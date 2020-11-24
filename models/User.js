@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
         {
             tickets: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'tickets'
+                ref: 'ticket'
             }
         }
     ]

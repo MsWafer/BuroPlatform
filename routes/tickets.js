@@ -4,6 +4,7 @@ const{check, validationResult} = require('express-validator');
 const auth = require ('../middleware/auth');
 
 const Ticket = require('../models/Ticket');
+const { populate } = require('../models/User');
 const User = require('../models/User');
 
 
@@ -23,18 +24,20 @@ async(req,res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
 
+        let currDate = new Date().toISOString().split('T')[0]
         const newTicket = new Ticket ({
+            user: req.user.id,
             problemname: req.body.problemname,
             text: req.body.text,
+            date: currDate,
             emergency: req.body.emergency,
             name: user.name,
-            user: req.user.id,
-            pcpass:req.body.pcpass
+            pcpass: req.body.pcpass
         });
 
-        const ticket = await newTicket.save();
+        await newTicket.save();
 
-        res.json(ticket);
+        res.json({msg:'Ваша проблема будет обкашляна в ближайшее время'});
     } catch (err) {
         console.error(err.messsage);
         res.status(500).send('serve error');
@@ -44,10 +47,10 @@ async(req,res) => {
 
 //get all tickets
 
-router.get('/all', auth, async(req,res) => {
+router.get('/all', async(req,res) => {
     try {
         let arr = [];
-        let tickets = await Ticket.find().sort({date: -1});
+        let tickets = await Ticket.find().sort({date:-1}).populate('user');
         tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
         res.json(arr);
     } catch (err) {
@@ -58,7 +61,7 @@ router.get('/all', auth, async(req,res) => {
 
 //get ticket by id
 
-router.get('/:id', auth, async(req,res) => {
+router.get('/:id', async(req,res) => {
     try {
         const ticket = await Ticket.findById(req.params.id);
 
@@ -78,7 +81,7 @@ router.get('/:id', auth, async(req,res) => {
 
 //get all user's tickets
 
-router.get('/user/:username', auth, async(req,res) => {
+router.get('/user/:username', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({user: req.params.username}).sort({date: -1});
@@ -91,7 +94,7 @@ router.get('/user/:username', auth, async(req,res) => {
 });
 
 //get all active tickets
-router.get('/active', auth, async(req,res) => {
+router.get('/active', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({status: req.params.status}).sort({date: -1});

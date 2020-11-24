@@ -19,8 +19,7 @@ const TicketSchema = new Schema({
         default: true
     },
     date: {
-        type: Date,
-        default: Date.now
+        type: String
     },
     emergency: {
         type: String,
@@ -28,11 +27,10 @@ const TicketSchema = new Schema({
     },
     screenshot: {
         type: String,
-        default: 0
     },
     pcpass: {
         type: String,
-        default: 0
+        default: null
     }
     
 });
