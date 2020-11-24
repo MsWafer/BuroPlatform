@@ -7,6 +7,7 @@ const {check, validationResult} = require('express-validator');
 
 const User = require('../models/User');
 
+//registration
 router.post ('/', [
     check('name', 'Введите имя пользователя').not().isEmpty(),
     check('email', 'Введите email').isEmail(),

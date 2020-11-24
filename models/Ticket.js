@@ -27,10 +27,12 @@ const TicketSchema = new Schema({
         required: true
     },
     screenshot: {
-        type: String
+        type: String,
+        default: 0
     },
     pcpass: {
-        type: String
+        type: String,
+        default: 0
     }
     
 });

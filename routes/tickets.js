@@ -28,7 +28,8 @@ async(req,res) => {
             text: req.body.text,
             emergency: req.body.emergency,
             name: user.name,
-            user: req.user.id
+            user: req.user.id,
+            pcpass:req.body.pcpass
         });
 
         const ticket = await newTicket.save();
@@ -47,10 +48,30 @@ router.get('/all', auth, async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find().sort({date: -1});
-        tickets.map(ticket => arr.push(`${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
+        res.status(500).send('server error');
+    }
+});
+
+//get ticket by id
+
+router.get('/:id', auth, async(req,res) => {
+    try {
+        const ticket = await Ticket.findById(req.params.id);
+
+        if(!ticket) {
+            return res.status(404).json({msg: "ticket not found"});
+        };
+
+        res.json(ticket);
+    } catch (err) {
+        console.error(err.messsage);
+        if(err.kind === 'ObjectId') {
+            return res.status(404).json({msg: "ticket not found"});
+        }
         res.status(500).send('server error');
     }
 });
@@ -61,7 +82,7 @@ router.get('/user/:username', auth, async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({user: req.params.username}).sort({date: -1});
-        tickets.map(ticket => arr.push(`${ticket.date}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -74,11 +95,23 @@ router.get('/active', auth, async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({status: req.params.status}).sort({date: -1});
-        tickets.map(ticket => arr.push(`${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
         res.status(500).send('server error');
+    }
+});
+
+//deactivate ticket by id
+router.put("/:id", async (req, res) => {
+
+    try {
+        let ticket = await Ticket.findOneAndUpdate({id: req.params.id}, {$set: {status:false}})
+        res.json({msg:`${ticket.id}пофикшен`});
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('server error')
     }
 });
 
