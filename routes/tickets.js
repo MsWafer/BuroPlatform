@@ -111,7 +111,7 @@ router.get('/user/:id', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -124,7 +124,7 @@ router.get('/all/active', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({status:true}).sort({date: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -137,7 +137,7 @@ router.get('/all/emergency', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find().sort({emergency: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
