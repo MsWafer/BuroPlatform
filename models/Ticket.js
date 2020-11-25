@@ -26,7 +26,8 @@ const TicketSchema = new Schema({
         required: true
     },
     screenshot: {
-        type: String,
+        data: Buffer,
+        contentType: String
     },
     pcpass: {
         type: String,
