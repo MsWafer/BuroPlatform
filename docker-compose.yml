@@ -12,8 +12,9 @@ services:
     container_name: mongo_sysadminochka
     restart: always
     image: mongo
+    command: mongod --port 27018
     ports: 
-     - '27017:27017'
+     - '27018:27018'
     volumes:
      - db-data:/data/db
      - mongo-config:/data/configdb
