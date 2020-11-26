@@ -3,13 +3,15 @@ const router = express.Router();
 const{check, validationResult} = require('express-validator');
 const auth = require ('../middleware/auth');
 const multer = require('multer'); 
-  
+const fs = require('fs'); 
+const path = require('path'); 
+
 const storage = multer.diskStorage({ 
-    destination: (req, file, cb) => { 
-        cb(null, 'uploads') 
+    destination: function (req, file, cb) {
+        cb(null, '../public')
     }, 
     filename: (req, file, cb) => { 
-        cb(null, file.fieldname + '-' + Date.now()) 
+        cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
     } 
 }); 
   
@@ -20,10 +22,10 @@ const User = require('../models/User');
 
 
 //create ticket
-router.post ('/', [auth, [
+router.post ('/', upload.single('file'), [auth, [
     check('problemname', 'Введите проблему').not().isEmpty(),
     check('text', 'Введите описание проблемы').not().isEmpty(),
-    check('emergency', 'Укажите срочность').not().isEmpty()
+    check('emergency', 'Выберите срочность').not().isEmpty().isNumeric()
 ]
 ], 
 async(req,res) => {
@@ -34,9 +36,9 @@ async(req,res) => {
 
     try {
         const user = await User.findById(req.user.id).select('-password').populate('user');
+        
         let currDate = new Date();
-        // .toISOString().split('T')[0]
-        upload.single('screenshot')
+
         const newTicket = new Ticket ({
             user: req.user.id,
             problemname: req.body.problemname,
@@ -45,17 +47,19 @@ async(req,res) => {
             emergency: req.body.emergency,
             name: user.name,
             pcpass: req.body.pcpass,
-            // screenshot: {
-            //     data: blyad,
-            //     contentType: 'image/png'
-            // }
+            screenshot: req.file ?
+             [{ssname:req.file.filename},
+                {sspath:req.file.path}] : []
         });
-
-        await newTicket.save();
-
+        try {
+            await newTicket.save();
+        } catch (error) {
+            console.log(error)
+        }
+        
         res.json({msg:'Ваша проблема будет обкашляна в ближайшее время'});
+        console.log('Новый тикет добавлен')
     } catch (err) {
-        console.error(err.messsage);
         res.status(500).send('serve error');
     }
 }
@@ -68,7 +72,16 @@ router.get('/all', async(req,res) => {
         let arr = [];
         let tickets = await Ticket.find().sort({date:-1}).populate('user');
         // let currDate = ticket.date.toString().slice(4,24)
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(
+       {
+        id:`${ticket.id}`,
+        date:`${ticket.date.toString().slice(4,21)}`,
+        user:`${ticket.user.name}`,
+        problemname:`${ticket.problemname}`,
+        emergency:`${ticket.emergency}`,
+        status:`${ticket.status}`
+        }
+        ))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -94,7 +107,8 @@ router.get('/:id', async(req,res) => {
             text:`${ticket.text}`,
             pcpass:`${ticket.pcpass}`,
             emergency:`${ticket.emergency}`,
-            status:`${ticket.status}`
+            status:`${ticket.status}`,
+            screenshot:`${ticket.screenshot[0].ssname}`
         });
     } catch (err) {
         console.error(err.messsage);
@@ -111,7 +125,15 @@ router.get('/user/:id', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(
+        {
+        id:`${ticket.id}`,
+        date:`${ticket.date.toString().slice(4,21)}`,
+        problemname:`${ticket.problemname}`,
+        emergency:`${ticket.emergency}`,
+        status:`${ticket.status}`
+        }
+        ))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -124,7 +146,15 @@ router.get('/all/active', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({status:true}).sort({date: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}`))
+        tickets.map(ticket => arr.push(
+            {
+            id:`${ticket.id}`,
+            date:`${ticket.date.toString().slice(4,21)}`,
+            user:`${ticket.user.name}`,
+            problemname:`${ticket.problemname}`,
+            emergency:`${ticket.emergency}`,
+            }
+        ))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
@@ -137,7 +167,16 @@ router.get('/all/emergency', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find().sort({emergency: -1}).populate('user');
-        tickets.map(ticket => arr.push(`${ticket.id}-${ticket.date.toString().slice(4,21)}-${ticket.user.name}-${ticket.problemname}-${ticket.emergency}-${ticket.status}`))
+        tickets.map(ticket => arr.push(
+            {
+            id:`${ticket.id}`,
+            date:`${ticket.date.toString().slice(4,21)}`,
+            user:`${ticket.user.name}`,
+            problemname:`${ticket.problemname}`,
+            emergency:`${ticket.emergency}`,
+            status:`${ticket.status}`
+            }
+        ))
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);

@@ -22,13 +22,19 @@ const TicketSchema = new Schema({
         type: String
     },
     emergency: {
-        type: String,
+        type: Number,
         required: true
     },
-    screenshot: {
-        data: Buffer,
-        contentType: String
+    screenshot: [
+        {
+        ssname:{
+            type: String,
     },
+        sspath:{
+            type:String,
+        }
+    }
+],
     pcpass: {
         type: String,
         default: null
