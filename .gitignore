@@ -3,4 +3,3 @@ ss.png
 uploads
 mongodb://mongo_sysadminochka:27017/Problems
 mongodb://127.0.0.1:27017/Problems
-.dockerignore
