@@ -1,0 +1,23 @@
+version: '3'
+services:
+  app:
+    container_name: sysadminochka
+    restart: always
+    build: .
+    ports:
+      - '5050:5050'
+    depends_on:
+      - 'mongo'
+  mongo:
+    container_name: mongo_sysadminochka
+    restart: always
+    image: mongo
+    ports: 
+     - '27017:27017'
+    volumes:
+     - db-data:/data/db
+     - mongo-config:/data/configdb
+
+volumes:
+  db-data: 
+  mongo-config:
