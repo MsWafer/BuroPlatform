@@ -32,10 +32,13 @@ router.get('/:auth', async(req,res) => {
             return res.status(400).json({msg: "Проект не найден"})
         } else if (project) {
             res.json({
-                name:`Имя проекта:${project.name}`,
-                crypt: `Шифр проекта:${project.crypt}`,
-                date: `Дата:${project.dateStart}-${project.dateFinish}`,
-                city: `Город:${project.city}`    
+                name:`Название:${project.name}`,
+                crypt: `Шифр:${project.crypt}`,
+                date: `С ${project.dateStart} по ${project.dateFinish}`,
+                city: `Город:${project.city}`,
+                type: `Тип:${project.type}`,
+                stage: `Этап:${project.stage}`,
+                area: `Площадь:${project.area}`  
             });
         } else if (projectName) {
             let arr2 =[];
@@ -76,6 +79,7 @@ router.put("/:crypt", async (req, res) => {
     const newType = req.body.type;
     const newStage = req.body.stage;
     const newArea = req.body.area;
+
     try {
         const project = await Project.findOneAndUpdate({crypt: req.params.crypt}, 
             {$set: {
@@ -88,10 +92,13 @@ router.put("/:crypt", async (req, res) => {
                 area:newArea
             }})
         res.json({
-                name:`Имя проекта:${project.name}`,
-                crypt: `Шифр проекта:${project.crypt}`,
-                date: `Дата:${project.dateStart}-${project.dateFinish}`,
-                city: `Город:${project.city}`
+                name:`Название:${project.name}`,
+                crypt: `Шифр:${project.crypt}`,
+                date: `С ${project.dateStart} по ${project.dateFinish}`,
+                city: `Город:${project.city}`,
+                type: `Тип:${project.type}`,
+                stage: `Этап:${project.stage}`,
+                area: `Площадь:${project.area}`
             });
     } catch (error) {
         console.error(error.message);

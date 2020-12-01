@@ -35,7 +35,7 @@ async(req,res) => {
     }
 
     try {
-        const user = await User.findById(req.user.id).select('-password').populate('user');
+        const user = await User.findById(req.user.id).select('-password','-permission').populate('user');
         
         let currDate = new Date();
 
@@ -47,8 +47,8 @@ async(req,res) => {
             emergency: req.body.emergency,
             name: user.name,
             pcpass: req.body.pcpass,
-            screenshot: req.file ?
-             [{ssname:req.file.filename},
+            screenshot: req.file ? [
+                {ssname:req.file.filename},
                 {sspath:req.file.path}] : []
         });
         try {

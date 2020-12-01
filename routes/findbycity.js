@@ -9,7 +9,7 @@ router.get('/:city',async (req,res) => {
     try {
         let projects = await Project.find({city: req.params.city});
         let arr =[];
-        await projects.map(project => arr.push(`${project.dateStart}-${project.dateFinish}-${project.crypt}-${project.name}`))
+        projects.map(project => arr.push(`${project.dateStart}-${project.dateFinish}-${project.crypt}-${project.name}`))
         if(arr.length==0){
             res.json({msg:'Не найдено проектов в указанном городе'})
         }else{

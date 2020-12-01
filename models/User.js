@@ -30,6 +30,13 @@ const UserSchema = new mongoose.Schema({
             }
         }
     ],
+    permission : {
+        type:String,
+        default: 'normie'
+    },
+    position: {
+        type:String
+    } 
     
 });
 

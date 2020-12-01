@@ -11,14 +11,15 @@ const User = require('../models/User');
 router.post ('/', [
     check('name', 'Введите имя пользователя').not().isEmpty(),
     check('email', 'Введите email').isEmail(),
-    check('password', "Введите пароль длиной более 7 символов").isLength({min:7})
+    check('password', "Введите пароль длиной не менее 7 и не более 20 символов").isLength({min:7,max:20}),
+    check('position', 'Выберите должность').not().isEmpty()
 ], async (req,res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, position } = req.body;
 
     try{
         let user = await User.findOne({email});
@@ -29,13 +30,14 @@ router.post ('/', [
         user = new User({
             name,
             email,
-            password
+            password,
+            position
         });
+
         //password encryption
         const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
 
-    
         await user.save();
 
         //jsonwebtoken return

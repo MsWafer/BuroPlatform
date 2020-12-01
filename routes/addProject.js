@@ -6,19 +6,20 @@ const auth = require ('../middleware/auth');
 const Project = require('../models/Project');
 const User = require('../models/User');
 
-router.post ('/', auth,
+router.post ('/', auth, [
     check('name', 'Введите название проекта').not().isEmpty(),
-    check('dateStart', 'Введите год').isDate(),
+    check('dateStart', 'Введите дату говна').isDate(),
     check('city', 'Введите город').not().isEmpty(),
-    check('type', 'Введите тип проекта').not().isEmpty(),
-    check('stage', 'Введите этап производства проекта').not().isEmpty(),
-    check('area', 'Введите площадь проекта').not().isEmpty(),
-    async (req,res) => {
+    check('type', 'Выберите тип проекта').not().isEmpty(),
+    check('stage', 'Выберите этап мочи').not().isEmpty()
+    ], async (req,res) => {
     const errors = validationResult(req);
+
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     };
-    const user = await User.findById(req.user.id).select('-password').populate('user');
+
+    const user = await User.findById(req.user.id).select('-password', '-permission').populate('user');
     
     let { name, dateStart, city, type, stage, area } = req.body;
 
@@ -28,7 +29,6 @@ router.post ('/', auth,
         };
 
         let crypt = getRndInteger(1000,9999)
-
         let gonvocod = await Project.findOne({crypt});
         if(gonvocod) {
             crypt
