@@ -16,26 +16,18 @@ const ProjectSchema = new Schema({
     },
     dateStart: {
         type: Date,
-        default: Date.now()
     },
     dateFinish: {
         type: Date,
-        default: Date.now()
+        default: null
     },
     team: [
         {
-        user1:{
+        user:{
             type: Schema.Types.ObjectId,
             ref: 'user'
         },
-        user2:{
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-            },
-        user3:{
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-        }}
+        }
     ],
     customer: {
         type: Schema.Types.ObjectId,

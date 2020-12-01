@@ -57,7 +57,7 @@ async(req,res) => {
             console.log(error)
         }
         
-        res.json({msg:'Ваша проблема будет обкашляна в ближайшее время'});
+        res.json({msg:'Новая проблема добавлена'});
         console.log('Новый тикет добавлен')
     } catch (err) {
         res.status(500).send('serve error');
@@ -71,7 +71,6 @@ router.get('/all', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find().sort({date:-1}).populate('user');
-        // let currDate = ticket.date.toString().slice(4,24)
         tickets.map(ticket => arr.push(
        {
         id:`${ticket.id}`,

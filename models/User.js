@@ -21,7 +21,15 @@ const UserSchema = new mongoose.Schema({
                 ref: 'ticket'
             }
         }
-    ]
+    ],
+    projects: [
+        {
+            project: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'project'
+            }
+        }
+    ],
     
 });
 
