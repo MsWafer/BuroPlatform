@@ -30,8 +30,7 @@ const ProjectSchema = new Schema({
         }
     ],
     customer: {
-        type: Schema.Types.ObjectId,
-        ref: 'user'
+        type: String
     },
     city: {
         type: String

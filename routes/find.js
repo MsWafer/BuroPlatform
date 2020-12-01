@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const auth = require ('../middleware/auth');
 
 const Project = require('../models/Project');
 
@@ -54,8 +54,40 @@ router.get('/:auth', async(req,res) => {
         res.status(500).send('server error')
     }
 });
+
+//get all user's projects
+
+router.get('/user/:id', async(req,res) => {
+    try {
+        let arr = [];
+        let projects = await Project.find({user: req.params.id})
+        .sort({date: -1})
+        .populate('user');
+
+        projects.map(project => arr.push(
+        {
+        id:`${project.id}`,
+        date:`${project.dateStart.toString().slice(4,21)} - ${project.dateFinish.toString().slice(4,21)}`,
+        name:`${project.name}`,
+        type:`${project.type}`,
+        stage:`${project.stage}`,
+        city:`${project.city}`,
+        area:`${project.area}`,
+        crypt:`${project.crypt}`,
+        customer:`${project.customer}`,
+        }
+        )
+        )
+
+        res.json(arr);
+    } catch (err) {
+        console.error(err.messsage);
+        res.status(500).send('server error');
+    }
+});
+
 //delete
-router.delete('/:crypt',async(req,res) => {
+router.delete('/:crypt', auth, async(req,res) => {
     try {
         const project = await Project.findOne({crypt: req.params.crypt});
         if(!project) {
@@ -70,7 +102,7 @@ router.delete('/:crypt',async(req,res) => {
 });
 
 //edit
-router.put("/:crypt", async (req, res) => {
+router.put("/:crypt", auth, async (req, res) => {
 
     const newName = req.body.name;
     const newDateStart = req.body.date;

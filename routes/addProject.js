@@ -21,7 +21,7 @@ router.post ('/', auth, [
 
     const user = await User.findById(req.user.id).select('-password', '-permission').populate('user');
     
-    let { name, dateStart, city, type, stage, area } = req.body;
+    let { name, dateStart, city, type, stage, area, customer } = req.body;
 
     try{
         function getRndInteger(min, max) {
@@ -52,7 +52,8 @@ router.post ('/', auth, [
             type,
             stage,
             area,
-            team:[{user:user.name}]
+            team:[{user:user.name}],
+            customer
         });
         
         await project.save();

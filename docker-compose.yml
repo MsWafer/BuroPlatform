@@ -5,16 +5,16 @@ services:
     restart: always
     build: .
     ports:
-      - '5050:5050'
+      - '3672:3672'
     depends_on:
       - 'mongo'
   mongo:
     container_name: mongo_sysadminochka
     restart: always
     image: mongo
-    command: mongod --port 27018
+    command: mongod --port 27147
     ports: 
-     - '27018:27018'
+     - '27147:27147'
     volumes:
      - db-data:/data/db
      - mongo-config:/data/configdb

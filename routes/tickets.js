@@ -124,6 +124,7 @@ router.get('/user/:id', async(req,res) => {
     try {
         let arr = [];
         let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user');
+
         tickets.map(ticket => arr.push(
         {
         id:`${ticket.id}`,
@@ -132,7 +133,9 @@ router.get('/user/:id', async(req,res) => {
         emergency:`${ticket.emergency}`,
         status:`${ticket.status}`
         }
-        ))
+        )
+        )
+
         res.json(arr);
     } catch (err) {
         console.error(err.messsage);
