@@ -8,15 +8,12 @@ app.use(cors())
 
 connectDB();
 
-app.get('/', (req,res) => res.send('Не крашься плиз'));
+app.get('/', (req,res) => res.send('Не крашьте плиз'));
 
 app.use('/auth', require('./routes/auth'));
 app.use('/users', require('./routes/users'));
 app.use('/tickets', require('./routes/tickets'));
-app.use('/add', require('./routes/addProject'));
-app.use('/projects', require('./routes/find'));
-app.use('/city', require('./routes/findbycity'));
-
+app.use('/projects', require('./routes/projects'));
 
 const PORT = process.env.PORT || 3672;
 

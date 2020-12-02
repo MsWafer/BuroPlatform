@@ -3,8 +3,72 @@ const router = express.Router();
 const auth = require ('../middleware/auth');
 
 const Project = require('../models/Project');
+const User = require('../models/User');
 
-//find all
+//add new project
+router.post ('/add', auth, [
+    check('name', 'Введите название проекта').not().isEmpty(),
+    check('dateStart', 'Введите дату говна').isDate(),
+    check('city', 'Введите город').not().isEmpty(),
+    check('type', 'Выберите тип проекта').not().isEmpty(),
+    check('stage', 'Выберите этап мочи').not().isEmpty()
+    ], async (req,res) => {
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()});
+    };
+
+    const user = await User.findById(req.user.id).select('-password', '-permission').populate('user');
+    
+    let { name, dateStart, city, type, stage, area, customer } = req.body;
+
+    try{
+        function getRndInteger(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        };
+
+        let crypt = getRndInteger(1000,9999)
+        let gonvocod = await Project.findOne({crypt});
+        if(gonvocod) {
+            crypt
+        };
+        if(gonvocod) {
+            crypt
+        };
+        if(gonvocod) {
+            crypt
+        };
+        if(gonvocod) {
+            crypt
+        };
+
+        project = new Project({
+            crypt,
+            name,
+            dateStart,
+            dateFinish:req.body.dateFinish ? req.body.dateFinish : {},
+            city,
+            type,
+            stage,
+            area,
+            team:[{user:user.name}],
+            customer
+        });
+        
+        await project.save();
+        console.log(`Проект ${crypt} добавлен`)
+
+        return res.status(200).send(`${crypt}-${name}`);
+
+    } catch(err) {
+    console.error(err.message);
+    res.status(500).send('server error');
+    }
+    
+});
+
+//find all projects
 router.get('/',async (req,res) => {
     try {
         let arr =[];
@@ -22,7 +86,8 @@ router.get('/',async (req,res) => {
 
     
 });
-//find by crypt/name
+
+//find project by crypt/name
 router.get('/:auth', async(req,res) => {
     try {
         let project = await Project.findOne({crypt: req.params.auth});
@@ -56,7 +121,6 @@ router.get('/:auth', async(req,res) => {
 });
 
 //get all user's projects
-
 router.get('/user/:id', async(req,res) => {
     try {
         let arr = [];
@@ -86,7 +150,24 @@ router.get('/user/:id', async(req,res) => {
     }
 });
 
-//delete
+//find projects by city
+router.get('city/:city',async (req,res) => {
+    try {
+        let projects = await Project.find({city: req.params.city});
+        let arr =[];
+        projects.map(project => arr.push(`${project.dateStart}-${project.dateFinish}-${project.crypt}-${project.name}`))
+        if(arr.length==0){
+            res.json({msg:'Не найдено проектов в указанном городе'})
+        }else{
+        res.json(arr);
+        }
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+});
+
+//delete project
 router.delete('/:crypt', auth, async(req,res) => {
     try {
         const project = await Project.findOne({crypt: req.params.crypt});
@@ -101,7 +182,7 @@ router.delete('/:crypt', auth, async(req,res) => {
     };
 });
 
-//edit
+//edit project
 router.put("/:crypt", auth, async (req, res) => {
 
     const newName = req.body.name;
@@ -138,4 +219,25 @@ router.put("/:crypt", auth, async (req, res) => {
     }
 });
 
+//add user to project's team
+router.put('/updteam/:crypt', auth, async(req,res)=>{
+    try {
+        let user = await User.findById(req.body.userid).select('-password').populate('user');
+        await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
+        let project = Project.findOne({crypt: req.params.crypt}).populate('user');
+        await User.findOneAndUpdate({id:req.body.userid},{$push: {projects: project}});
+        res.status(200).json({msg:`${user.name} добавлен в команду проекта ${req.params.crypt}`})
+        console.log(`Пользователь добавлен в команду проекта ${req.params.crypt}`)
+    } catch (error) {
+    res.status(400).send(`server error`)
+    console.log('произошла якась хуйня')
+}})
+
+
 module.exports = router;
+
+
+    // let perm = await User.findById(req.user.id).select('-password').populate('user');
+    // if(perm.permission !== 'admin'){
+    //     return res.status(403).send('У вас недостаточно прав для данной операции')
+    // }
