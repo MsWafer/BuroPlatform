@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const{check, validationResult} = require('express-validator');
+const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
 
 const Project = require('../models/Project');
@@ -20,47 +20,56 @@ router.post ('/add', auth, [
         return res.status(400).json({errors: errors.array()});
     };
 
-    const user = await User.findById(req.user.id).select('-password', '-permission').populate('user');
+    const user = await User.findById(req.user.id).select('-password').populate('user');
     
-    let { name, dateStart, city, type, stage, area, customer } = req.body;
+    let { name, dateStart, dateFinish, city, type, stage, area, customer } = req.body;
 
     try{
         function getRndInteger(min, max) {
             return Math.floor(Math.random() * (max - min)) + min;
         };
 
-        let crypt = getRndInteger(1000,9999)
-        let gonvocod = await Project.findOne({crypt});
-        if(gonvocod) {
-            crypt
-        };
-        if(gonvocod) {
-            crypt
-        };
-        if(gonvocod) {
-            crypt
-        };
-        if(gonvocod) {
-            crypt
-        };
+//              ####
+//              ####
+//         ##############
+//         ##############
+//              ####
+//              ####
+//              ####
+//              ####
+
+        let crypts =[];
+        let crypt = getRndInteger(1,10)
+        let projects = await Project.find().select('crypt');
+        await projects.map(project123 => crypts.push(project123.crypt));
+
+        const promise = () =>  new Promise((resolve,reject) => {
+            
+            crypt = getRndInteger(1,10)
+
+            if(!crypts.includes(crypt)){resolve()}
+            else{reject(promise())}
+            
+        });
+
+        promise().then()
+                 .catch()
+
 
         project = new Project({
             crypt,
             name,
             dateStart,
-            dateFinish:req.body.dateFinish ? req.body.dateFinish : {},
+            dateFinish,
             city,
             type,
             stage,
             area,
-            team:[{user:user.name}],
             customer
         });
-        
         await project.save();
         console.log(`Проект ${crypt} добавлен`)
-
-        return res.status(200).send(`${crypt}-${name}`);
+        return res.status(200).send(`${dateStart}-${crypt}-${name}`);
 
     } catch(err) {
     console.error(err.message);
@@ -70,7 +79,7 @@ router.post ('/add', auth, [
 });
 
 //find all projects
-router.get('/',async (req,res) => {
+router.get('/', async (req,res) => {
     try {
         let arr =[];
         let projects = await Project.find();
