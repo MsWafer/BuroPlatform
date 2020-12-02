@@ -53,6 +53,7 @@ async(req,res) => {
         });
         try {
             await newTicket.save();
+            await User.findOneAndUpdate({id:req.user.id},{$push: {tickets:newTicket}})
         } catch (error) {
             console.log(error)
         }
@@ -66,7 +67,6 @@ async(req,res) => {
 );
 
 //get all tickets
-
 router.get('/all', async(req,res) => {
     try {
         let arr = [];
@@ -89,7 +89,6 @@ router.get('/all', async(req,res) => {
 });
 
 //get ticket by id
-
 router.get('/:id', async(req,res) => {
     try {
         const ticket = await Ticket.findById(req.params.id).populate('user');
@@ -119,7 +118,6 @@ router.get('/:id', async(req,res) => {
 });
 
 //get all user's tickets
-
 router.get('/user/:id', async(req,res) => {
     try {
         let arr = [];

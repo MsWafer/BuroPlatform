@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const{check, validationResult} = require('express-validator');
 const auth = require ('../middleware/auth');
 
 const Project = require('../models/Project');
@@ -224,7 +225,7 @@ router.put('/updteam/:crypt', auth, async(req,res)=>{
     try {
         let user = await User.findById(req.body.userid).select('-password').populate('user');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
-        let project = Project.findOne({crypt: req.params.crypt}).populate('user');
+        let project = await Project.findOne({crypt: req.params.crypt});
         await User.findOneAndUpdate({id:req.body.userid},{$push: {projects: project}});
         res.status(200).json({msg:`${user.name} добавлен в команду проекта ${req.params.crypt}`})
         console.log(`Пользователь добавлен в команду проекта ${req.params.crypt}`)
