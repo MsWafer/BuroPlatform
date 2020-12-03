@@ -14,22 +14,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    tickets: [
-        {
-            tickets: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'ticket'
-            }
-        }
-    ],
-    projects: [
-        {
-            project: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'project'
-            }
-        }
-    ],
+    tickets: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ticket'
+    }],
+    projects: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'project'
+    }],
     permission : {
         type:String,
         default: 'normie'

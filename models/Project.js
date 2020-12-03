@@ -21,14 +21,10 @@ const ProjectSchema = new Schema({
         type: Date,
         default: null
     },
-    team: [
-        {
-        user:{
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-        },
-        }
-    ],
+    team: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     customer: {
         type: String
     },
