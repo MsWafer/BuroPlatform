@@ -19,42 +19,27 @@ router.post ('/add', auth, [
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     };
-
-    const user = await User.findById(req.user.id).select('-password').populate('user');
     
     let { name, dateStart, dateFinish, city, type, stage, area, customer } = req.body;
 
     try{
         function getRndInteger(min, max) {
-            return Math.floor(Math.random() * (max - min)) + min;
-        };
-
-//              ####
-//              ####
-//         ##############
-//         ##############
-//              ####
-//              ####
-//              ####
-//              ####
-
+            return Math.floor(Math.random() * (max - min)) + min;};
         let crypts =[];
-        let crypt = getRndInteger(1,10)
         let projects = await Project.find().select('crypt');
-        await projects.map(project123 => crypts.push(project123.crypt));
+        projects.map(project123 => crypts.push(project123.crypt));
 
-        const promise = () =>  new Promise((resolve,reject) => {
-            
-            crypt = getRndInteger(1,10)
+        if(crypts.length==8999){
+            console.log('Места нет, пизда')
+            return res.status(400).json({err:'Закончились свободные шифры, въебите бекендеру'})
+        }
 
-            if(!crypts.includes(crypt)){resolve()}
-            else{reject(promise())}
-            
+        const promise = () =>  new Promise((resolve) => {
+            crypt = getRndInteger(1000,10000).toString();
+            if(crypts.includes(crypt)){resolve(promise())};
         });
 
-        promise().then()
-                 .catch()
-
+        promise()
 
         project = new Project({
             crypt,
@@ -67,10 +52,10 @@ router.post ('/add', auth, [
             area,
             customer
         });
+
         await project.save();
         console.log(`Проект ${crypt} добавлен`)
         return res.status(200).send(`${dateStart}-${crypt}-${name}`);
-
     } catch(err) {
     console.error(err.message);
     res.status(500).send('server error');
@@ -83,7 +68,7 @@ router.get('/', async (req,res) => {
     try {
         let arr =[];
         let projects = await Project.find();
-        await projects.map(project => arr.push(`${project.dateStart}-${project.crypt}-${project.name}`))
+        await projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
         if(arr.length==0){
             res.json({msg:'Не найдено проектов'})
         }else{
@@ -106,18 +91,19 @@ router.get('/:auth', async(req,res) => {
         if(!project && !projectName) {
             return res.status(400).json({msg: "Проект не найден"})
         } else if (project) {
+            if(!project.dateFinish){finishDate=``}else{finishDate=` - ${project.dateFinish.toString().slice(4,15)}`}
             res.json({
-                name:`Название:${project.name}`,
-                crypt: `Шифр:${project.crypt}`,
-                date: `С ${project.dateStart} по ${project.dateFinish}`,
-                city: `Город:${project.city}`,
-                type: `Тип:${project.type}`,
-                stage: `Этап:${project.stage}`,
-                area: `Площадь:${project.area}`  
+                name:`${project.name}`,
+                crypt: `${project.crypt}`,
+                date: `${project.dateStart.toString().slice(4,15)}${finishDate}`,
+                city: `${project.city}`,
+                type: `${project.type}`,
+                stage: `${project.stage}`,
+                area: `${project.area}`  
             });
         } else if (projectName) {
             let arr2 =[];
-            projectName.map(project => arr2.push(`${project.dateStart}-${project.dateFinish}-${project.crypt}-${project.name}`))
+            projectName.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
             if(arr2.length==0){
                 res.json({msg:'Не найдено проектов с указанным названием'})
             }else{
@@ -161,11 +147,11 @@ router.get('/user/:id', async(req,res) => {
 });
 
 //find projects by city
-router.get('city/:city',async (req,res) => {
+router.get('/city/:city',async (req,res) => {
     try {
-        let projects = await Project.find({city: req.params.city});
         let arr =[];
-        projects.map(project => arr.push(`${project.dateStart}-${project.dateFinish}-${project.crypt}-${project.name}`))
+        let projects = await Project.find({city: req.params.city});
+        projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
         if(arr.length==0){
             res.json({msg:'Не найдено проектов в указанном городе'})
         }else{
@@ -195,33 +181,30 @@ router.delete('/:crypt', auth, async(req,res) => {
 //edit project
 router.put("/:crypt", auth, async (req, res) => {
 
-    const newName = req.body.name;
-    const newDateStart = req.body.date;
-    const newDateFinish = req.body.date;
-    const newCity = req.body.city;
-    const newType = req.body.type;
-    const newStage = req.body.stage;
-    const newArea = req.body.area;
-
     try {
-        const project = await Project.findOneAndUpdate({crypt: req.params.crypt}, 
+        let project = await Project.findOneAndUpdate({crypt: req.params.crypt}, 
             {$set: {
-                name:newName, 
-                dateStart:newDateStart, 
-                dateFinish:newDateFinish, 
-                city:newCity,
-                type:newType,
-                stage:newStage,
-                area:newArea
+                name:req.body.name?req.body.name:project.name, 
+                dateStart:req.body.dateStart?req.body.dateStart:project.dateStart, 
+                dateFinish:req.body.dateFinish?req.body.dateFinish:project.dateFinish, 
+                city:req.body.city?req.body.city:project.city,
+                type:req.body.type?req.body.dateStart:project.dateStart,
+                stage:req.body.stage?req.body.stage:project.stage,
+                area:req.body.area?req.body.area:project.area,
+                customer:req.body.customer?req.body.customer:project.customer
             }})
+            
+            let editedProject = await Project.findOne({crypt: req.params.crypt})
+            if(!editedProject.dateFinish){finishDate=``}else{finishDate=` - ${editedProject.dateFinish.toString().slice(4,15)}`}
         res.json({
-                name:`Название:${project.name}`,
-                crypt: `Шифр:${project.crypt}`,
-                date: `С ${project.dateStart} по ${project.dateFinish}`,
-                city: `Город:${project.city}`,
-                type: `Тип:${project.type}`,
-                stage: `Этап:${project.stage}`,
-                area: `Площадь:${project.area}`
+                name:`${editedProject.name}`,
+                crypt: `${editedProject.crypt}`,
+                date: `${editedProject.dateStart.toString().slice(4,15)}${finishDate}`,
+                city: `${editedProject.city}`,
+                type: `${editedProject.type}`,
+                stage: `${editedProject.stage}`,
+                area: `${editedProject.area}`,
+                customer: `${editedProject.customer}`
             });
     } catch (error) {
         console.error(error.message);
@@ -231,13 +214,29 @@ router.put("/:crypt", auth, async (req, res) => {
 
 //add user to project's team
 router.put('/updteam/:crypt', auth, async(req,res)=>{
+    try{
+        let usercheck = await User.findOne({_id:req.body.userid})
+        if(!usercheck)
+        {return res.status(400).json({msg:`Не найден пользователь с указанным _id`})};
+    }catch(err){
+        if(err.kind == 'ObjectId') {
+            return res.status(400).json({msg:'Не найден пользователь с указанным _id'});
+        }
+        res.status(500).send('server error');
+    }
+    let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
+    let das = huy.toString().slice(11,-3).replace(/{ _id:/g,'').replace(/ _id:/g,'').replace(/ }/g,'').replace(/     /g,'').replace(/\n/g,'').trim();
+    let asd = das.split(',')
+    if(asd.includes(req.body.userid)){return res.status(400).json({msg:`Данный пользователь уже находится в команде проекта`})};
+
     try {
-        let user = await User.findById(req.body.userid).select('-password').populate('user');
+        let user = await User.findById(req.body.userid).select('-password -permission');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
         let project = await Project.findOne({crypt: req.params.crypt});
-        await User.findOneAndUpdate({id:req.body.userid},{$push: {projects: project}});
+        await User.findOneAndUpdate({_id:req.body.userid},{$push: {projects: project}});
+
         res.status(200).json({msg:`${user.name} добавлен в команду проекта ${req.params.crypt}`})
-        console.log(`Пользователь добавлен в команду проекта ${req.params.crypt}`)
+        console.log(`${user.name} добавлен в команду проекта ${req.params.crypt}`)
     } catch (error) {
     res.status(400).send(`server error`)
     console.log('произошла якась хуйня')

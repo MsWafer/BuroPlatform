@@ -39,7 +39,7 @@ const ProjectSchema = new Schema({
         type: String,
     },
     crypt: {
-        type: Number
+        type: String
     }
     
 });
