@@ -23,6 +23,6 @@
   - **GET /projects/:auth** :sunglasses: - найти проект по *auth*, где *auth* это *crypt* или *title* проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
   - **DELETE /projects/:crypt** :grimacing: - удалить проект, указав его *crypt* в хедере
   - **PUT /projects/:crypt** :stuck_out_tongue_winking_eye: - изменить информацию проекта, указав его crypt в хедере и новые значения в body. В респонсе измененные данные проекта
-  - **GET projects/city/:city** :serbia: - респонс со всеми проектами в городе, указанном в *city*
+  - **GET projects/city/:city** - респонс со всеми проектами в городе, указанном в *city*
   - **GET projects/user/:id** - найти все проекты пользователя *id*
   - **PUT projects/updteam/:crypt** - находит проект по его *crypt* и добавляет в его команду пользователя, чей айди указан в *userid* в body
