@@ -4,11 +4,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require ('jsonwebtoken');
 const config = require('config');
 const {check, validationResult} = require('express-validator');
+const auth = require ('../middleware/auth');
+const multer = require('multer'); 
+const fs = require('fs'); 
+const path = require('path'); 
+
+const storage = multer.diskStorage({ 
+    destination: function (req, file, cb) {
+        cb(null, '../public/avatars')
+    }, 
+    filename: (req, file, cb) => { 
+        cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
+    } 
+}); 
+  
+const upload = multer({ storage: storage }); 
+
 
 const User = require('../models/User');
+const Project = require('../models/Project');
+const Ticket = require('../models/Ticket');
+const { findById, findOne, findOneAndUpdate } = require('../models/User');
+const { response } = require('express');
 
 //registration
-router.post ('/', [
+router.post ('/',upload.single('file'), [
     check('name', 'Введите имя пользователя').not().isEmpty(),
     check('email', 'Введите email').isEmail(),
     check('password', "Введите пароль длиной не менее 7 и не более 20 символов").isLength({min:7,max:20}),
@@ -31,7 +51,10 @@ router.post ('/', [
             name,
             email,
             password,
-            position
+            position,
+            avatar: req.file ? [
+                {avatarname:req.file.filename},
+                {avatarpath:req.file.path}] : []
         });
 
         //password encryption
@@ -58,5 +81,68 @@ router.post ('/', [
     }
     
 });
+
+//edit user
+router.put('/me', auth, async(req,res) =>{
+    let user1 = await findOne({user:req.params.id});
+    if(!req.body.password){
+        newPassword=user1.password
+    }else if(req.body.password){
+        const salt = await bcrypt.genSalt(10);
+        newPassword = await bcrypt.hash(req.body.password, salt);
+    }
+    try {
+        await findOneAndUpdate({user:req.params.id},
+            {$set: {
+                name:req.body.name?req.body.name:user1.name, 
+                email:req.body.email?req.body.email:project1.email, 
+                position:req.body.position?req.body.position:project1.position, 
+                password:newPassword
+            }
+        })
+        response.json({msg:'Ваш профиль был обновлен'})
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+}
+)
+
+//find all users
+router.get('/all', async(req,res)=>{
+    try {
+        let users = await User.find().populate('projects').populate('tickets')
+        res.json(users) 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+    
+})
+
+//find user by id
+router.get('/:id', async(req,res) =>{
+    try {
+        let user = await User.findById(req.params.id)
+        .select('-password -permission')
+        .populate('projects')
+        .populate('tickets')
+        if(!user) {
+            return res.status(404).json({msg: "ticket not found"});
+        };
+        res.json({
+            id:user.id,
+            name:user.name,
+            email:user.email,
+            position:user.position,
+            projects:user.projects,
+            tickets:user.tickets,
+            avatar:user.avatar[0].avatarpath
+        })
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+})
 
 module.exports = router;

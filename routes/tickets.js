@@ -8,7 +8,7 @@ const path = require('path');
 
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '../public')
+        cb(null, '../public/ticketSS')
     }, 
     filename: (req, file, cb) => { 
         cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
@@ -53,7 +53,7 @@ async(req,res) => {
         });
         try {
             await newTicket.save();
-            await User.findOneAndUpdate({id:req.user.id},{$push: {tickets:newTicket}})
+            await User.findOneAndUpdate({_id:req.user.id},{$push: {tickets:newTicket}})
         } catch (error) {
             console.log(error)
         }
@@ -98,15 +98,15 @@ router.get('/:id', async(req,res) => {
         };
 
         res.json({
-            id:`${ticket.id}`,
-            date:`${ticket.date}`,
-            user:`${ticket.user.name}`,
-            problemname:`${ticket.problemname}`,
-            text:`${ticket.text}`,
-            pcpass:`${ticket.pcpass}`,
-            emergency:`${ticket.emergency}`,
-            status:`${ticket.status}`,
-            screenshot:`${ticket.screenshot[0].ssname}`
+            id:ticket.id,
+            date:ticket.date,
+            user:ticket.user.name,
+            problemname:ticket.problemname,
+            text:ticket.text,
+            pcpass:ticket.pcpass,
+            emergency:ticket.emergency,
+            status:ticket.status,
+            screenshot:ticket.screenshot[0].ssname
         });
     } catch (err) {
         console.error(err.messsage);

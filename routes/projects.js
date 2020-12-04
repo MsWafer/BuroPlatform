@@ -8,7 +8,7 @@ const User = require('../models/User');
 
 //add new project
 router.post ('/add', auth, [
-    check('name', 'Введите название проекта').not().isEmpty(),
+    check('title', 'Введите название проекта').not().isEmpty(),
     check('dateStart', 'Введите дату говна').isDate(),
     check('city', 'Введите город').not().isEmpty(),
     check('type', 'Выберите тип проекта').not().isEmpty(),
@@ -20,7 +20,7 @@ router.post ('/add', auth, [
         return res.status(400).json({errors: errors.array()});
     };
     
-    let { name, dateStart, dateFinish, city, type, stage, area, customer } = req.body;
+    let { title, dateStart, dateFinish, city, type, stage, area, customer } = req.body;
 
     try{
         function getRndInteger(min, max) {
@@ -41,21 +41,24 @@ router.post ('/add', auth, [
 
         promise()
 
+        let crypter = `${dateStart}-${crypt}-${title}`
+
         project = new Project({
             crypt,
-            name,
+            title,
             dateStart,
             dateFinish,
             city,
             type,
             stage,
             area,
-            customer
+            customer,
+            crypter
         });
 
         await project.save();
         console.log(`Проект ${crypt} добавлен`)
-        return res.status(200).send(`${dateStart}-${crypt}-${name}`);
+        return res.status(200).json({crypter});
     } catch(err) {
     console.error(err.message);
     res.status(500).send('server error');
@@ -66,14 +69,15 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        let arr =[];
-        let projects = await Project.find();
-        await projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
-        if(arr.length==0){
-            res.json({msg:'Не найдено проектов'})
-        }else{
-        res.json(arr);
-        }
+        // let arr =[];
+        let projects = await Project.find().select('dateStart crypt title crypter -_id');
+        res.json(projects)
+        // await projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
+        // if(arr.length==0){
+        //     res.json({msg:'Не найдено проектов'})
+        // }else{
+        // res.json(arr);
+        // }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
@@ -82,18 +86,18 @@ router.get('/', async (req,res) => {
     
 });
 
-//find project by crypt/name
+//find project by crypt/title
 router.get('/:auth', async(req,res) => {
     try {
-        let project = await Project.findOne({crypt: req.params.auth}).populate('team','name projects permission');
-        let projectName = await Project.find({name: req.params.auth});
+        let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission');
+        let projectTitle = await Project.find({title: req.params.auth});
         console.log(project.team)
-        if(!project && !projectName) {
+        if(!project && !projectTitle) {
             return res.status(400).json({msg: "Проект не найден"})
         } else if (project) {
             // if(!project.dateFinish){finishDate=``}else{finishDate=` - ${project.dateFinish.toString().slice(4,15)}`}
             res.json({
-                name: project.name,
+                title: project.title,
                 crypt: project.crypt,
                 dateStart: project.dateStart,
                 dateFinish: project.dateFinish,
@@ -103,9 +107,9 @@ router.get('/:auth', async(req,res) => {
                 area: project.area,
                 team: project.team
             });
-        } else if (projectName) {
+        } else if (projectTitle) {
             let arr2 =[];
-            projectName.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
+            projectTitle.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
             if(arr2.length==0){
                 res.json({msg:'Не найдено проектов с указанным названием'})
             }else{
@@ -121,29 +125,23 @@ router.get('/:auth', async(req,res) => {
 //get all user's projects
 router.get('/user/:id', async(req,res) => {
     try {
-        let userProjects = await User.findById({_id:req.params.id})
-        .populate('projects', '-__v')
-        .select('projects -_id')
-        .sort({date: -1});
+    let projects = await Project.find({team: req.params.id})
+    .sort({date: -1})
+    .select('-__v')
+    .populate('team','-projects -password -permission -tickets -__v');
 
-        res.json(userProjects);
+    res.json(projects);
     } catch (err) {
-        console.error(err.messsage);
-        res.status(500).send('server error');
+    console.error(err.messsage);
+    res.status(500).send('server error');
     }
-});
+    });
 
 //find projects by city
 router.get('/city/:city',async (req,res) => {
     try {
-        let arr =[];
-        let projects = await Project.find({city: req.params.city});
-        projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.name}`))
-        if(arr.length==0){
-            res.json({msg:'Не найдено проектов в указанном городе'})
-        }else{
-        res.json(arr);
-        }
+        let projects = await Project.find({city: req.params.city}).select('dateStart crypt title crypter -_id');
+        res.json(projects)
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
@@ -171,19 +169,19 @@ router.put("/:crypt", auth, async (req, res) => {
     try {
         await Project.findOneAndUpdate({crypt: req.params.crypt}, 
             {$set: {
-                name:req.body.name?req.body.name:project1.name, 
+                title:req.body.title?req.body.title:project1.title, 
                 dateStart:req.body.dateStart?req.body.dateStart:project1.dateStart, 
                 dateFinish:req.body.dateFinish?req.body.dateFinish:project1.dateFinish, 
                 city:req.body.city?req.body.city:project1.city,
                 type:req.body.type?req.body.type:project1.type,
                 stage:req.body.stage?req.body.stage:project1.stage,
                 area:req.body.area?req.body.area:project1.area,
-                customer:req.body.customer?req.body.customer:project1.customer
+                customer:req.body.customer?req.body.customer:project1.customer,
             }})
 
             let editedProject = await Project.findOne({crypt: req.params.crypt})
         res.json({
-                name:editedProject.name,
+                title: editedProject.title,
                 crypt: editedProject.crypt,
                 dateStart: editedProject.dateStart,
                 dateFinish: editedProject.dateFinish,
@@ -191,7 +189,8 @@ router.put("/:crypt", auth, async (req, res) => {
                 type: editedProject.type,
                 stage: editedProject.stage,
                 area: editedProject.area,
-                customer: editedProject.customer
+                customer: editedProject.customer,
+                crypter: editedProject.crypter
             });
     } catch (error) {
         console.error(error.message);
@@ -212,9 +211,9 @@ router.put('/updteam/:crypt', auth, async(req,res)=>{
         res.status(500).send('server error');
     }
     let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
-    let das = huy.toString().slice(10,-3).replace(/{ _id:/g,'').replace(/ _id:/g,'').replace(/ }/g,'').replace(/     /g,'').replace(/\n/g,'').trim();
-    let asd = das.split(',')
-    if(asd.includes(req.body.userid)){return res.status(400).json({msg:`Данный пользователь уже находится в команде проекта`})};
+    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
+    let huy3 = huy2.split(',')
+    if(huy3.includes(req.body.userid)){return res.status(400).json({msg:`Данный пользователь уже находится в команде проекта`})};
 
     try {
         let user = await User.findById(req.body.userid).select('-password -permission');

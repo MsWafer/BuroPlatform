@@ -2,7 +2,7 @@ const mongoose = require ('mongoose');
 const Schema = mongoose.Schema;
 
 const ProjectSchema = new Schema({
-    name: {
+    title: {
         type: String,
         required: true
     },
@@ -35,6 +35,9 @@ const ProjectSchema = new Schema({
         type: String,
     },
     crypt: {
+        type: String
+    },
+    crypter: {
         type: String
     }
     

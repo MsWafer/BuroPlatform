@@ -28,7 +28,16 @@ const UserSchema = new mongoose.Schema({
     },
     position: {
         type:String
-    } 
+    },
+    avatar: [
+        {
+        avatarname:{
+            type: String,
+    },
+        avatarpath:{
+            type:String,
+        }
+    }]
     
 });
 
