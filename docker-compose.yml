@@ -1,20 +1,20 @@
 version: '3'
 services:
   app:
-    container_name: sysadminochka
+    container_name: platform
     restart: always
     build: .
     ports:
-      - '3672:3672'
+      - '7070:7070'
     depends_on:
       - 'mongo'
   mongo:
-    container_name: mongo_sysadminochka
+    container_name: mongo_platform
     restart: always
     image: mongo
-    command: mongod --port 27147
+    # command: mongod --port 27017
     ports: 
-     - '27147:27147'
+     - '27017:27017'
     volumes:
      - db-data:/data/db
      - mongo-config:/data/configdb
