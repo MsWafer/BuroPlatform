@@ -1,5 +1,5 @@
 node_modules
 ss.png
 uploads
-mongodb://mongo_sysadminochka:27017/Problems
-mongodb://127.0.0.1:27017/Problems
+mongodb://mongo_sysadminochka:27017/Platform
+mongodb://127.0.0.1:27017/Platform

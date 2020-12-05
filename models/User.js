@@ -14,14 +14,30 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    tickets: [
+    tickets: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ticket'
+    }],
+    projects: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'project'
+    }],
+    permission : {
+        type:String,
+        default: 'normie'
+    },
+    position: {
+        type:String
+    },
+    avatar: [
         {
-            tickets: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'ticket'
-            }
+        avatarname:{
+            type: String,
+    },
+        avatarpath:{
+            type:String,
         }
-    ]
+    }]
     
 });
 
