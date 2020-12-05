@@ -145,4 +145,20 @@ router.get('/:id', async(req,res) =>{
     }
 })
 
+//delete user by id
+router.delete('/:id',auth,async(req,res)=>{
+    try {
+        let user = await User.findOne({_id: req.params.id});
+        if(!user) {
+            return res.status(404).json('Проект не найден')
+        };
+        await Project.updateMany({team:user.id},{$pull:{team:user.id}},{multi:true})
+        await user.remove();
+        res.json({msg:`Пользователь удален`});
+    }catch(err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    };
+})
+
 module.exports = router;

@@ -23,7 +23,8 @@ const ProjectSchema = new Schema({
     },
     team: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user'
+        ref: 'user',
+        default: []
     }],
     customer: {
         type: String

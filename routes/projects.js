@@ -69,15 +69,8 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        // let arr =[];
-        let projects = await Project.find().select('dateStart crypt title crypter -_id');
+        let projects = await Project.find().select('dateStart crypt title crypter -_id').populate('team');
         res.json(projects)
-        // await projects.map(project => arr.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
-        // if(arr.length==0){
-        //     res.json({msg:'Не найдено проектов'})
-        // }else{
-        // res.json(arr);
-        // }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
@@ -105,7 +98,7 @@ router.get('/:auth', async(req,res) => {
                 type: project.type,
                 stage: project.stage,
                 area: project.area,
-                team: project.team
+                team: project.team?project.team:[]
             });
         } else if (projectTitle) {
             let arr2 =[];
@@ -151,10 +144,11 @@ router.get('/city/:city',async (req,res) => {
 //delete project
 router.delete('/:crypt', auth, async(req,res) => {
     try {
-        const project = await Project.findOne({crypt: req.params.crypt});
+        let project = await Project.findOne({crypt: req.params.crypt}).populate('team');
         if(!project) {
             return res.status(404).json('Проект не найден')
         };
+        await User.updateMany({projects:project.id},{$pull:{projects:project.id}},{multi:true})
         await project.remove();
         res.json({msg:`Проект удален`});
     }catch(err) {
@@ -228,5 +222,36 @@ router.put('/updteam/:crypt', auth, async(req,res)=>{
     console.log('произошла якась хуйня')
 }})
 
+//remove user from project's team
+router.delete('/updteam/:crypt', auth, async(req,res)=>{
+    try{
+        let usercheck = await User.findOne({_id:req.body.userid})
+        if(!usercheck)
+        {return res.status(400).json({msg:`Не найден пользователь с указанным _id`})};
+    }catch(err){
+        if(err.kind == 'ObjectId') {
+            return res.status(400).json({msg:'Не найден пользователь с указанным _id'});
+        }
+        res.status(500).send('server error');
+    }
+        let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
+        console.log(huy.team)
+        if(huy.team.length == 0){return res.status(400).json({msg:`В команде проекта нет пользователей`})};
+        let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
+        let huy3 = huy2.split(',')
+        if(!huy3.includes(req.body.userid)){return res.status(400).json({msg:`Данный пользователь не находится в команде проекта`})};
+
+    try {
+        let user = await User.findById(req.body.userid).select('-password -permission');
+        await Project.findOneAndUpdate({crypt: req.params.crypt},{$pull: {team: user.id}});
+        let project = await Project.findOne({crypt: req.params.crypt});
+        await User.findOneAndUpdate({_id:req.body.userid},{$pull: {projects: project.id}});
+
+        res.status(200).json({msg:`${user.name} удален из команды проекта ${req.params.crypt}`})
+        console.log(`${user.name} удален из команды проекта ${req.params.crypt}`)
+    } catch (error) {
+    res.status(400).send(`server error`)
+    console.log('произошла якась хуйня')
+}})
 
 module.exports = router;
