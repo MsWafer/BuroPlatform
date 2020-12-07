@@ -33,9 +33,11 @@ const UserSchema = new mongoose.Schema({
         {
         avatarname:{
             type: String,
+            default:null
     },
         avatarpath:{
             type:String,
+            default:null
         }
     }]
     
