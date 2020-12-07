@@ -72,7 +72,8 @@ router.post ('/',upload.single('file'), [
             {expiresIn: 360000000},
             (err, token) => {
                 if(err) throw err;
-                res.json({token});
+                res.json({token:token,
+                          id:user.id});
             });
 
     } catch(err) {
@@ -82,9 +83,26 @@ router.post ('/',upload.single('file'), [
     
 });
 
+//get current user's info
+router.get('/me',auth,async(req,res)=>{
+    let user = await User.findOne({_id:req.user.id}).select('-password').populate('projects', -'team').populate('tickets', '-user')
+    if(user.avatar.avatarpath==undefined){userAvatar=[]}else {userAvatar=user.avatar[0].avatarpath}
+    res.json({
+        id:user.id,
+        name:user.name,
+        email:user.email,
+        position:user.position,
+        permission:user.permission,
+        projects:user.projects,
+        tickets:user.tickets,
+        token:req.header('auth-token'),
+        avatar:userAvatar
+    })
+})
+
 //edit user
 router.put('/me', auth, async(req,res) =>{
-    let user1 = await findOne({user:req.params.id});
+    let user1 = await User.findOne({_id:req.user.id});
     if(!req.body.password){
         newPassword=user1.password
     }else if(req.body.password){
@@ -92,7 +110,7 @@ router.put('/me', auth, async(req,res) =>{
         newPassword = await bcrypt.hash(req.body.password, salt);
     }
     try {
-        await findOneAndUpdate({user:req.params.id},
+        await findOneAndUpdate({user:req.user},
             {$set: {
                 name:req.body.name?req.body.name:user1.name, 
                 email:req.body.email?req.body.email:project1.email, 
