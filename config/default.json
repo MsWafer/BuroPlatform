@@ -1,4 +1,4 @@
 {
-    "mongoURI": "mongodb://mongo_sysadminochka:27017/Platform",
+    "mongoURI": "mongodb://mongo_platform:27017/Platform",
     "jwtSecret": "secrettoken"
 }
