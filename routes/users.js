@@ -110,7 +110,7 @@ router.put('/me', auth, async(req,res) =>{
         newPassword = await bcrypt.hash(req.body.password, salt);
     }
     try {
-        await findOneAndUpdate({user:req.user},
+        await findOneAndUpdate({_id:req.user.id},
             {$set: {
                 name:req.body.name?req.body.name:user1.name, 
                 email:req.body.email?req.body.email:project1.email, 
