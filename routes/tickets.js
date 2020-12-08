@@ -196,13 +196,25 @@ router.put("/:id", async (req, res) => {
 //delete ticket by id
 router.delete("/:id",auth,async(req,res)=>{
     try {
-        await Ticket.findOneAndDelete({_id:req.params.id})
+        let ticket = await Ticket.findOne({_id:req.params.id})
         await User.updateMany({tickets:ticket.id},{$pull:{tickets:ticket.id}},{multi:true})
+        await Ticket.findOneAndDelete({_id:req.params.id})
         console.log("ticket deleted")
         return res.json({msg:"ticket udalen"})
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
+    }
+})
+
+//delete all tickets
+router.delete('/deleteall',async(req,res)=>{
+    try {
+        await Ticket.deleteMany({status:true})
+        console.log('eee pizdec')
+    } catch (error) {
+        console.log('uuu pizdec')
+        res.status(500).json({err:"blya ne udalilos"})
     }
 })
 

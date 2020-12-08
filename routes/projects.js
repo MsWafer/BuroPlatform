@@ -22,7 +22,7 @@ router.post ('/add', auth, [
         return res.status(400).json({errors: errors.array()});
     };
     
-    let { title, dateStart, dateFinish, city, type, stage, area, customer, about, status } = req.body;
+    let { title, dateStart, dateFinish, city, type, stage, area, customer, about, status, userid } = req.body;
 
     try{
         function getRndInteger(min, max) {
@@ -42,7 +42,7 @@ router.post ('/add', auth, [
         });
 
         promise()
-
+        
         let crypter = `${dateStart}-${crypt}-${title}`
 
         project = new Project({
@@ -61,6 +61,11 @@ router.post ('/add', auth, [
         });
 
         await project.save();
+        let arr = userid.split(',')
+        // console.log(arr)
+        // return
+        let newProject = await Project.findOneAndUpdate({crypt:crypt},{ $addToSet: { team: { $each: arr } } })
+        await User.updateMany({'_id':{$in:arr}},{$push:{projects:newProject}},{multi:true})
         console.log(`Проект ${crypt} добавлен`)
         return res.status(200).json({crypter});
     } catch(err) {
