@@ -5,9 +5,9 @@ const cors = require('cors');
 const app = express();
 app.use(express.json({extended: false}));
 app.use(cors())
-app.use(express.static('/usr/src/app/public'))
-app.use('/usr/src/app/public/ticketSS', express.static('/usr/src/app/public'))
-app.use('/usr/src/app/public/avatars', express.static('/usr/src/app/public'))
+app.use(express.static(__dirname + '/public'))
+app.use('/ticketSS', express.static(__dirname + '/public'))
+app.use('/avatars', express.static(__dirname + '/public'))
 
 connectDB();
 
