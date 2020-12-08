@@ -34,9 +34,8 @@ async(req,res) => {
         return res.status(400).json({errors:errors.array()});
     }
 
-    try {
-        const user = await User.findById(req.user.id).select('-password','-permission').populate('user');
-        
+    try {   
+        let user = await User.findOne({_id:req.user.id}).select('-password -permission');
         let currDate = new Date();
 
         const newTicket = new Ticket ({

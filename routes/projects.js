@@ -1,9 +1,11 @@
+const { response } = require('express');
 const express = require('express');
 const router = express.Router();
 const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
 
 const Project = require('../models/Project');
+const Sprint = require('../models/Sprint');
 const User = require('../models/User');
 
 //add new project
@@ -69,7 +71,7 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        let projects = await Project.find().select('dateStart crypt title crypter -_id').populate('team');
+        let projects = await Project.find().select('dateStart crypt title crypter _id');
         res.json(projects)
     } catch (err) {
         console.error(err.message);
@@ -83,7 +85,7 @@ router.get('/', async (req,res) => {
 router.get('/:auth', async(req,res) => {
     try {
         let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission');
-        let projectTitle = await Project.find({title: req.params.auth});
+        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart crypt title crypter _id').populate('team');
         console.log(project.team)
         if(!project && !projectTitle) {
             return res.status(400).json({msg: "Проект не найден"})
@@ -101,13 +103,14 @@ router.get('/:auth', async(req,res) => {
                 team: project.team?project.team:[]
             });
         } else if (projectTitle) {
-            let arr2 =[];
-            projectTitle.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
-            if(arr2.length==0){
-                res.json({msg:'Не найдено проектов с указанным названием'})
-            }else{
-            res.json(arr2);
-            }
+            // let arr2 =[];
+            // projectTitle.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
+            // if(arr2.length==0){
+            //     res.json({msg:'Не найдено проектов с указанным названием'})
+            // }else{
+            // res.json(arr2);
+            // }
+            res.json(projectTitle);
         }
     } catch (err) {
         console.error(err.message);
@@ -253,5 +256,33 @@ router.delete('/updteam/:crypt', auth, async(req,res)=>{
     res.status(400).send(`server error`)
     console.log('произошла якась хуйня')
 }})
+
+//add sprint to project found by crypt
+router.post('/addsprint/:crypt', auth, async(req,res)=>{
+    sprint = new Sprint()
+    await sprint.save()
+    await Project.findOneAndUpdate({crypt: req.params.crypt},{$push:{sprints:sprint}})
+    res.json({msg:`Новый спринт добавлен в проект`})
+})
+
+//add new task to sprint
+router.post('/addtask/:id',auth,async(req,res)=>{
+    try {
+        // let {taskTitle, workVolume} = req.body
+        // let taskStatus = false
+        let task = {
+            taskTitle:req.body.taskTitle, 
+            workVolume:req.body.workVolume, 
+            taskStatus:false
+        }
+        console.log(task[1])
+        await Sprint.findOneAndUpdate({_id:req.params.id}, {$push:{tasks:task}})
+        res.json({msg:'Задача добавлена'})
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({msg:'server error'})
+    }
+    
+})
 
 module.exports = router;

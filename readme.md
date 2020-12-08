@@ -5,7 +5,7 @@
 - **POST /users** - регистрация нового пользователя, требует *name*, *email*, *position* и *password*(7-20символов) в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев). ТЕПЕРЬ С АВАТАРКАМИ :joy: :joy: :joy: :joy: :joy: :joy:
 - **POST /auth** - авторизация, требует *email* и *password* ранее зарегестрированного пользователя в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев).
 - **GET /users/me** - показывает инфу текущего авторизованного пользователя
-- **GET /users** - показывает всех пользователей
+- **GET /users/all** - показывает всех пользователей
 - **GET /users/:id** - показывает пользователя, чей *_id* указан в юрл
 - **PUT /users/me** - редактирование своего аккаунта, требует авторизации(неожиданно)
 - **DELETE /users/:id** - удаление аккаунта по *_id* пользователя
@@ -29,3 +29,17 @@
   - **GET projects/user/:id** - найти все проекты пользователя *id*
   - **PUT projects/updteam/:crypt** - находит проект по его *crypt* и добавляет в его команду пользователя, чей айди указан в *userid* в body
   - **DELETE projects/updteam/:crypt** - находит проект по его *crypt* и убирает из его команды пользователя, чей айди указан в *userid* в body
+
+
+password recovery plan
+------------------
+- find user by email, write recovery code to model and send it to user's email
+- check whenever recovery code inserted by user is the same as the one in model
+- if its the same, ask for new password, encrypt it and write to model
+
+sprints plan
+-------------------
+- add empty sprint with inactive status
+- add task with taskTitle, workVolume, taskStatus
+- activate task, check if all tasks in sprint are activated, activate sprint if so
+- activate sprint

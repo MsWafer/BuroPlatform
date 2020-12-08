@@ -26,6 +26,11 @@ const ProjectSchema = new Schema({
         ref: 'user',
         default: []
     }],
+    sprints: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'sprint',
+        default: []
+    }],
     customer: {
         type: String
     },
