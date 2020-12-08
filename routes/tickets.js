@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path'); 
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/public/ticketSS')
+        cb(null, '/usr/src/app/public/ticketSS')
     }, 
     filename: (req, file, cb) => { 
         cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
@@ -68,7 +68,7 @@ async(req,res) => {
 router.get('/all', async(req,res) => {
     try {
         // let arr = [];
-        let tickets = await Ticket.find().sort({date:-1}).populate('user');
+        let tickets = await Ticket.find().sort({date:-1}).populate('user','-tickets');
     //     tickets.map(ticket => arr.push(
     //    {
     //     id:`${ticket.id}`,
@@ -104,7 +104,7 @@ router.get('/:id', async(req,res) => {
             pcpass:ticket.pcpass,
             emergency:ticket.emergency,
             status:ticket.status,
-            screenshot:ticket.screenshot[0].ssname
+            screenshot:ticket.screenshot[0].sspath
         });
     } catch (err) {
         console.log(err);
