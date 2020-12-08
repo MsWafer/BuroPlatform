@@ -6,8 +6,8 @@ const app = express();
 app.use(express.json({extended: false}));
 app.use(cors())
 app.use(express.static('public'))
-app.use('/ticketSS', express.static('public'))
-app.use('/avatars', express.static('public'))
+app.use('/usr/src/app/public/ticketSS', express.static('public'))
+app.use('/usr/src/app/public/avatars', express.static('public'))
 
 connectDB();
 
