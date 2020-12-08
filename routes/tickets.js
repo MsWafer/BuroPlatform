@@ -197,7 +197,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id",auth,async(req,res)=>{
     try {
         let ticket = await Ticket.findOne({_id:req.params.id})
-        await User.updateMany({tickets:ticket.id},{$pull:{tickets:ticket.id}},{multi:true})
+        await User.updateMany({tickets:ticket._id},{$pull:{tickets:ticket._id}},{multi:true})
         await Ticket.findOneAndDelete({_id:req.params.id})
         console.log("ticket deleted")
         return res.json({msg:"ticket udalen"})
@@ -210,7 +210,7 @@ router.delete("/:id",auth,async(req,res)=>{
 //delete all tickets
 router.delete('/deleteall',async(req,res)=>{
     try {
-        await Ticket.deleteMany({status:true})
+        await Ticket.remove({})
         console.log('eee pizdec')
     } catch (error) {
         console.log('uuu pizdec')
