@@ -8,6 +8,7 @@ services:
       - '7070:7070'
     depends_on:
       - 'mongo'
+    # commang: mkdir 
   mongo:
     container_name: mongo_platform
     restart: always

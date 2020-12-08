@@ -2,27 +2,27 @@ const express = require('express');
 const router = express.Router();
 const{check, validationResult} = require('express-validator');
 const auth = require ('../middleware/auth');
-const multer = require('multer'); 
-const fs = require('fs'); 
-const path = require('path'); 
+// const multer = require('multer'); 
+// const fs = require('fs'); 
+// const path = require('path'); 
 
-const storage = multer.diskStorage({ 
-    destination: function (req, file, cb) {
-        cb(null, '../public/ticketSS')
-    }, 
-    filename: (req, file, cb) => { 
-        cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
-    } 
-}); 
+// const storage = multer.diskStorage({ 
+//     destination: function (req, file, cb) {
+//         cb(null, '../public/ticketSS')
+//     }, 
+//     filename: (req, file, cb) => { 
+//         cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
+//     } 
+// }); 
   
-const upload = multer({ storage: storage }); 
+// const upload = multer({ storage: storage }); 
 
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
 
 
 //create ticket
-router.post ('/', upload.single('file'), [auth, [
+router.post ('/', /*upload.single('file'),*/ [auth, [
     check('problemname', 'Введите проблему').not().isEmpty(),
     check('text', 'Введите описание проблемы').not().isEmpty(),
     check('emergency', 'Выберите срочность').not().isEmpty().isNumeric()
@@ -46,9 +46,9 @@ async(req,res) => {
             emergency: req.body.emergency,
             name: user.name,
             pcpass: req.body.pcpass,
-            screenshot: req.file ? [
-                {ssname:req.file.filename},
-                {sspath:req.file.path}] : []
+            // screenshot: req.file ? [
+            //     {ssname:req.file.filename},
+            //     {sspath:req.file.path}] : []
         });
         try {
             await newTicket.save();
@@ -105,10 +105,10 @@ router.get('/:id', async(req,res) => {
             pcpass:ticket.pcpass,
             emergency:ticket.emergency,
             status:ticket.status,
-            screenshot:ticket.screenshot[0].ssname
+            // screenshot:ticket.screenshot[0].ssname
         });
     } catch (err) {
-        console.error(err.messsage);
+        console.log(err);
         if(err.kind === 'ObjectId') {
             return res.status(404).json({msg: "ticket not found"});
         }
@@ -194,6 +194,19 @@ router.put("/:id", async (req, res) => {
         res.status(500).send('server error')
     }
 });
+
+//delete ticket by id
+router.delete("/:id",auth,async(req,res)=>{
+    try {
+        await Ticket.findOneAndDelete({_id:req.params.id})
+        await User.updateMany({tickets:ticket.id},{$pull:{tickets:ticket.id}},{multi:true})
+        console.log("ticket deleted")
+        return res.json({msg:"ticket udalen"})
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('server error');
+    }
+})
 
 module.exports = router;
 

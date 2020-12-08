@@ -84,8 +84,8 @@ router.get('/', async (req,res) => {
 //find project by crypt/title
 router.get('/:auth', async(req,res) => {
     try {
-        let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission');
-        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart crypt title crypter _id').populate('team');
+        let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission').populate('sprints');
+        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter _id').populate('team').populate('sprints');
         console.log(project.team)
         if(!project && !projectTitle) {
             return res.status(400).json({msg: "Проект не найден"})
@@ -100,7 +100,8 @@ router.get('/:auth', async(req,res) => {
                 type: project.type,
                 stage: project.stage,
                 area: project.area,
-                team: project.team?project.team:[]
+                team: project.team?project.team:[],
+                sprints: project.sprints?project.sprints:[]
             });
         } else if (projectTitle) {
             // let arr2 =[];
@@ -258,7 +259,9 @@ router.delete('/updteam/:crypt', auth, async(req,res)=>{
 }})
 
 //add sprint to project found by crypt
-router.post('/addsprint/:crypt', auth, async(req,res)=>{
+router.post('/sprints/new/:crypt', auth, async(req,res)=>{
+    let project = await Project.findOne({crypt: req.params.crypt})
+    if(!project){return res.json({msg:"Не найдено проекта с указанным шифром"})}
     sprint = new Sprint()
     await sprint.save()
     await Project.findOneAndUpdate({crypt: req.params.crypt},{$push:{sprints:sprint}})
@@ -266,10 +269,10 @@ router.post('/addsprint/:crypt', auth, async(req,res)=>{
 })
 
 //add new task to sprint
-router.post('/addtask/:id',auth,async(req,res)=>{
+router.post('/sprints/addtask/:id',auth,async(req,res)=>{
+    let sprint = await Sprint.findOne({_id:req.params.id})
+    if(!sprint){return res.json({msg:"Указанный спринт не найден"})}
     try {
-        // let {taskTitle, workVolume} = req.body
-        // let taskStatus = false
         let task = {
             taskTitle:req.body.taskTitle, 
             workVolume:req.body.workVolume, 
@@ -282,7 +285,18 @@ router.post('/addtask/:id',auth,async(req,res)=>{
         console.log(error)
         return res.status(400).json({msg:'server error'})
     }
-    
+})
+
+//deactivate task
+router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
+    try {
+        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id":req.body.taskid},{$set:{"tasks.$.taskStatus" : true}})
+        console.log('task deactivated')
+        return res.json({msg:"Задача выполнена"})
+    } catch (error) {
+        console.log(error)
+        return res.json({err:"server error"})
+    }
 })
 
 module.exports = router;
