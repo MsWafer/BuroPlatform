@@ -22,7 +22,7 @@ router.post ('/add', auth, [
         return res.status(400).json({errors: errors.array()});
     };
     
-    let { title, dateStart, dateFinish, city, type, stage, area, customer } = req.body;
+    let { title, dateStart, dateFinish, city, type, stage, area, customer, about, type } = req.body;
 
     try{
         function getRndInteger(min, max) {
@@ -55,7 +55,9 @@ router.post ('/add', auth, [
             stage,
             area,
             customer,
-            crypter
+            crypter,
+            about,
+            type,
         });
 
         await project.save();
@@ -71,7 +73,7 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        let projects = await Project.find().select('dateStart crypt title crypter _id');
+        let projects = await Project.find().select('dateStart team sprints crypt title crypter _id status').populate('team','-projects').populate('sprints');
         res.json(projects)
     } catch (err) {
         console.error(err.message);
@@ -85,12 +87,11 @@ router.get('/', async (req,res) => {
 router.get('/:auth', async(req,res) => {
     try {
         let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission').populate('sprints');
-        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter _id').populate('team').populate('sprints');
+        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects').populate('sprints');
         console.log(project.team)
         if(!project && !projectTitle) {
             return res.status(400).json({msg: "Проект не найден"})
         } else if (project) {
-            // if(!project.dateFinish){finishDate=``}else{finishDate=` - ${project.dateFinish.toString().slice(4,15)}`}
             res.json({
                 title: project.title,
                 crypt: project.crypt,
@@ -101,16 +102,11 @@ router.get('/:auth', async(req,res) => {
                 stage: project.stage,
                 area: project.area,
                 team: project.team?project.team:[],
-                sprints: project.sprints?project.sprints:[]
+                sprints: project.sprints?project.sprints:[],
+                about:project.about,
+                status:project.status
             });
         } else if (projectTitle) {
-            // let arr2 =[];
-            // projectTitle.map(project => arr2.push(`${project.dateStart.toString().slice(4,15)}-${project.crypt}-${project.title}`))
-            // if(arr2.length==0){
-            //     res.json({msg:'Не найдено проектов с указанным названием'})
-            // }else{
-            // res.json(arr2);
-            // }
             res.json(projectTitle);
         }
     } catch (err) {
@@ -125,7 +121,8 @@ router.get('/user/:id', async(req,res) => {
     let projects = await Project.find({team: req.params.id})
     .sort({date: -1})
     .select('-__v')
-    .populate('team','-projects -password -permission -tickets -__v');
+    .populate('team','-projects -password -permission -tickets -__v')
+    .populate('sprints');
 
     res.json(projects);
     } catch (err) {
@@ -137,7 +134,7 @@ router.get('/user/:id', async(req,res) => {
 //find projects by city
 router.get('/city/:city',async (req,res) => {
     try {
-        let projects = await Project.find({city: req.params.city}).select('dateStart crypt title crypter -_id');
+        let projects = await Project.find({city: req.params.city}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects').populate('sprints');
         res.json(projects)
     } catch (err) {
         console.error(err.message);
@@ -175,6 +172,8 @@ router.put("/:crypt", auth, async (req, res) => {
                 stage:req.body.stage?req.body.stage:project1.stage,
                 area:req.body.area?req.body.area:project1.area,
                 customer:req.body.customer?req.body.customer:project1.customer,
+                about:req.body.about?req.body.about:project1.about,
+                status:req.body.status?req.body.status:project1.status,
             }})
 
             let editedProject = await Project.findOne({crypt: req.params.crypt})
@@ -188,7 +187,9 @@ router.put("/:crypt", auth, async (req, res) => {
                 stage: editedProject.stage,
                 area: editedProject.area,
                 customer: editedProject.customer,
-                crypter: editedProject.crypter
+                crypter: editedProject.crypter,
+                about: editedProject.about,
+                status: editedProject.status,
             });
     } catch (error) {
         console.error(error.message);

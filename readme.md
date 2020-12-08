@@ -18,6 +18,7 @@
   - **GET /tickets/all/active** - находит все открытые тикеты (status:true).
   - **GET /tickets/all/emergency** - показывает все тикеты, отсортированные по emergency.
   - **PUT /tickets/id** - меняет *status* тикета на *false*, ~закрывая его.
+  - **DELETE /tickets/:id** - удалить тикет по ид в юрл
 
 ### ПроектОчка :thumbsup: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
   - **POST /projects/add** :joy: - добавить новый проект, указав *title*, *dateStart*, *city*, *type*, *stage*(опционально - *dateFinish*, *customer*, *area*) в body

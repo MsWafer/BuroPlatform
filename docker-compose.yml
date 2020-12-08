@@ -8,7 +8,9 @@ services:
       - '7070:7070'
     depends_on:
       - 'mongo'
-    # commang: mkdir 
+    volumes:
+      - ticketSS:/usr/src/app/public/ticketSS
+      - avatars:/usr/src/app/public/avatars
   mongo:
     container_name: mongo_platform
     restart: always
@@ -23,3 +25,5 @@ services:
 volumes:
   db-data: 
   mongo-config:
+  ticketSS:
+  avatars:

@@ -14,6 +14,10 @@ const ProjectSchema = new Schema({
         type: String,
         required: true
     },
+    about:{
+        type:String,
+        default:'a'
+    },
     dateStart: {
         type: Date,
     },
@@ -38,13 +42,16 @@ const ProjectSchema = new Schema({
         type: String
     },
     area: {
-        type: String,
+        type: Number,
     },
     crypt: {
         type: String
     },
     crypter: {
         type: String
+    },
+    status:{
+        type:Boolean
     }
     
 });
