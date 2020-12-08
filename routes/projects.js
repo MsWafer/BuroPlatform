@@ -22,7 +22,7 @@ router.post ('/add', auth, [
         return res.status(400).json({errors: errors.array()});
     };
     
-    let { title, dateStart, dateFinish, city, type, stage, area, customer, about, type } = req.body;
+    let { title, dateStart, dateFinish, city, type, stage, area, customer, about, status } = req.body;
 
     try{
         function getRndInteger(min, max) {
@@ -57,7 +57,7 @@ router.post ('/add', auth, [
             customer,
             crypter,
             about,
-            type,
+            status,
         });
 
         await project.save();

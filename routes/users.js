@@ -8,7 +8,6 @@ const auth = require ('../middleware/auth');
 const multer = require('multer'); 
 const fs = require('fs'); 
 const path = require('path'); 
-app.use(express.static('public'))
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
         cb(null, '/public/avatars')
