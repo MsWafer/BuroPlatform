@@ -325,7 +325,7 @@ router.put('/sprints/:id', auth, async(req,res)=>{
 })
 
 //get sprint by id
-router.get('/sprints/:id', auth, async(req,res) => {
+router.get('/getspring/:id', auth, async(req,res) => {
     try {
         let sprint = await Sprint.findOne({_id:req.params.id})
         return res.json(sprint)
