@@ -38,7 +38,7 @@
   - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
 
 
-password recovery plan
+<!-- password recovery plan
 ------------------
 - find user by email, write recovery code to model and send it to user's email
 - check whenever recovery code inserted by user is the same as the one in model
@@ -46,7 +46,17 @@ password recovery plan
 
 sprints plan
 -------------------
-- add empty sprint with inactive status
-- add task with taskTitle, workVolume, taskStatus
-- activate task, check if all tasks in sprint are activated, activate sprint if so
-- activate sprint
+- add empty sprint with inactive status +
+- add task with taskTitle, workVolume, taskStatus +
+- activate task, check if all tasks in sprint are activated, activate sprint if so +-
+- activate sprint +
+
+
+
+
+
+
+
+taskTitle:[taskTitle1,taskTitle2,taskTitle3,...,taskTitleN], workVolume:[workVolume1,workVolume2,workVolume3,...,workVolumeN], taskState:false ==>
+
+ [{tastTitle:taskTitle1,workVolume:workVolume1,taskState:false},   {tastTitle:taskTitle2,workVolume:workVolume2,taskState:false},{tastTitle:taskTitle3,workVolume:workVolume3,taskState:false},  ...,  {tastTitle:taskTitleN,workVolume:workVolumeN,taskState:false}] -->

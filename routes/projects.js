@@ -273,7 +273,11 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
     sprint = new Sprint()
     await sprint.save()
     await Project.findOneAndUpdate({crypt: req.params.crypt},{$push:{sprints:sprint}})
-    res.json({msg:`Новый спринт добавлен в проект`})
+    res.json({msg:`Новый спринт добавлен в проект`,
+                id:sprint.id,
+                tasks:sprint.tasks,
+                state:sprint.state,
+                dateOpen:sprint.dateOpen})
 })
 
 //add new task to sprint
@@ -281,13 +285,7 @@ router.post('/sprints/addtask/:id',auth,async(req,res)=>{
     let sprint = await Sprint.findOne({_id:req.params.id})
     if(!sprint){return res.json({msg:"Указанный спринт не найден"})}
     try {
-        let task = {
-            taskTitle:req.body.taskTitle, 
-            workVolume:req.body.workVolume, 
-            taskStatus:false
-        }
-        console.log(task[1])
-        await Sprint.findOneAndUpdate({_id:req.params.id}, {$push:{tasks:task}})
+        await Sprint.findOneAndUpdate({_id:req.params.id}, { $push: {tasks: { $each: req.body.tasks }}}, {multi:true})
         res.json({msg:'Задача добавлена'})
     } catch (error) {
         console.log(error)
