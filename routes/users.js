@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path'); 
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/usr/src/app/public/ticketSS')
+        cb(null, __dirname + '/avatars')
     }, 
     filename: (req, file, cb) => { 
         cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
@@ -51,9 +51,7 @@ router.post ('/',upload.single('file'), [
             email,
             password,
             position,
-            avatar: req.file ? [
-                {avatarname:req.file.filename},
-                {avatarpath:req.file.path}] : []
+            avatar: req.file ? req.file.filename : {}
         });
 
         //password encryption
@@ -85,7 +83,7 @@ router.post ('/',upload.single('file'), [
 //get current user's info
 router.get('/me',auth,async(req,res)=>{
     let user = await User.findOne({_id:req.user.id}).select('-password').populate('projects', -'team').populate('tickets', '-user')
-    if(user.avatar.avatarpath==undefined){userAvatar=[]}else {userAvatar=user.avatar[0].avatarpath}
+    if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
     res.json({
         id:user.id,
         name:user.name,
@@ -128,7 +126,7 @@ router.put('/me', auth, async(req,res) =>{
 //find all users
 router.get('/all', async(req,res)=>{
     try {
-        let users = await User.find().populate('projects').populate('tickets')
+        let users = await User.find().populate('projects', '-team').populate('tickets', '-user')
         res.json(users) 
     } catch (err) {
         console.error(err.message);
@@ -142,8 +140,8 @@ router.get('/:id', async(req,res) =>{
     try {
         let user = await User.findById(req.params.id)
         .select('-password -permission')
-        .populate('projects')
-        .populate('tickets')
+        .populate('projects', '-team')
+        .populate('tickets', '-user')
         if(!user) {
             return res.status(404).json({msg: "ticket not found"});
         };
@@ -154,7 +152,7 @@ router.get('/:id', async(req,res) =>{
             position:user.position,
             projects:user.projects,
             tickets:user.tickets,
-            avatar:user.avatar[0].avatarpath
+            avatar:user.avatar
         })
     } catch (err) {
         console.error(err.message);

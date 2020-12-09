@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path'); 
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/usr/src/app/public/ticketSS')
+        cb(null, __dirname + '/ticketSS')
     }, 
     filename: (req, file, cb) => { 
         cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
@@ -45,9 +45,7 @@ async(req,res) => {
             emergency: req.body.emergency,
             name: user.name,
             pcpass: req.body.pcpass,
-            screenshot: req.file ? [
-                {ssname:req.file.filename},
-                {sspath:req.file.path}] : []
+            screenshot: req.file ? req.file.filename : {}
         });
         try {
             await newTicket.save();
@@ -68,7 +66,7 @@ async(req,res) => {
 router.get('/all', async(req,res) => {
     try {
         // let arr = [];
-        let tickets = await Ticket.find().sort({date:-1}).populate('user','-tickets');
+        let tickets = await Ticket.find().sort({date:-1}).populate('user','-tickets -projects');
     //     tickets.map(ticket => arr.push(
     //    {
     //     id:`${ticket.id}`,
@@ -89,7 +87,7 @@ router.get('/all', async(req,res) => {
 //get ticket by id
 router.get('/:id', async(req,res) => {
     try {
-        const ticket = await Ticket.findById(req.params.id).populate('user');
+        const ticket = await Ticket.findById(req.params.id).populate('user', '-tickets -projects');
 
         if(!ticket) {
             return res.status(404).json({msg: "ticket not found"});
@@ -104,7 +102,7 @@ router.get('/:id', async(req,res) => {
             pcpass:ticket.pcpass,
             emergency:ticket.emergency,
             status:ticket.status,
-            screenshot:ticket.screenshot[0].sspath
+            screenshot:ticket.screenshot
         });
     } catch (err) {
         console.log(err);
@@ -119,7 +117,7 @@ router.get('/:id', async(req,res) => {
 router.get('/user/:id', async(req,res) => {
     try {
         // let arr = [];
-        let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user');
+        let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user', '-projects -tickets');
 
         // tickets.map(ticket => arr.push(
         // {
@@ -143,7 +141,7 @@ router.get('/user/:id', async(req,res) => {
 router.get('/all/active', async(req,res) => {
     try {
         // let arr = [];
-        let tickets = await Ticket.find({status:true}).sort({date: -1}).populate('user');
+        let tickets = await Ticket.find({status:true}).sort({date: -1}).populate('user', '-tickets -projects');
         // tickets.map(ticket => arr.push(
         //     {
         //     id:`${ticket.id}`,
@@ -164,7 +162,7 @@ router.get('/all/active', async(req,res) => {
 router.get('/all/emergency', async(req,res) => {
     try {
         // let arr = [];
-        let tickets = await Ticket.find().sort({emergency: -1}).populate('user');
+        let tickets = await Ticket.find().sort({emergency: -1}).populate('user', '-projects -tickets');
         // tickets.map(ticket => arr.push(
         //     {
         //     id:`${ticket.id}`,

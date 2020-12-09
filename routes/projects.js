@@ -78,7 +78,7 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        let projects = await Project.find().select('dateStart team sprints crypt title crypter _id status').populate('team','-projects').populate('sprints');
+        let projects = await Project.find().select('dateStart team sprints crypt title crypter _id status').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
         res.json(projects)
     } catch (err) {
         console.error(err.message);
@@ -91,8 +91,8 @@ router.get('/', async (req,res) => {
 //find project by crypt/title
 router.get('/:auth', async(req,res) => {
     try {
-        let project = await Project.findOne({crypt: req.params.auth}).populate('team','title projects permission').populate('sprints');
-        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects').populate('sprints');
+        let project = await Project.findOne({crypt: req.params.auth}).populate('team','-projects -password -permission -tickets -__v').populate('sprints');
+        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
         console.log(project.team)
         if(!project && !projectTitle) {
             return res.status(400).json({msg: "Проект не найден"})
@@ -139,7 +139,7 @@ router.get('/user/:id', async(req,res) => {
 //find projects by city
 router.get('/city/:city',async (req,res) => {
     try {
-        let projects = await Project.find({city: req.params.city}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects').populate('sprints');
+        let projects = await Project.find({city: req.params.city}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
         res.json(projects)
     } catch (err) {
         console.error(err.message);
@@ -298,6 +298,8 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     try {
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id":req.body.taskid},{$set:{"tasks.$.taskStatus" : true}})
         console.log('task deactivated')
+        let sprint = await Sprint.findOne({_id:req.params.id, "tasks.status":false})
+        if(!sprint){let sprint = await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
         return res.json({msg:"Задача выполнена"})
     } catch (error) {
         console.log(error)

@@ -25,16 +25,9 @@ const TicketSchema = new Schema({
         type: Number,
         required: true
     },
-    screenshot: [
-        {
-        ssname:{
-            type: String,
-    },
-        sspath:{
-            type:String,
-        }
-    }
-],
+    screenshot:{
+        type:String,
+},
     pcpass: {
         type: String,
         default: null
