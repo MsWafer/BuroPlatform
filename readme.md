@@ -31,6 +31,12 @@
   - **PUT projects/updteam/:crypt** - находит проект по его *crypt* и добавляет в его команду пользователя, чей айди указан в *userid* в body
   - **DELETE projects/updteam/:crypt** - находит проект по его *crypt* и убирает из его команды пользователя, чей айди указан в *userid* в body
 
+  ### СпринтОчка(WiP)
+  - **POST projects/sprints/new/:crypt** - добавляет пустой спринт к проекту с шифром, указанным в юрл
+  - **PUT projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет **один** таск с *taskTitle*(string) и *workVolume*(number) из body
+  - **PUT projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что вероятно не работает)
+  - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
+
 
 password recovery plan
 ------------------
