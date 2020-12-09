@@ -21,7 +21,7 @@
   - **DELETE /tickets/:id** - удалить тикет по ид в юрл
 
 ### ПроектОчка :thumbsup: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
-  - **POST /projects/add** :joy: - добавить новый проект, указав *title*, *dateStart*, *city*, *type*, *stage*(опционально - *dateFinish*, *customer*, *area*) в body
+  - **POST /projects/add** :joy: - добавить новый проект, указав *title*, *dateStart*, *city*, *type*, *stage*(опционально - *dateFinish*, *customer*, *area*, *userid*(айдишники юзеров которых надо добавить в команду проекта через запятую)) в body
   - **GET /projects** :star_struck: - получить список всех проектов
   - **GET /projects/:auth** :sunglasses: - найти проект по *auth*, где *auth* это *crypt* или *title* проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
   - **DELETE /projects/:crypt** :grimacing: - удалить проект, указав его *crypt* в хедере

@@ -61,6 +61,7 @@ router.post ('/add', auth, [
         });
 
         await project.save();
+        if(!userid){return}
         let arr = userid.split(',')
         // console.log(arr)
         // return
@@ -109,7 +110,8 @@ router.get('/:auth', async(req,res) => {
                 team: project.team?project.team:[],
                 sprints: project.sprints?project.sprints:[],
                 about:project.about,
-                status:project.status
+                status:project.status,
+                crypter:project.crypter
             });
         } else if (projectTitle) {
             res.json(projectTitle);

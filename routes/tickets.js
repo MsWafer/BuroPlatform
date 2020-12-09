@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
         cb(null, '/usr/src/app/public/ticketSS')
     }, 
     filename: (req, file, cb) => { 
-        cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
+        cb(null, file.fieldname + '-' + Date.now()+ '-' +path.extname(file.originalname)) 
     } 
 }); 
   
@@ -45,7 +45,7 @@ async(req,res) => {
             emergency: req.body.emergency,
             name: user.name,
             pcpass: req.body.pcpass,
-            screenshot: req.file ? req.file.filename : {}
+            screenshot: req.file ? 'ticketSS/' + req.file.filename : {}
         });
         try {
             await newTicket.save();

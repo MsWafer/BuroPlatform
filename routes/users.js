@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
         cb(null, '/usr/src/app/public/ticketSS')
     }, 
     filename: (req, file, cb) => { 
-        cb(null, file.fieldname + '-' + Date.now() +path.extname(file.originalname)) 
+        cb(null, file.fieldname + '-' + Date.now()+ '-' +path.extname(file.originalname)) 
     } 
 }); 
 
@@ -51,7 +51,7 @@ router.post ('/',upload.single('file'), [
             email,
             password,
             position,
-            avatar: req.file ? req.file.filename : {}
+            avatar: req.file ? 'avatars/' + req.file.filename : {}
         });
 
         //password encryption
