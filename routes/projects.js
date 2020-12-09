@@ -61,7 +61,7 @@ router.post ('/add', auth, [
         });
 
         await project.save();
-        if(!userid){return}
+        if(!userid||userid==null||userid==undefined){return}
         let arr = userid.split(',')
         // console.log(arr)
         // return
