@@ -327,7 +327,8 @@ router.put('/sprints/:id', auth, async(req,res)=>{
 //get sprint by id
 router.get('/sprints/:id', auth, async(req,res) => {
     try {
-        await Sprint.findOne({_id:req.params.id})
+        let sprint = await Sprint.findOne({_id:req.params.id})
+        return res.json(sprint)
     } catch (error) {
         console.log(error)
         return res.json({err:"server error"})
