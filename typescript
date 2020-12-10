@@ -1,87 +1,4 @@
-Script started on 2020-12-10 12:31:34+0300
-]0;root@v388612: ~/BuroPlatformAll/BuroPlatformroot@v388612:~/BuroPlatformAll/BuroPlatform# git pull org[Kigin mase[Kter
-remote: Enumerating objects: 8, done.[K
-remote: Counting objects:  12% (1/8)[Kremote: Counting objects:  25% (2/8)[Kremote: Counting objects:  37% (3/8)[Kremote: Counting objects:  50% (4/8)[Kremote: Counting objects:  62% (5/8)[Kremote: Counting objects:  75% (6/8)[Kremote: Counting objects:  87% (7/8)[Kremote: Counting objects: 100% (8/8)[Kremote: Counting objects: 100% (8/8), done.[K
-remote: Compressing objects:  25% (1/4)[Kremote: Compressing objects:  50% (2/4)[Kremote: Compressing objects:  75% (3/4)[Kremote: Compressing objects: 100% (4/4)[Kremote: Compressing objects: 100% (4/4), done.[K
-remote: Total 6 (delta 4), reused 4 (delta 2), pack-reused 0[K
-Unpacking objects:  16% (1/6)   Unpacking objects:  33% (2/6)   Unpacking objects:  50% (3/6)   Unpacking objects:  66% (4/6)   Unpacking objects:  83% (5/6)   Unpacking objects: 100% (6/6)   Unpacking objects: 100% (6/6), done.
-From https://github.com/MsWafer/BuroPlatform
- * branch            master     -> FETCH_HEAD
-   2c340d1..9142415  master     -> origin/master
-Updating 2c340d1..9142415
-Fast-forward
- readme.md | 6 [32m+++[m[31m---[m
- 1 file changed, 3 insertions(+), 3 deletions(-)
-]0;root@v388612: ~/BuroPlatformAll/BuroPlatformroot@v388612:~/BuroPlatformAll/BuroPlatform# docker-compose down
-Stopping platform       ... 
-Stopping mongo_platform ... 
-[2A[2KStopping platform       ... [32mdone[0m[2B[1A[2KStopping mongo_platform ... [32mdone[0m[1BRemoving platform       ... 
-Removing mongo_platform ... 
-[1A[2KRemoving mongo_platform ... [32mdone[0m[1B[2A[2KRemoving platform       ... [32mdone[0m[2BRemoving network buroplatform_default
-]0;root@v388612: ~/BuroPlatformAll/BuroPlatformroot@v388612:~/BuroPlatformAll/BuroPlatform# docker rmi buroplatform_app
-Untagged: buroplatform_app:latest
-Deleted: sha256:14df71f13ad82f64cb764e8e21f025b33e40f0dfe8e74a5d492b96b3b2076118
-Deleted: sha256:e9dde7a79d499f1b0584060032525216f697f09b240eefeb71a08300c7f803c2
-Deleted: sha256:ef81e7aa5e58035c72542d58e69716e72d6d34429565b77c7c7ae4abcf590928
-Deleted: sha256:9e5d3c70c504a7e62bc88f3c54f22db23ef789ce9782b60f239f5a7e45b04f66
-Deleted: sha256:c7d3849c568491dca2584acd5d4c98c10f102408dfdf4e92ea05190979286de0
-Deleted: sha256:702b8cc634c611fef6854120dc62af74fd4df9a60a04282d29d34c58f3364fcb
-Deleted: sha256:de4dd6991f22ea60682c938a5251a1ff5a60225b4a3c0416990d0567a94c3a82
-Deleted: sha256:836db087c4ddc754cab767418c8cc389293b4c5ceb2818759d059c79f416af99
-Deleted: sha256:a66b17ff2ed10b1b11c0d763fd1d48a023595fe37f67ed9cd5fcce929d5f50ad
-Deleted: sha256:a658c3a2ecd1b460ddc515d8efbd338af8890b01ea1e19e36e3256cc5ff665f1
-]0;root@v388612: ~/BuroPlatformAll/BuroPlatformroot@v388612:~/BuroPlatformAll/BuroPlatform# docker-compose up -d
-Creating network "buroplatform_default" with the default driver
-Building app
-Step 1/7 : FROM node:12
- ---> e4f1e16b3633
-Step 2/7 : WORKDIR /usr/src/app
- ---> Running in 8ec8a00e1e70
-Removing intermediate container 8ec8a00e1e70
- ---> 278754888e3f
-Step 3/7 : COPY package*.json ./
- ---> 1f3e3e927fe1
-Step 4/7 : RUN npm install
- ---> Running in 312b2f224539
-
-> nodemon@2.0.6 postinstall /usr/src/app/node_modules/nodemon
-> node bin/postinstall || exit 0
-
-[32mLove nodemon? You can now support the project via the open collective:[22m[39m
- > [96m[1mhttps://opencollective.com/nodemon/donate[0m
-
-[91mnpm[0m[91m [0m[91mWARN[0m[91m sysadminshit@1.0.0 No description
-[0m[91mnpm[0m[91m [0m[91mWARN[0m[91m sysadminshit@1.0.0 No repository field.
-[0m[91mnpm[0m[91m [0m[91mWARN[0m[91m [0m[91moptional[0m[91m SKIPPING OPTIONAL DEPENDENCY: fsevents@2.1.3 (node_modules/fsevents):
-[0m[91mnpm[0m[91m [0m[91mWARN[0m[91m [0m[91mnotsup[0m[91m SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@2.1.3: wanted {"os":"darwin","arch":"any"} (current: {"os":"linux","arch":"x64"})
-[0m[91m
-[0madded 241 packages from 132 contributors and audited 242 packages in 7.121s
-
-12 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-
-Removing intermediate container 312b2f224539
- ---> 561ef3fdc9d3
-Step 5/7 : COPY . .
- ---> 505d7111a548
-Step 6/7 : EXPOSE 7070
- ---> Running in 52997a633376
-Removing intermediate container 52997a633376
- ---> 036d76725102
-Step 7/7 : CMD [ "node", "server.js" ]
- ---> Running in 957b34101ddf
-Removing intermediate container 957b34101ddf
- ---> 4fa5d3b0fadf
-Successfully built 4fa5d3b0fadf
-Successfully tagged buroplatform_app:latest
-[33mWARNING[0m: Image for service app was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
-Creating mongo_platform ... 
-Creating mongo_platform
-[1A[2KCreating mongo_platform ... [32mdone[0m[1BCreating platform ... 
-Creating platform
-[1A[2KCreating platform ... [32mdone[0m[1B]0;root@v388612: ~/BuroPlatformAll/BuroPlatformroot@v388612:~/BuroPlatformAll/BuroPlatform# exit
-exit
-
-Script done on 2020-12-10 12:32:45+0300
+git pull origin master
+docker-compose down
+docker rmi buroplatform_app
+docker-compose up -d
