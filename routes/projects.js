@@ -284,7 +284,9 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
 router.get('/sprints/:crypt',auth,async(req,res)=>{
     let project = await Project.findOne({crypt:req.params.crypt}).select('sprints').populate('sprints')
     console.log(project)
-    return res.json(project)
+    return res.json(
+        {projectid:project.id,
+        sprints:project.sprints})
 })
 
 //add new task to sprint
