@@ -31,6 +31,10 @@ const UserSchema = new mongoose.Schema({
     },
     avatar: {
         type:String
+    },
+    reccode: {
+        type:String,
+        default:null
     }
     
 });

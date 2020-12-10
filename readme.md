@@ -42,16 +42,16 @@
 
 <!-- password recovery plan
 ------------------
-- find user by email, write recovery code to model and send it to user's email
+- find user by email, write recovery code to model and send it to user's email +++
 - check whenever recovery code inserted by user is the same as the one in model
 - if its the same, ask for new password, encrypt it and write to model
 
 sprints plan
 -------------------
-- add empty sprint with inactive status +
-- add task with taskTitle, workVolume, taskStatus +
+- add empty sprint with inactive status +++
+- add task with taskTitle, workVolume, taskStatus +++
 - activate task, check if all tasks in sprint are activated, activate sprint if so +-
-- activate sprint +
+- activate sprint +++
 
 
 

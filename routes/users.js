@@ -8,6 +8,7 @@ const auth = require ('../middleware/auth');
 const multer = require('multer'); 
 const fs = require('fs'); 
 const path = require('path'); 
+const nodemailer = require('nodemailer')
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
         cb(null, '/usr/src/app/public/ticketSS')
@@ -175,5 +176,66 @@ router.delete('/:id',auth,async(req,res)=>{
         res.status(500).send('server error');
     };
 })
+
+//find user by mail, generate recovery code, save it to model and send to user's email
+router.put('/passrec', async(req,res)=>{
+    let user = await User.findOne({email:req.body.email})
+    if(!user){return res.json({msg:'Не найден пользователь с указанным email'})}
+
+    //generating recovery code
+    function makeid(length) {
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let charactersLength = characters.length;
+        for ( let i = 0; i < length; i++ ) {
+           result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+     }
+    
+    //unnecessary security stuff
+    let reccds = [];
+    let users = await User.find().select('reccode');
+    users.map(user => reccds.push(user.reccode));
+    const promise = () =>  new Promise((resolve) => {
+        recCode = makeid(6);
+        if(reccds.includes(recCode)){resolve(promise())};
+    });
+    promise()
+
+    //saving recovery code to model
+    await User.findOneAndUpdate({email:req.body.email},{$set:{reccode:recCode}})
+
+    //send email
+    try {
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'buro82platformbot@gmail.com',
+                pass: 'Kr$V6=Sf/^S4*9Hn'
+            }
+        });
+        let mailOptions = {
+            from: 'buro82platformbot@gmail.com',
+            to: `${req.body.email}`,
+            subject: `<no-reply> Восстановление пароля на платформе Buro82`,
+            text: `Ваш код для восстановление пароля: ${recCode}`
+        };
+        transporter.sendMail(mailOptions, function(error, info){
+            console.log('Email sent: ' + info.response);
+            return res.json({msg:`Код восстановления был отправлен на ${req.body.email}`, recCode:recCode})
+        });
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json(error)
+    }
+    
+})
+
+//check recovery code
+router.get('/passrec/2',async(req,res)=>{
+    let user = await User.findOne({recCode:rec.body.recCode})
+})
+
 
 module.exports = router;
