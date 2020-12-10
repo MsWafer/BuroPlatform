@@ -62,11 +62,11 @@ router.post ('/add', auth, [
 
         await project.save();
         if(!userid||userid==null||userid==undefined){return}
-        let arr = userid.split(',')
+        // let arr = userid.split(',')
         // console.log(arr)
         // return
-        let newProject = await Project.findOneAndUpdate({crypt:crypt},{ $addToSet: { team: { $each: arr } } })
-        await User.updateMany({'_id':{$in:arr}},{$push:{projects:newProject}},{multi:true})
+        let newProject = await Project.findOneAndUpdate({crypt:crypt},{ $addToSet: { team: { $each: userid } } })
+        await User.updateMany({'_id':{$in:userid}},{$push:{projects:newProject}},{multi:true})
         console.log(`Проект ${crypt} добавлен`)
         return res.status(200).json({crypter});
     } catch(err) {

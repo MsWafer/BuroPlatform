@@ -1,7 +1,7 @@
-ГАЙД ДЛЯ МАЛЮТОК :man_with_probing_cane: :person_in_manual_wheelchair: :man_in_manual_wheelchair: :family_man_man_boy: :shark:
+ГАЙД ДЛЯ МАЛЮТОК :person_in_manual_wheelchair: :shark: :family_man_man_boy:
 ---------------------
 ## ЭндпоинтОчка
-### ЮзерОчка :eye: :lips: :eye: :shark:
+### ЮзерОчка :eye: :lips: :eye:
 - **POST /users** - регистрация нового пользователя, требует *name*, *email*, *position* и *password*(7-20символов) в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев). ТЕПЕРЬ С АВАТАРКАМИ :joy: :joy: :joy: :joy: :joy: :joy:
 - **POST /auth** - авторизация, требует *email* и *password* ранее зарегестрированного пользователя в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев).
 - **GET /users/me** - показывает инфу текущего авторизованного пользователя
@@ -20,24 +20,24 @@
   - **PUT /tickets/id** - меняет *status* тикета на *false*, ~закрывая его.
   - **DELETE /tickets/:id** - удалить тикет по ид в юрл
 
-### ПроектОчка :thumbsup: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
-  - **POST /projects/add** :joy: - добавить новый проект, указав *title*, *dateStart*, *city*, *type*, *stage*(опционально - *dateFinish*, *customer*, *area*, *about* *userid*(айдишники юзеров которых надо добавить в команду проекта через запятую)) в body
-  - **GET /projects** :star_struck: - получить список всех проектов
-  - **GET /projects/:auth** :sunglasses: - найти проект по *auth*, где *auth* это *crypt* или *title* проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
-  - **DELETE /projects/:crypt** :grimacing: - удалить проект, указав его *crypt* в хедере
-  - **PUT /projects/:crypt** :stuck_out_tongue_winking_eye: - изменить информацию проекта, указав его crypt в хедере и новые значения в body. В респонсе измененные данные проекта
+### ПроектОчка :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
+  - **POST /projects/add** - добавить новый проект, указав *title*, *dateStart*, *city*, *type*, *stage*(опционально - *dateFinish*, *customer*, *area*, *about* *userid*(айдишники юзеров которых надо добавить в команду проекта в виде объектов в массиве)) в body
+  - **GET /projects** - получить список всех проектов
+  - **GET /projects/:auth** - найти проект по *auth*, где *auth* это *crypt* или *title* проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
+  - **DELETE /projects/:crypt** - удалить проект, указав его *crypt* в хедере
+  - **PUT /projects/:crypt** - изменить информацию проекта, указав его crypt в хедере и новые значения в body. В респонсе измененные данные проекта
   - **GET projects/city/:city** - респонс со всеми проектами в городе, указанном в *city*
   - **GET projects/user/:id** - найти все проекты пользователя *id*
   - **PUT projects/updteam/:crypt** - находит проект по его *crypt* и добавляет в его команду пользователя, чей айди указан в *userid* в body
   - **DELETE projects/updteam/:crypt** - находит проект по его *crypt* и убирает из его команды пользователя, чей айди указан в *userid* в body
 
-  ### СпринтОчка(WiP)
+  ### СпринтОчка :a: :shark: :a:
   - **POST projects/sprints/new/:crypt** - добавляет пустой спринт к проекту с шифром, указанным в юрл
   - **GET projects/sprints/:crypt** - показывает все спринты проекта, найденного по его шифру в юрл
   - **PUT projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив тасков с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
   - **PUT projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что вероятно не работает)
   - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
-  - **GET projects/getsprint/:id** - находит спринт по ид
+  - **GET projects/getsprint/:id** - находит спринт по *id*
 
 
 <!-- password recovery plan
