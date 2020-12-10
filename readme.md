@@ -1,7 +1,7 @@
-ГАЙД ДЛЯ МАЛЮТОК :man_with_probing_cane: :person_in_manual_wheelchair: :man_in_manual_wheelchair: :family_man_man_boy:
+ГАЙД ДЛЯ МАЛЮТОК :man_with_probing_cane: :person_in_manual_wheelchair: :man_in_manual_wheelchair: :family_man_man_boy: :shark:
 ---------------------
 ## ЭндпоинтОчка
-### ЮзерОчка :eye: :lips: :eye:
+### ЮзерОчка :eye: :lips: :eye: :shark:
 - **POST /users** - регистрация нового пользователя, требует *name*, *email*, *position* и *password*(7-20символов) в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев). ТЕПЕРЬ С АВАТАРКАМИ :joy: :joy: :joy: :joy: :joy: :joy:
 - **POST /auth** - авторизация, требует *email* и *password* ранее зарегестрированного пользователя в json в body, выдает ***auth-token*** в респонс, пользователь остается авторизованным 360000000 секунд(дев).
 - **GET /users/me** - показывает инфу текущего авторизованного пользователя
