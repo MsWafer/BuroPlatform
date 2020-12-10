@@ -39,12 +39,17 @@
   - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
   - **GET projects/getsprint/:id** - находит спринт по *id*
 
+  ### Восстановление ПароляОчка
+  - **PUT users/passrec** - находит юзера по *email* в body, создает *recCode*, сохраняет его в модель и отправляет пользователю на указанный email
+  - **GET users/passrec/2** - проверяет введенный пользователем *recCode* из бади, возвращает *recCode* на всякий случай
+  - **PUT users/passrec/3** - находит пользователя по *recCode* из body, меняет его пароль на новый *password* из body, удаляет старый *recCode* из модели, зачем-то возвращает юзер айди
+
 
 <!-- password recovery plan
 ------------------
 - find user by email, write recovery code to model and send it to user's email +++
-- check whenever recovery code inserted by user is the same as the one in model
-- if its the same, ask for new password, encrypt it and write to model
+- check whenever recovery code inserted by user is the same as the one in model +++
+- if its the same, ask for new password, encrypt it and write to model +++
 
 sprints plan
 -------------------

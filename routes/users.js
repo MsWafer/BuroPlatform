@@ -235,6 +235,26 @@ router.put('/passrec', async(req,res)=>{
 //check recovery code
 router.get('/passrec/2',async(req,res)=>{
     let user = await User.findOne({recCode:rec.body.recCode})
+    if(!user){return res.json({err:'Введен неверный код'})}
+    return res.json({
+        msg:'Введите новый пароль',
+        recCode:req.body.recCode})
+})
+
+//new password stuff
+router.put('/passrec/3',async(req,res)=>{
+    if(!req.body.password){return res.json({msg:'Введите новый пароль'})}
+    try {
+        const salt = await bcrypt.genSalt(10);
+        newPassword = await bcrypt.hash(req.body.password, salt);
+        let user = await User.findOneAndUpdate({recCode:req.body.recCode},{$set:{password:newPassword}},{$set:{recCode:null}})
+        return res.json({
+            msg:'Пароль изменен',
+            userid:user.id})
+    } catch (error) {
+        console.log(error)
+        return res.json({err:'Server error'})
+    }
 })
 
 
