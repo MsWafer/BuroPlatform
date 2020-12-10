@@ -181,10 +181,12 @@ router.put("/:crypt", auth, async (req, res) => {
                 customer:req.body.customer?req.body.customer:project1.customer,
                 about:req.body.about?req.body.about:project1.about,
                 status:req.body.status?req.body.status:project1.status,
+                about:req.body.about?req.body.about:project1.about
             }})
 
             let editedProject = await Project.findOne({crypt: req.params.crypt})
         res.json({
+                id: editedProject.id,
                 title: editedProject.title,
                 crypt: editedProject.crypt,
                 dateStart: editedProject.dateStart,
@@ -197,6 +199,9 @@ router.put("/:crypt", auth, async (req, res) => {
                 crypter: editedProject.crypter,
                 about: editedProject.about,
                 status: editedProject.status,
+                about: editedProject.about,
+                projects: editedProject.projects,
+                sprints: editedProject.sprints
             });
     } catch (error) {
         console.error(error.message);
