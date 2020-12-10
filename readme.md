@@ -37,6 +37,7 @@
   - **PUT projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив тасков с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
   - **PUT projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что вероятно не работает)
   - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
+  - **GET projects/getsprint/:id** - находит спринт по ид
 
 
 <!-- password recovery plan
