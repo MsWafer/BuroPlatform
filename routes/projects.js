@@ -98,6 +98,7 @@ router.get('/:auth', async(req,res) => {
         let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
         console.log(project.team)
         if(!project && !projectTitle) {
+            console.log('no projects found')
             return res.status(400).json({msg: "Проект не найден"})
         } else if (project) {
             console.log('found project by crypt')
@@ -299,7 +300,7 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
 
 //find all project's sprints
 router.get('/sprints/:crypt',auth,async(req,res)=>{
-    let project = await Project.findOne({crypt:req.params.crypt}).select('sprints').populate('sprints')
+    let project = await Project.findOne({crypt:req.params.crypt},{$sort:{sprints:1}}).select('sprints').populate('sprints')
     console.log('found all projects sprints')
     return res.json(
         {projectid:project.id,
@@ -311,7 +312,7 @@ router.post('/sprints/addtask/:id',auth,async(req,res)=>{
     let sprint = await Sprint.findOne({_id:req.params.id})
     if(!sprint){return res.json({msg:"Указанный спринт не найден"})}
     try {
-        await Sprint.findOneAndUpdate({_id:req.params.id}, { $push: {tasks: { $each: req.body.tasks }}}, {multi:true})
+        await Sprint.findOneAndUpdate({_id:req.params.id}, { $push: {tasks: { $each: req.body.tasks, $position:0 }}}, {multi:true})
         console.log('new tasks added to sprint')
         res.json({msg:'Задача добавлена'})
     } catch (error) {
