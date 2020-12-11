@@ -4,8 +4,6 @@ const router = express.Router();
 const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
 
-const db = config.get('mongoURI');
-
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
 const User = require('../models/User');
@@ -303,15 +301,10 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
 //find all project's sprints
 router.get('/sprints/:crypt',auth,async(req,res)=>{
     let project = await Project.findOne({crypt:req.params.crypt}).select('sprints').populate('sprints')
-
-
-    let aaa = db.projects.find({crypt:req.params.crypt})
-    .aggregate({$unwind: '$sprints'},{$sort: {'sprints.':-1}},{$group: {_id: '$_id', '_id': {$push:'$sprints'}}},{$project: {'sprints':'_id'}})
-    .pretty();
     console.log('found all projects sprints')
-    return res.json(aaa
-        // {projectid:project.id,
-        // sprints:project.sprints}
+    return res.json(
+        {projectid:project.id,
+        sprints:project.sprints}
         )
 })
 
