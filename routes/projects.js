@@ -308,7 +308,7 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id":req.body.taskid},{$set:{"tasks.$.taskStatus" : true}})
         console.log('task deactivated')
         let sprint = await Sprint.findOne({_id:req.params.id, "tasks.status":false})
-        if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
+        if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}}, {$set:{dateClose:Date.now()}})}
         return res.json({msg:"Задача выполнена"})
     } catch (error) {
         console.log(error)
@@ -319,7 +319,7 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
 //deactivate sprint
 router.put('/sprints/:id', auth, async(req,res)=>{
     try {
-        await Sprint.findOneAndUpdate({_id:req.params.id},{$set:{status:true}})
+        await Sprint.findOneAndUpdate({_id:req.params.id},{$set:{status:true}},{$set:{dateClose:Date.now()}})
     } catch (error) {
         console.log(error)
         return res.json({err:"server error"})
