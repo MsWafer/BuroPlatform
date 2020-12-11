@@ -288,7 +288,7 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
     if(!project){return res.json({msg:"Не найдено проекта с указанным шифром"})}
     sprint = new Sprint()
     await sprint.save()
-    await Project.findOneAndUpdate({crypt: req.params.crypt},{$push:{sprints:sprint}})
+    await Project.findOneAndUpdate({crypt: req.params.crypt},{$unshift:{sprints:sprint}})
     console.log('sprint added to project')
     return res.json({msg:`Новый спринт добавлен в проект`,
                 id:sprint.id,
