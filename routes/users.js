@@ -183,6 +183,9 @@ router.delete('/:id',auth,async(req,res)=>{
     };
 })
 
+
+
+
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put('/passrec', async(req,res)=>{
     let user = await User.findOne({email:req.body.email})
