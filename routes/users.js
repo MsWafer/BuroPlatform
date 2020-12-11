@@ -23,8 +23,7 @@ const upload = multer({ storage: storage });
 
 const User = require('../models/User');
 const Project = require('../models/Project');
-const Ticket = require('../models/Ticket');
-const { findById, findOne, findOneAndUpdate } = require('../models/User');
+const { findOneAndUpdate } = require('../models/User');
 
 //registration
 router.post ('/',upload.single('file'), [
