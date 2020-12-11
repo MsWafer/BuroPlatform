@@ -304,7 +304,7 @@ router.get('/sprints/:crypt',auth,async(req,res)=>{
     console.log('found all projects sprints')
     return res.json(
         {projectid:project.id,
-        sprints:project.sprints}
+        sprints:project.sprints.reverse()}
         )
 })
 
