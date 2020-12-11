@@ -300,7 +300,8 @@ router.post('/sprints/new/:crypt', auth, async(req,res)=>{
 
 //find all project's sprints
 router.get('/sprints/:crypt',auth,async(req,res)=>{
-    let project = await Project.findOne({crypt:req.params.crypt},null,{$sort:{sprints:-1}}).select('sprints').populate('sprints')
+    let project = await Project.findOne({crypt:req.params.crypt}).select('sprints').populate('sprints')
+    .aggregate([{$unwind:"$sprints"},{$sort:{"sprints.dateOpen":1}},{"$group":{"_id":"$_id","sprints":{"$push":"sprints"}}}])
     console.log('found all projects sprints')
     return res.json(
         {projectid:project.id,
