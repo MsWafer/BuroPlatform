@@ -4,6 +4,8 @@ const router = express.Router();
 const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
 
+const db = config.get('mongoURI');
+
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
 const User = require('../models/User');
