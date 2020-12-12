@@ -325,9 +325,9 @@ router.post('/sprints/addtask/:id',auth,async(req,res)=>{
 router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     try {
 
-        await Sprint.findOneAndUpdate({ "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus": true } });
-        let sprint = await Sprint.findOne({ _id: req.params.id, "tasks.taskStatus": false,});
-        if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
+        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks.id": req.body.taskid },{ $set: { "tasks.$.taskStatus": true } });
+        // let sprint = await Sprint.findOne({ _id: req.params.id, "tasks.taskStatus": false,});
+        // if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
 
         console.log('task deactivated')
         return res.json({msg:"Задача выполнена"})
