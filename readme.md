@@ -34,8 +34,8 @@
   ### СпринтОчка :a: :shark: :a:
   - **POST projects/sprints/new/:crypt** - добавляет пустой спринт к проекту с шифром, указанным в юрл
   - **GET projects/sprints/:crypt** - показывает все спринты проекта, найденного по его шифру в юрл
-  - **PUT projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив тасков с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
-  - **PUT projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что вероятно не работает)
+  - **POST projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив *tasks* с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
+  - **PUT projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что возможно не работает)
   - **PUT projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
   - **GET projects/getsprint/:id** - находит спринт по *id*
 
@@ -43,27 +43,3 @@
   - **PUT users/passrec** - находит юзера по *email* в body, создает *recCode*, сохраняет его в модель и отправляет пользователю на указанный email
   - **GET users/passrec/2** - проверяет введенный пользователем *recCode* из бади, возвращает *recCode* на всякий случай
   - **PUT users/passrec/3** - находит пользователя по *recCode* из body, меняет его пароль на новый *password* из body, удаляет старый *recCode* из модели, зачем-то возвращает юзер айди
-
-
-<!-- password recovery plan
-------------------
-- find user by email, write recovery code to model and send it to user's email +++
-- check whenever recovery code inserted by user is the same as the one in model +++
-- if its the same, ask for new password, encrypt it and write to model +++
-
-sprints plan
--------------------
-- add empty sprint with inactive status +++
-- add task with taskTitle, workVolume, taskStatus +++
-- activate task, check if all tasks in sprint are activated, activate sprint if so +-
-- activate sprint +++
-
-
-
-
-
-
-
-taskTitle:[taskTitle1,taskTitle2,taskTitle3,...,taskTitleN], workVolume:[workVolume1,workVolume2,workVolume3,...,workVolumeN], taskState:false ==>
-
- [{tastTitle:taskTitle1,workVolume:workVolume1,taskState:false},   {tastTitle:taskTitle2,workVolume:workVolume2,taskState:false},{tastTitle:taskTitle3,workVolume:workVolume3,taskState:false},  ...,  {tastTitle:taskTitleN,workVolume:workVolumeN,taskState:false}] -->

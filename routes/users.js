@@ -23,9 +23,7 @@ const upload = multer({ storage: storage });
 
 const User = require('../models/User');
 const Project = require('../models/Project');
-const Ticket = require('../models/Ticket');
-const { findById, findOne, findOneAndUpdate } = require('../models/User');
-const { response } = require('express');
+const { findOneAndUpdate } = require('../models/User');
 
 //registration
 router.post ('/',upload.single('file'), [
@@ -60,6 +58,7 @@ router.post ('/',upload.single('file'), [
             user.password = await bcrypt.hash(password, salt);
 
         await user.save();
+        console.log('new user registered')
 
         //jsonwebtoken return
         const payload = {user: {id: user.id}};
@@ -85,7 +84,8 @@ router.post ('/',upload.single('file'), [
 router.get('/me',auth,async(req,res)=>{
     let user = await User.findOne({_id:req.user.id}).select('-password').populate('projects', -'team').populate('tickets', '-user')
     if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
-    res.json({
+    console.log('user found')
+    return res.json({
         id:user.id,
         name:user.name,
         email:user.email,
@@ -116,7 +116,8 @@ router.put('/me', auth, async(req,res) =>{
                 password:newPassword
             }
         })
-        response.json({msg:'Ваш профиль был обновлен'})
+        console.log('user info updated')
+        return res.json({msg:'Ваш профиль был обновлен'})
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
@@ -128,7 +129,8 @@ router.put('/me', auth, async(req,res) =>{
 router.get('/all', async(req,res)=>{
     try {
         let users = await User.find().populate('projects', '-team').populate('tickets', '-user')
-        res.json(users) 
+        console.log('GET all users')
+        return res.json(users) 
     } catch (err) {
         console.error(err.message);
         res.status(500).send('server error');
@@ -144,9 +146,11 @@ router.get('/:id', async(req,res) =>{
         .populate('projects', '-team')
         .populate('tickets', '-user')
         if(!user) {
-            return res.status(404).json({msg: "ticket not found"});
+            console.log('user not found')
+            return res.status(404).json({msg: "User not found"});
         };
-        res.json({
+        console.log('user found')
+        return res.json({
             id:user.id,
             name:user.name,
             email:user.email,
@@ -157,7 +161,7 @@ router.get('/:id', async(req,res) =>{
         })
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 })
 
@@ -170,12 +174,16 @@ router.delete('/:id',auth,async(req,res)=>{
         };
         await Project.updateMany({team:user.id},{$pull:{team:user.id}},{multi:true})
         await user.remove();
-        res.json({msg:`Пользователь удален`});
+        console.log('User deleted')
+        return res.json({msg:`Пользователь удален`});
     }catch(err) {
         console.error(err.message);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     };
 })
+
+
+
 
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put('/passrec', async(req,res)=>{
@@ -248,6 +256,7 @@ router.put('/passrec/3',async(req,res)=>{
         const salt = await bcrypt.genSalt(10);
         newPassword = await bcrypt.hash(req.body.password, salt);
         let user = await User.findOneAndUpdate({recCode:req.body.recCode},{$set:{password:newPassword}},{$set:{recCode:null}})
+        console.log('Пароль изменен')
         return res.json({
             msg:'Пароль изменен',
             userid:user.id})

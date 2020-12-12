@@ -65,22 +65,12 @@ async(req,res) => {
 //get all tickets
 router.get('/all', async(req,res) => {
     try {
-        // let arr = [];
         let tickets = await Ticket.find().sort({date:-1}).populate('user','-tickets -projects');
-    //     tickets.map(ticket => arr.push(
-    //    {
-    //     id:`${ticket.id}`,
-    //     date:`${ticket.date.toString().slice(4,21)}`,
-    //     user:`${ticket.user.name}`,
-    //     problemname:`${ticket.problemname}`,
-    //     emergency:`${ticket.emergency}`,
-    //     status:`${ticket.status}`
-    //     }
-    //     ))
-        res.json(tickets);
+        console.log('GET all tickets')
+        return res.json(tickets);
     } catch (err) {
         console.error(err.messsage);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 });
 
@@ -92,7 +82,7 @@ router.get('/:id', async(req,res) => {
         if(!ticket) {
             return res.status(404).json({msg: "ticket not found"});
         };
-
+        console.log('ticket found by id')
         res.json({
             id:ticket.id,
             date:ticket.date,
@@ -116,67 +106,36 @@ router.get('/:id', async(req,res) => {
 //get all user's tickets
 router.get('/user/:id', async(req,res) => {
     try {
-        // let arr = [];
         let tickets = await Ticket.find({user: req.params.id}).sort({date: -1}).populate('user', '-projects -tickets');
-
-        // tickets.map(ticket => arr.push(
-        // {
-        // id:`${ticket.id}`,
-        // date:`${ticket.date.toString().slice(4,21)}`,
-        // problemname:`${ticket.problemname}`,
-        // emergency:`${ticket.emergency}`,
-        // status:`${ticket.status}`
-        // }
-        // )
-        // )
-
-        res.json(tickets);
+        console.log(`found all tickets of user ${req.params.id}`)
+        return res.json(tickets);
     } catch (err) {
         console.error(err.messsage);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 });
 
 //get all active tickets
 router.get('/all/active', async(req,res) => {
     try {
-        // let arr = [];
         let tickets = await Ticket.find({status:true}).sort({date: -1}).populate('user', '-tickets -projects');
-        // tickets.map(ticket => arr.push(
-        //     {
-        //     id:`${ticket.id}`,
-        //     date:`${ticket.date.toString().slice(4,21)}`,
-        //     user:`${ticket.user.name}`,
-        //     problemname:`${ticket.problemname}`,
-        //     emergency:`${ticket.emergency}`,
-        //     }
-        // ))
-        res.json(tickets);
+        console.log('found all active tickets')
+        return res.json(tickets);
     } catch (err) {
         console.error(err.messsage);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 });
 
 //get all tickets sorted by emergency
 router.get('/all/emergency', async(req,res) => {
     try {
-        // let arr = [];
         let tickets = await Ticket.find().sort({emergency: -1}).populate('user', '-projects -tickets');
-        // tickets.map(ticket => arr.push(
-        //     {
-        //     id:`${ticket.id}`,
-        //     date:`${ticket.date.toString().slice(4,21)}`,
-        //     user:`${ticket.user.name}`,
-        //     problemname:`${ticket.problemname}`,
-        //     emergency:`${ticket.emergency}`,
-        //     status:`${ticket.status}`
-        //     }
-        // ))
-        res.json(tickets);
+        console.log('get all tickets by emergency')
+        return res.json(tickets);
     } catch (err) {
         console.error(err.messsage);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 });
 
@@ -184,10 +143,11 @@ router.get('/all/emergency', async(req,res) => {
 router.put("/:id", async (req, res) => {
     try {
         let ticket = await Ticket.findOneAndUpdate({id: req.params._id}, {$set: {status:false}})
-        res.json({msg:`${ticket.id} пофикшен`});
+        console.log(`ticket ${ticket.id} deactivated`)
+        return res.json({msg:`${ticket.id} пофикшен`});
     } catch (error) {
         console.error(error.message);
-        res.status(500).send('server error')
+        return res.status(500).send('server error')
     }
 });
 
@@ -201,14 +161,14 @@ router.delete("/:id",auth,async(req,res)=>{
         return res.json({msg:"ticket udalen"})
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('server error');
+        return res.status(500).send('server error');
     }
 })
 
 //delete all tickets
 router.delete('/deleteall',async(req,res)=>{
     try {
-        await Ticket.remove({})
+        await Ticket.deleteMany({})
         console.log('eee pizdec')
     } catch (error) {
         console.log('uuu pizdec')

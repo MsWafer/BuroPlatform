@@ -1,6 +1,0 @@
-cd BuroPlatformAll
-cd BuroPlatform
-git pull origin master
-docker-compose down
-docker rmi buroplatform_app
-docker-compose up -d
