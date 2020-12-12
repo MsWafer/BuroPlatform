@@ -78,7 +78,6 @@ router.post ('/add', auth, [
             stage: newProject.stage,
             area: newProject.area,
             team: newProject.team?project.team:[],
-            sprints: newProject.sprints?project.sprints:[],
             about:newProject.about,
             status:newProject.status,
             crypter:newProject.crypter
