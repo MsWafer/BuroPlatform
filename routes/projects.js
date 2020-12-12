@@ -68,7 +68,21 @@ router.post ('/add', auth, [
         let newProject = await Project.findOneAndUpdate({crypt:crypt},{ $addToSet: { team: { $each: userid } } })
         await User.updateMany({'_id':{$in:userid}},{$push:{projects:newProject}},{multi:true})
         console.log(`Проект ${crypt} добавлен`)
-        return res.status(200).json({crypter});
+        return res.status(200).json({
+            title: newProject.title,
+            crypt: newProject.crypt,
+            dateStart: newProject.dateStart,
+            dateFinish: newProject.dateFinish,
+            city: newProject.city,
+            type: newProject.type,
+            stage: newProject.stage,
+            area: newProject.area,
+            team: newProject.team?project.team:[],
+            sprints: newProject.sprints?project.sprints:[],
+            about:newProject.about,
+            status:newProject.status,
+            crypter:newProject.crypter
+        });
     } catch(err) {
     console.error(err.message);
     return res.status(500).send('server error');
