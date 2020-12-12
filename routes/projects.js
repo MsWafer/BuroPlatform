@@ -310,10 +310,12 @@ router.post('/sprints/addtask/:id',auth,async(req,res)=>{
 //deactivate task
 router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     try {
-        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id":req.body.taskid},{$set:{"tasks.$.taskStatus" : true}})
-        console.log('task deactivated')
-        let sprint = await Sprint.findOne({_id:req.params.id, "tasks.status":false})
+
+        await Sprint.findOneAndUpdate({ "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus": true } });
+        let sprint = await Sprint.findOne({ _id: req.params.id, "tasks.taskStatus": false,});
         if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
+
+        console.log('task deactivated')
         return res.json({msg:"Задача выполнена"})
     } catch (error) {
         console.log(error)
@@ -321,10 +323,21 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     }
 })
 
-//deactivate sprint
+//change sprint status sprint
 router.put('/sprints/:id', auth, async(req,res)=>{
     try {
-        await Sprint.findOneAndUpdate({_id:req.params.id},{$set:{status:true}})
+        let project = await Sprint.findOne({ _id: req.params.id });
+        if (project.status == false) {
+          await Sprint.findOneAndUpdate(
+            { _id: req.params.id },
+            { $set: { status: true } }
+          );
+        } else if (project.status == true) {
+          await Sprint.findOneAndUpdate(
+            { _id: req.params.id },
+            { $set: { status: false } }
+          );
+        }
     } catch (error) {
         console.log(error)
         return res.json({err:"server error"})
