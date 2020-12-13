@@ -11,7 +11,7 @@ app.use("/avatars", express.static(__dirname + "/avatars"));
 
 connectDB();
 
-app.get("/", (req, res) => res.send("Не крашьте плиз"));
+app.get("/", (req, res) => res.send("Не крашься плиз"));
 
 app.use("/auth", require("./routes/auth"));
 app.use("/users", require("./routes/users"));
