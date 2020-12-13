@@ -11,7 +11,7 @@ const path = require('path');
 const nodemailer = require('nodemailer')
 const storage = multer.diskStorage({ 
     destination: function (req, file, cb) {
-        cb(null, '/usr/src/app/public/ticketSS')
+        cb(null, '/usr/src/app/public/avatars')
     }, 
     filename: (req, file, cb) => { 
         cb(null, file.fieldname + '-' + Date.now()+ '-' +path.extname(file.originalname)) 
@@ -26,7 +26,7 @@ const Project = require('../models/Project');
 const { findOneAndUpdate } = require('../models/User');
 
 //registration
-router.post ('/',upload.single('file'), [
+router.post ('/',/*upload.single('file'),*/ [
     check('name', 'Введите имя пользователя').not().isEmpty(),
     check('email', 'Введите email').isEmail(),
     check('password', "Введите пароль длиной не менее 7 и не более 20 символов").isLength({min:7,max:20}),
@@ -50,7 +50,7 @@ router.post ('/',upload.single('file'), [
             email,
             password,
             position,
-            avatar: req.file ? 'avatars/' + req.file.filename : {}
+            // avatar: req.file ? 'avatars/' + req.file.filename : {}
         });
 
         //password encryption
