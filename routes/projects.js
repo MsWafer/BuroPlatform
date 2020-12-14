@@ -424,6 +424,7 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         //find all tasks
         //filter by id
         let tasks = await Sprint.findOne({_id:req.params.id})
+        console.log(tasks.tasks)
         let status = tasks.tasks.filter(task => task._id == req.body.taskid).taskStatus
         console.log(status)
         status = !status;
