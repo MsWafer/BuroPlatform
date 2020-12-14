@@ -25,7 +25,7 @@ services:
     image: futurice/docker-volume-backup
     volumes:
       - db-data:/backup/db-data:ro
-      - ./root/BuroPlatformAll/backups:/archive                  
+      - ./backups:/archive                  
   mongo-backup:
     container_name: mongo-backup
     image: tiredofit/mongodb-backup
