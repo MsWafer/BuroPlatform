@@ -288,7 +288,15 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
     let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
     let huy3 = huy2.split(',')
-    if(huy3.includes(req.user.id)){return res.status(400).json({msg:`Вы уже находитесь в команде данного проекта`})};
+    if(huy3.includes(req.user.id)){
+        let user = await User.findOne({_id:req.user.id}).select('-password -permission');
+        await Project.findOneAndUpdate({crypt: req.params.crypt},{$pull: {team: user.id}});
+        let project = await Project.findOne({crypt: req.params.crypt});
+        await User.findOneAndUpdate({_id:req.user.id},{$pull: {projects: project.id}});
+
+        res.status(200).json({msg:`Вы вышли из команды проекта ${req.params.crypt}`})
+        return console.log(`${user.name} удален из команды проекта ${req.params.crypt}`)
+    }
 
     try {
         let user = await User.findOne({_id:req.user.id}).select('-password -permission');
