@@ -364,8 +364,6 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         if(!sprint){tStatus=true}else{tStatus=false}
 
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus": true } });
-        // let sprint = await Sprint.findOne({ _id: req.params.id, "tasks.taskStatus": false,});
-        // if(!sprint){await Sprint.findOneAndUpdate({_id:req.params.id}, {$set:{status:true}})}
 
         console.log('task deactivated')
         return res.json({msg:"Задача выполнена"})

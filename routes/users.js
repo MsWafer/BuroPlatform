@@ -26,7 +26,7 @@ const Project = require('../models/Project');
 const { findOneAndUpdate } = require('../models/User');
 
 //registration
-router.post ('/',/*upload.single('file'),*/ [
+router.post ('/', [
     check('name', 'Введите имя пользователя').not().isEmpty(),
     check('email', 'Введите email').isEmail(),
     check('password', "Введите пароль длиной не менее 7 и не более 20 символов").isLength({min:7,max:20}),
@@ -49,8 +49,7 @@ router.post ('/',/*upload.single('file'),*/ [
             name,
             email,
             password,
-            position,
-            // avatar: req.file ? 'avatars/' + req.file.filename : {}
+            position
         });
 
         //password encryption
@@ -99,7 +98,7 @@ router.get('/me',auth,async(req,res)=>{
 })
 
 //edit user
-router.put('/me', auth, async(req,res) =>{
+router.put('/me',upload.single('file'), auth, async(req,res) =>{
     let user1 = await User.findOne({_id:req.user.id});
     if(!req.body.password){
         newPassword=user1.password
@@ -113,7 +112,8 @@ router.put('/me', auth, async(req,res) =>{
                 name:req.body.name?req.body.name:user1.name, 
                 email:req.body.email?req.body.email:project1.email, 
                 position:req.body.position?req.body.position:project1.position, 
-                password:newPassword
+                password:newPassword,
+                avatar: req.file ? 'avatars/' + req.file.filename : {}
             }
         })
         console.log('user info updated')
@@ -181,9 +181,6 @@ router.delete('/:id',auth,async(req,res)=>{
         return res.status(500).send('server error');
     };
 })
-
-
-
 
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put('/passrec', async(req,res)=>{
