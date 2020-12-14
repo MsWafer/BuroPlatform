@@ -24,7 +24,7 @@ services:
   mongo-backup-local:
     image: futurice/docker-volume-backup
     volumes:
-      - db-data:/backup/db-data:ro
+      - db-data:/db-data:ro
       - ./backups:/archive                  
   mongo-backup:
     container_name: mongo-backup
