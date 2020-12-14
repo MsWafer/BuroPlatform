@@ -423,7 +423,7 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":!"tasks.$.taskStatus" } });
         //find all tasks
         //filter by id
-        let tasks = await findOne({_id:req.params.id}).select('tasks')
+        let tasks = await  Sprint.findOne({_id:req.params.id}).select('tasks')
         let status = tasks.filter(task => task._id == req.body.taskid).taskStatus
         status = !status;
         tasks.save()
