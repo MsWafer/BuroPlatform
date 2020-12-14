@@ -423,13 +423,11 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         // await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":!"tasks.$.taskStatus" } });
         //find all tasks
         //filter by id
-        let tasks = await Sprint.findOne({_id:req.params.id}).select('tasks')
-        // console.log(tasks)
+        let tasks = await Sprint.findOne({_id:req.params.id})
         let status = tasks.tasks.filter(task => task._id == req.body.taskid).taskStatus
         status = !status;
-        Sprint.save()
-        console.log(status)
-
+        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":status } })
+        
         console.log('task deactivated')
         return res.json({
             msg:"Задача выполнена"})
