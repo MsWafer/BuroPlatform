@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
+const { model, findOne } = require('../models/Project');
 
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
@@ -420,6 +421,12 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         // if(!sprint){tStatus=true}else{tStatus=false}
 
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":!"tasks.$.taskStatus" } });
+        //find all tasks
+        //filter by id
+        let tasks = await findOne({_id:req.params.id}).select('tasks')
+        let status = tasks.filter(task => task._id == req.body.taskid).taskStatus
+        status = !status;
+        tasks.save()
 
         console.log('task deactivated')
         return res.json({
