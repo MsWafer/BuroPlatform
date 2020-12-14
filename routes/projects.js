@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const{check, validationResult, Result} = require('express-validator');
 const auth = require ('../middleware/auth');
-const { model, findOne } = require('../models/Project');
 
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
@@ -419,12 +418,9 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     try {
         let tasks = await Sprint.findOne({_id:req.params.id})
         let status = tasks.tasks.filter(task => task._id == req.body.taskid)[0].taskStatus
-        // status = !status;
         await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":!status } })
-        
         console.log('task de/activated')
-        return res.json({
-            msg:"c===8"})
+        return res.json({msg:"Изменен статус задачи"})
     } catch (error) {
         console.log(error)
         return res.json({err:"server error"})
