@@ -25,7 +25,7 @@ services:
     container_name: mongo-backup
     image: tiredofit/mongodb-backup
     links:
-     - mongo-platform
+     - mongo
     volumes:
       - backups:/backups
     environment:
