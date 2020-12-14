@@ -294,7 +294,21 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
         let project = await Project.findOne({crypt: req.params.crypt});
         await User.findOneAndUpdate({_id:req.user.id},{$pull: {projects: project.id}});
 
-        res.status(200).json({msg:`Вы вышли из команды проекта ${req.params.crypt}`})
+        res.status(200).json({
+            msg:`Вы вышли из команды проекта ${req.params.crypt}`,
+            crypter:project.crypter,
+            title: project.title,
+            crypt: project.crypt,
+            dateStart: project.dateStart,
+            dateFinish: project.dateFinish,
+            city: project.city,
+            type: project.type,
+            stage: project.stage,
+            area: project.area,
+            about:project.about,
+            status:project.status,
+            team:project.team
+        })
         return console.log(`${user.name} удален из команды проекта ${req.params.crypt}`)
     }
 
