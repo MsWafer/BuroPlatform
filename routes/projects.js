@@ -416,10 +416,10 @@ router.post('/sprints/addtask/:id',auth,async(req,res)=>{
 //deactivate task
 router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
     try {
-        let sprint = await Sprint.findOne({_id:req.params.id, "tasks._id": req.body.taskid, "tasks.$.taskStatus": true})
-        if(!sprint){tStatus=true}else{tStatus=false}
+        // let sprint = await Sprint.findOne({_id:req.params.id, "tasks._id": req.body.taskid, "tasks.$.taskStatus": true})
+        // if(!sprint){tStatus=true}else{tStatus=false}
 
-        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus": tStatus } });
+        await Sprint.findOneAndUpdate({_id:req.params.id, "tasks._id": req.body.taskid },{ $set: { "tasks.$.taskStatus":!"tasks.$.taskStatus" } });
 
         console.log('task deactivated')
         return res.json({
