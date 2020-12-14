@@ -427,6 +427,7 @@ router.put('/sprints/DAtask/:id',auth,async(req,res)=>{
         let status = tasks.filter(task => task._id == req.body.taskid).taskStatus
         status = !status;
         tasks.save()
+        console.log(status)
 
         console.log('task deactivated')
         return res.json({
