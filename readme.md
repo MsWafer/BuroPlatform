@@ -29,6 +29,7 @@
   - **GET projects/city/:city** - респонс со всеми проектами в городе, указанном в *city*
   - **GET projects/user/:id** - найти все проекты пользователя *id*
   - **PUT projects/updteam/:crypt** - находит проект по его *crypt* и добавляет в его команду пользователя, чей айди указан в *userid* в body
+  - **PUT projects/jointeam/:crypt** - текущий пользователь вступает в ~~ИГИЛ~~ команду проекта, чей *crypt* указан в юрл
   - **DELETE projects/updteam/:crypt** - находит проект по его *crypt* и убирает из его команды пользователя, чей айди указан в *userid* в body
 
   ### СпринтОчка :a: :shark: :a:

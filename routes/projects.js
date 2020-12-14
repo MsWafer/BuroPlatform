@@ -283,6 +283,40 @@ router.put('/updteam/:crypt', auth, async(req,res)=>{
     return console.log('произошла якась хуйня')
 }})
 
+//join project's team
+router.put('/jointeam/:crypt', auth, async(req,res)=>{
+    let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
+    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
+    let huy3 = huy2.split(',')
+    if(huy3.includes(req.user.id)){return res.status(400).json({msg:`Вы уже находитесь в команде данного проекта`})};
+
+    try {
+        let user = await User.findOne({_id:req.user.id}).select('-password -permission');
+        await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
+        let project = await Project.findOne({crypt: req.params.crypt});
+        await User.findOneAndUpdate({_id:req.user.id},{$push: {projects: project}});
+
+        res.status(200).json({
+            msg:`Вы были добавлены в команду проекта ${req.params.crypt}`,
+            crypter:project.crypter,
+            title: project.title,
+            crypt: project.crypt,
+            dateStart: project.dateStart,
+            dateFinish: project.dateFinish,
+            city: project.city,
+            type: project.type,
+            stage: project.stage,
+            area: project.area,
+            about:project.about,
+            status:project.status,
+            team:project.team
+        })
+        return console.log(`Пользователь добавлен в команду проекта ${req.params.crypt}`)
+    } catch (error) {
+    res.status(400).send(`server error`)
+    return console.log('произошла якась хуйня')
+}})
+
 //remove user from project's team
 router.delete('/updteam/:crypt', auth, async(req,res)=>{
     try{
