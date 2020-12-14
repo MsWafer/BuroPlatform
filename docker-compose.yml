@@ -27,7 +27,7 @@ services:
     links:
      - mongo-platform
     volumes:
-      - ./backups:/backups
+      - backups:/backups
     environment:
       - DB_HOST=mongo-platform
       - DB_DUMP_FREQ=720
@@ -42,4 +42,4 @@ volumes:
   mongo-config:
   ticketSS:
   avatars:
-  ./backups:
+  backups:
