@@ -29,7 +29,7 @@ services:
     volumes:
       - backups:/backups
     environment:
-      - DB_HOST=mongo-platform
+      - DB_HOST=mongo
       - DB_DUMP_FREQ=720
       - DB_DUMP_BEGIN=+1
       - DB_CLEANUP_TIME=2880
