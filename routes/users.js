@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require ('jsonwebtoken');
 const config = require('config');
+require('dotenv').config()
 const {check, validationResult} = require('express-validator');
 const auth = require ('../middleware/auth');
 const multer = require('multer'); 
@@ -139,6 +140,19 @@ router.put('/poschange/:id',auth,async(req,res)=>{
     
 })
 
+//change user's permission
+router.put('/permchange/:id',auth,async(req,res)=>{
+    try {
+        let user = await User.findOneAndUpdate({_id:req.params.id},{$set:{permission:req.body.permission}})
+        if(!user){return res.json({msg:"Не найден пользователь с указанным id"})}
+        console.log('users permissin changed')
+        return res.json({msg:"Разрешения пользователя изменены"})
+    } catch (error) {
+        console.error(error)
+        return res.status(400).json({err:'server error'})
+    }
+})
+
 //edit user
 router.put('/me', auth, async(req,res) =>{
     try {
@@ -241,21 +255,18 @@ router.put('/passrec', async(req,res)=>{
     });
     promise()
 
-    //saving recovery code to model
-    await User.findOneAndUpdate({email:req.body.email},{$set:{reccode:recCode}})
-
     //send email
     try {
         let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'buro82platformbot@gmail.com',
-                pass: 'Kr$V6=Sf/^S4*9Hn'
+                user: process.env.B_E,
+                pass: process.env.B_P
             }
         });
         let mailOptions = {
-            from: 'buro82platformbot@gmail.com',
-            to: `${req.body.email}`,
+            from: process.env.BE,
+            to: req.body.email,
             subject: `<no-reply> Восстановление пароля на платформе Buro82`,
             text: `Ваш код для восстановление пароля: ${recCode}`
         };
@@ -263,6 +274,9 @@ router.put('/passrec', async(req,res)=>{
             console.log('Email sent: ' + info.response);
             return res.json({msg:`Код восстановления был отправлен на ${req.body.email}`, recCode:recCode})
         });
+
+        //saving recovery code to model
+        await User.findOneAndUpdate({email:req.body.email},{$set:{reccode:recCode}})
     } catch (error) {
         console.log(error)
         return res.status(400).json(error)

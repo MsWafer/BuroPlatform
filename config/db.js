@@ -1,11 +1,8 @@
 const mongoose = require("mongoose");
-const config = require("config");
-const db = config.get("mongoURI");
-const db2 = config.get("mongoURI2");
-
+require('dotenv').config()
+if(!process.env.N_ENV){db=process.env.MONGOURI2}else if(process.env.N_ENV=='production'){db=process.env.MONGOURI}
 const connectDB = async () => {
   try {
-    try {
       await mongoose.connect(db, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -13,15 +10,6 @@ const connectDB = async () => {
         useFindAndModify: false,
       });
       console.log("MongoDB connected");
-    } catch {
-      await mongoose.connect(db2, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useCreateIndex: true,
-        useFindAndModify: false,
-      });
-      console.log("MongoDB connected");
-    }
   } catch (error) {
     console.error(error.message);
     process.exit(1);

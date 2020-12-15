@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema({
   ],
   permission: {
     type: String,
-    default: "normie",
+    default: "user",
   },
   position: {
     type: String,

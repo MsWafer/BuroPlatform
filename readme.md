@@ -1,4 +1,4 @@
-ГАЙД ДЛЯ МАЛЮТОК :person_in_manual_wheelchair: :shark: :family_man_man_boy:
+ГАЙД ДЛЯ МАЛЮТОК :person_in_manual_wheelchair: :family_man_man_boy:
 ---------------------
 ## ЭндпоинтОчка
 ### ЮзерОчка :eye: :lips: :eye:
@@ -10,7 +10,8 @@
 - **PUT /users/me** - меняет *name*,*email*,*position* текущего пользователя на новые, взятые из body. Если они не указаны оставляет старые значения
 - **PUT /users/me/a** - меняет/ставит аватар текущего пользователя, требует *file*, возможно формдата
 - **PUT /users/me/pw** - меняет пароль на новый *req.body.password*
-- **PUT /users/poschange/:id** - меняет должность юзера, чей ид указан в юрл
+- **PUT /users/poschange/:id** - меняет *position* юзера, чей ид указан в юрл
+- **PUT /users/permchange/:id** - меняет *permission* юзера, чей ид указан в юрл
 - **DELETE /users/:id** - удаление аккаунта по *_id* пользователя
 
 ### СисадминОчка :mechanic: :man_mechanic: :mechanic: :place_of_worship:
