@@ -103,7 +103,7 @@ router.post ('/add', auth, [
 //find all projects
 router.get('/', async (req,res) => {
     try {
-        let projects = await Project.find().select('dateStart team sprints crypt title crypter _id status').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
+        let projects = await Project.find().select('dateStart dateFinish team sprints crypt title crypter _id status').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
         console.log('GET all projects')
         return res.json(projects)
     } catch (err) {
