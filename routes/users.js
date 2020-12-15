@@ -114,6 +114,7 @@ router.put('/me/pw',auth,async(req,res)=>{
 //change or add avatar
 router.put('/me/a',upload.single('file'),auth,async(req,res)=>{
     try {
+        if(!req.file){return res.json({msg:''})}
         await User.findOneAndUpdate({_id:req.user.id},{$set:{avatar: req.file ? 'avatars/' + req.file.filename : {}}})
         console.log('avatar changed/added')
         return res.json({msg:"Ваш аватар был изменен"})
