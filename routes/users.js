@@ -97,23 +97,55 @@ router.get('/me',auth,async(req,res)=>{
     })
 })
 
-//edit user
-router.put('/me',upload.single('file'), auth, async(req,res) =>{
-    let user1 = await User.findOne({_id:req.user.id});
-    if(!req.body.password){
-        newPassword=user1.password
-    }else if(req.body.password){
+//change current user's password
+router.put('/me/pw',auth,async(req,res)=>{
+    try {
         const salt = await bcrypt.genSalt(10);
         newPassword = await bcrypt.hash(req.body.password, salt);
+        await User.findOneAndUpdate({_id:req.user.id},{$set:{password:newPassword}})
+        console.log('юзер сменил пароль')
+        res.json({msg:'Ваш пароль был успешно изменен'})
+    } catch (error) {
+        console.error(error)
+        return res.status(400).json({err:'server error'})
     }
+})
+
+//change or add avatar
+router.put('/me/a',upload.single('file'),auth,async(req,res)=>{
+    try {
+        await User.findOneAndUpdate({_id:req.user.id},{$set:{avatar: req.file ? 'avatars/' + req.file.filename : {}}})
+        console.log('avatar changed/added')
+        return res.json({msg:"Ваш аватар был изменен"})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({err:'server error'})
+    }
+
+})
+
+//change user's position
+router.put('/poschange/:id',auth,async(req,res)=>{
+    try {
+        let user = await User.findOneAndUpdate({_id:req.params.id},{$set:{position:req.body.position}})
+        if(!user){return res.json({msg:"Не найден пользователь с указанным id"})}
+        console.log('users position changed')
+        return res.json({msg:"Должность пользователя изменена"})
+    } catch (error) {
+        console.error(error)
+        return res.status(400).json({err:'server error'})
+    }
+    
+})
+
+//edit user
+router.put('/me', auth, async(req,res) =>{
     try {
         await findOneAndUpdate({_id:req.user.id},
             {$set: {
                 name:req.body.name?req.body.name:user1.name, 
                 email:req.body.email?req.body.email:project1.email, 
                 position:req.body.position?req.body.position:project1.position, 
-                password:newPassword,
-                avatar: req.file ? 'avatars/' + req.file.filename : {}
             }
         })
         console.log('user info updated')
