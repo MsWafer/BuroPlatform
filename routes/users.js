@@ -82,7 +82,7 @@ router.post ('/', [
 
 //get current user's info
 router.get('/me',auth,async(req,res)=>{
-    let user = await User.findOne({_id:req.user.id}).select('-password').populate('projects', -'team').populate('tickets', '-user')
+    let user = await User.findOne({_id:req.user.id}).select('-password -permission').populate('projects', -'team').populate('tickets', '-user')
     if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
     console.log('user found')
     return res.json({
@@ -175,7 +175,7 @@ router.put('/me', auth, async(req,res) =>{
 //find all users
 router.get('/all', async(req,res)=>{
     try {
-        let users = await User.find().populate('projects', '-team').populate('tickets', '-user')
+        let users = await User.find().select('-password -avatar').populate('projects', '-team').populate('tickets', '-user')
         console.log('GET all users')
         return res.json(users) 
     } catch (err) {
@@ -196,6 +196,7 @@ router.get('/:id', async(req,res) =>{
             console.log('user not found')
             return res.status(404).json({msg: "User not found"});
         };
+        if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
         console.log('user found')
         return res.json({
             id:user.id,
@@ -204,7 +205,7 @@ router.get('/:id', async(req,res) =>{
             position:user.position,
             projects:user.projects,
             tickets:user.tickets,
-            avatar:user.avatar
+            avatar:userAvatar
         })
     } catch (err) {
         console.error(err.message);
@@ -231,7 +232,7 @@ router.delete('/:id',auth,async(req,res)=>{
 
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put('/passrec', async(req,res)=>{
-    let user = await User.findOne({email:req.body.email})
+    let user = await User.findOne({email:req.body.email}).select('-password -permission -avatar')
     if(!user){return res.json({msg:'Не найден пользователь с указанным email'})}
 
     //generating recovery code

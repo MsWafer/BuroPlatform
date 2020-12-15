@@ -115,8 +115,8 @@ router.get('/', async (req,res) => {
 //find project by crypt/title
 router.get('/:auth', async(req,res) => {
     try {
-        let project = await Project.findOne({crypt: req.params.auth}).populate('team','-projects -password -permission -tickets -__v').populate('sprints');
-        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
+        let project = await Project.findOne({crypt: req.params.auth}).populate('team','-projects -password -permission -avatar -tickets -__v').populate('sprints');
+        let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -avatar -permission -tickets -__v').populate('sprints');
         console.log(project.team)
         if(!project && !projectTitle) {
             console.log('no projects found')
@@ -154,7 +154,7 @@ router.get('/user/:id', async(req,res) => {
     let projects = await Project.find({team: req.params.id})
     .sort({date: -1})
     .select('-__v')
-    .populate('team','-projects -password -permission -tickets -__v')
+    .populate('team','-projects -password  -avatar -permission -tickets -__v')
     .populate('sprints');
 
     console.log(`found projects of user ${req.params.id}`)
@@ -168,7 +168,7 @@ router.get('/user/:id', async(req,res) => {
 //find projects by city
 router.get('/city/:city',async (req,res) => {
     try {
-        let projects = await Project.find({city: req.params.city}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -permission -tickets -__v').populate('sprints');
+        let projects = await Project.find({city: req.params.city}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -avatar -permission -tickets -__v').populate('sprints');
         console.log('found projects by city')
         return res.json(projects)
     } catch (err) {
@@ -196,7 +196,7 @@ router.delete('/:crypt', auth, async(req,res) => {
 
 //edit project
 router.put("/:crypt", auth, async (req, res) => {
-    let project1 = await Project.findOne({crypt: req.params.crypt})
+    let project1 = await Project.findOne({crypt: req.params.crypt}).select('-team -sprints')
     try {
         await Project.findOneAndUpdate({crypt: req.params.crypt}, 
             {$set: {
@@ -242,7 +242,7 @@ router.put("/:crypt", auth, async (req, res) => {
 //add user to project's team
 router.put('/updteam/:crypt', auth, async(req,res)=>{
     try{
-        let usercheck = await User.findOne({_id:req.body.userid})
+        let usercheck = await User.findOne({_id:req.body.userid}).select('-password -permission -avatar')
         if(!usercheck)
         {return res.status(400).json({msg:`Не найден пользователь с указанным _id`})};
     }catch(err){
@@ -257,7 +257,7 @@ router.put('/updteam/:crypt', auth, async(req,res)=>{
     if(huy3.includes(req.body.userid)){return res.status(400).json({msg:`Данный пользователь уже находится в команде проекта`})};
 
     try {
-        let user = await User.findById(req.body.userid).select('-password -permission');
+        let user = await User.findById(req.body.userid).select('-password -permission -avatar');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
         let project = await Project.findOne({crypt: req.params.crypt});
         await User.findOneAndUpdate({_id:req.body.userid},{$push: {projects: project}});
@@ -289,7 +289,7 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
     let huy3 = huy2.split(',')
     if(huy3.includes(req.user.id)){
-        let user = await User.findOne({_id:req.user.id}).select('-password -permission');
+        let user = await User.findOne({_id:req.user.id}).select('-password -permission -avatar');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$pull: {team: user.id}});
         let project = await Project.findOne({crypt: req.params.crypt});
         await User.findOneAndUpdate({_id:req.user.id},{$pull: {projects: project.id}});
@@ -342,7 +342,7 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
 //remove user from project's team
 router.delete('/updteam/:crypt', auth, async(req,res)=>{
     try{
-        let usercheck = await User.findOne({_id:req.body.userid})
+        let usercheck = await User.findOne({_id:req.body.userid}).select('-password -avatar -permission')
         if(!usercheck)
         {return res.status(400).json({msg:`Не найден пользователь с указанным _id`})};
     }catch(err){
@@ -352,7 +352,6 @@ router.delete('/updteam/:crypt', auth, async(req,res)=>{
         res.status(500).send('server error');
     }
         let huy = await Project.findOne({crypt:req.params.crypt}).select('-_id team');
-        console.log(huy.team)
         if(huy.team.length == 0){return res.status(400).json({msg:`В команде проекта нет пользователей`})};
         let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g,'')
         let huy3 = huy2.split(',')
