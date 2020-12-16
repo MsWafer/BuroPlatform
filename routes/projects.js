@@ -291,7 +291,7 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
     if(huy3.includes(req.user.id)){
         let user = await User.findOne({_id:req.user.id}).select('-password -permission -avatar');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$pull: {team: user.id}});
-        let project = await Project.findOne({crypt: req.params.crypt});
+        let project = await Project.findOne({crypt: req.params.crypt}).populate('team','-password -permission -tickets -projects');
         await User.findOneAndUpdate({_id:req.user.id},{$pull: {projects: project.id}});
 
         res.status(200).json({
