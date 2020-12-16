@@ -8,7 +8,6 @@ const SprintSchema = new Schema({
   },
   dateOpen: {
     type: Date,
-    default: Date.now(),
   },
   dateClose: {
     type: Date,

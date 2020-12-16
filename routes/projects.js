@@ -378,7 +378,9 @@ router.delete('/updteam/:crypt', auth, async(req,res)=>{
 router.post('/sprints/new/:crypt', auth, async(req,res)=>{
     let project = await Project.findOne({crypt: req.params.crypt})
     if(!project){return res.json({msg:"Не найдено проекта с указанным шифром"})}
-    sprint = new Sprint()
+    sprint = new Sprint({
+        dateOpen:Date.now(),
+    })
     await sprint.save()
     await Project.findOneAndUpdate({crypt: req.params.crypt},{$push:{sprints:sprint, $position:0}})
     console.log('sprint added to project')

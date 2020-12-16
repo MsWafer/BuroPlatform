@@ -21,26 +21,10 @@ services:
     volumes:
      - mongo-config:/data/configdb
      - mongoData:/data/db            
-  mongo-backup:
-    container_name: mongo-backup
-    image: tiredofit/mongodb-backup
-    links:
-     - mongo
-    volumes:
-      - backups:/backups
-    environment:
-      - DB_HOST=mongo
-      - DB_DUMP_FREQ=720
-      - DB_DUMP_BEGIN=+1
-      - DB_CLEANUP_TIME=2880
-      - MD5=TRUE
-      - COMPRESSION=GZ
-    restart: always
 volumes:
   mongo-config:
   ticketSS:
   avatars:
-  backups:
   mongoData:
     external:
       name: mongo_external
