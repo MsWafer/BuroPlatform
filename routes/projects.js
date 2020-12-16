@@ -309,6 +309,7 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
             status:project.status,
             team:project.team
         })
+        console.log(project.team)
         return console.log(`${user.name} удален из команды проекта ${req.params.crypt}`)
     }
 
