@@ -333,6 +333,7 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
             status:project.status,
             team:project.team
         })
+        console.log(project.team)
         return console.log(`Пользователь добавлен в команду проекта ${req.params.crypt}`)
     } catch (error) {
     res.status(400).send(`server error`)
