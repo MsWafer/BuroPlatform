@@ -35,11 +35,11 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default:null
+    default:{}
   },
   reccode: {
     type: String,
-    default: null,
+    default: {},
   },
 });
 

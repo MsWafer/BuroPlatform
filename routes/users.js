@@ -83,7 +83,7 @@ router.post ('/', [
 //get current user's info
 router.get('/me',auth,async(req,res)=>{
     let user = await User.findOne({_id:req.user.id}).select('-password -permission').populate('projects', -'team').populate('tickets', '-user')
-    if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
+    if(user.avatar==null){userAvatar={}}else {userAvatar=user.avatar}
     console.log('user found')
     return res.json({
         id:user.id,
@@ -196,7 +196,7 @@ router.get('/:id', async(req,res) =>{
             console.log('user not found')
             return res.status(404).json({msg: "User not found"});
         };
-        if(user.avatar==undefined){userAvatar={}}else {userAvatar=user.avatar}
+        if(user.avatar==null){userAvatar={}}else {userAvatar=user.avatar}
         console.log('user found')
         return res.json({
             id:user.id,
