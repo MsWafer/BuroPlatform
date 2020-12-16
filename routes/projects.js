@@ -309,14 +309,13 @@ router.put('/jointeam/:crypt', auth, async(req,res)=>{
             status:project.status,
             team:project.team
         })
-        console.log(project.team)
         return console.log(`${user.name} удален из команды проекта ${req.params.crypt}`)
     }
 
     try {
         let user = await User.findOne({_id:req.user.id}).select('-password -permission');
         await Project.findOneAndUpdate({crypt: req.params.crypt},{$push: {team: user}});
-        let project = await Project.findOne({crypt: req.params.crypt});
+        let project = await Project.findOne({crypt: req.params.crypt}).populate('team','-password -permission -tickets -projects');
         await User.findOneAndUpdate({_id:req.user.id},{$push: {projects: project}});
 
         res.status(200).json({
