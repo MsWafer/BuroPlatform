@@ -8,3 +8,4 @@ backups
 aaa.txt
 aaaaa.txt
 .env
+docker-compose-old.yml

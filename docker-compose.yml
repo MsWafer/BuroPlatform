@@ -19,13 +19,8 @@ services:
     ports: 
      - '27017:27017'
     volumes:
-     - db-data:/data/db
      - mongo-config:/data/configdb
-  mongo-backup-local:
-    image: futurice/docker-volume-backup
-    volumes:
-      - db-data:/db-data:ro
-      - ./backups:/archive                  
+     - mongoData:/data/db            
   mongo-backup:
     container_name: mongo-backup
     image: tiredofit/mongodb-backup
@@ -40,7 +35,6 @@ services:
       - DB_CLEANUP_TIME=2880
       - MD5=TRUE
       - COMPRESSION=GZ
-
     restart: always
 volumes:
   db-data: 
@@ -48,3 +42,6 @@ volumes:
   ticketSS:
   avatars:
   backups:
+  mongoData:
+    external:
+      name: mongo_external
