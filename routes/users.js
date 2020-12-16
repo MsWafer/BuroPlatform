@@ -50,7 +50,8 @@ router.post ('/', [
             name,
             email,
             password,
-            position
+            position,
+            avatar:'avatars/spurdo.jpg'
         });
 
         //password encryption
