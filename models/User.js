@@ -35,11 +35,11 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default:'a'
+    default:'avatars/spurdo.jpg'
   },
   reccode: {
     type: String,
-    default:'avatars/spurdo.jpg',
+    default:'a',
   },
 });
 

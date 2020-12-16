@@ -442,6 +442,8 @@ router.put('/sprints/:id', auth, async(req,res)=>{
             { $set: { status: false } }
           );
         }
+        console.log('srint status changed')
+        return res.json({msg:"Статус спринта изменен"})
     } catch (error) {
         console.log(error)
         return res.json({err:"server error"})
