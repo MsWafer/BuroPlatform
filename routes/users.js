@@ -84,7 +84,7 @@ router.post ('/', [
 //get current user's info
 router.get('/me',auth,async(req,res)=>{
     let user = await User.findOne({_id:req.user.id}).select('-password -permission').populate('projects', -'team').populate('tickets', '-user')
-    if(user.avatar==undefined){userAvatar=null}else {userAvatar=user.avatar}
+    if(user.avatar==undefined){userAvatar='avatars/spurdo.jpg'}else {userAvatar=user.avatar}
     console.log('user found')
     return res.json({
         id:user.id,
