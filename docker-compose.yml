@@ -37,7 +37,6 @@ services:
       - COMPRESSION=GZ
     restart: always
 volumes:
-  db-data: 
   mongo-config:
   ticketSS:
   avatars:
