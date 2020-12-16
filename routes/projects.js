@@ -402,6 +402,7 @@ router.get('/sprints/:crypt',auth,async(req,res)=>{
 router.post('/sprints/addtask/:id',auth,async(req,res)=>{
     let sprint = await Sprint.findOne({_id:req.params.id})
     if(!sprint){return res.json({msg:"Указанный спринт не найден"})}
+    if(!req.body.tasks){return res.json({msg:'Добавьте задачу'})}
     try {
         await Sprint.findOneAndUpdate({_id:req.params.id}, { $push: {tasks: { $each: req.body.tasks, $position:0 }}}, {multi:true})
         console.log('new tasks added to sprint')

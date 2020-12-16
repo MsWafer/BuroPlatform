@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema({
   },
   reccode: {
     type: String,
-    default:'a',
+    default:'avatars/spurdo.jpg',
   },
 });
 
