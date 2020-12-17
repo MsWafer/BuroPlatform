@@ -82,7 +82,7 @@ router.post ('/', [
 
 //get current user's info
 router.get('/me',auth,async(req,res)=>{
-    let user = await User.findOne({_id:req.user.id}).select('-password -permission').populate('projects', -'team').populate('tickets', '-user')
+    let user = await User.findOne({_id:req.user.id}).select('-password').populate('projects', -'team').populate('tickets', '-user')
     if(user.avatar==undefined||user.avatar==null){userAvatar='avatars/spurdo.jpg'}else{userAvatar=user.avatar}
     console.log('user found')
     return res.json({
@@ -189,7 +189,7 @@ router.get('/all', async(req,res)=>{
 router.get('/:id', async(req,res) =>{
     try {
         let user = await User.findById(req.params.id)
-        .select('-password -permission')
+        .select('-password')
         .populate('projects', '-team')
         .populate('tickets', '-user')
         if(!user) {
@@ -205,6 +205,7 @@ router.get('/:id', async(req,res) =>{
             position:user.position,
             projects:user.projects,
             tickets:user.tickets,
+            permission:user.permission,
             avatar:userAvatar
         })
     } catch (err) {
