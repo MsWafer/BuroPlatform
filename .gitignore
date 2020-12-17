@@ -1,14 +1,4 @@
 node_modules
-ss.png
-uploads
-mongodb://mongo_platform:27017/Platform
-mongodb://127.0.0.1:27017/Platform
 lazyass.bat
-backups
-aaa.txt
-aaaaa.txt
 .env
-docker-compose-old.yml
-dumper.sh
-govnishe.sh
-govno.sh
+scripts
