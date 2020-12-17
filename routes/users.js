@@ -18,7 +18,6 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + Date.now()+ '-' +path.extname(file.originalname)) 
     } 
 }); 
-
 const upload = multer({ storage: storage }); 
 
 
@@ -116,8 +115,8 @@ router.put('/me/pw',auth,async(req,res)=>{
 //change or add avatar
 router.put('/me/a',upload.single('file'),auth,async(req,res)=>{
     try {
-        if(!req.file){return res.json({msg:''})}
-        await User.findOneAndUpdate({_id:req.user.id},{$set:{avatar: req.file ? 'avatars/' + req.file.filename : {}}})
+        if(!req.file){return res.json({msg:'Загрузите аватар'})}
+        await User.findOneAndUpdate({_id:req.user.id},{$set:{avatar: req.file ? 'avatars/' + req.file.filename : 'avatars/spurdo.jpg'}})
         console.log('avatar changed/added')
         return res.json({msg:"Ваш аватар был изменен"})
     } catch (error) {
@@ -197,7 +196,7 @@ router.get('/:id', async(req,res) =>{
             console.log('user not found')
             return res.status(404).json({msg: "User not found"});
         };
-        if(user.avatar==undefined||user.avatar==null){userAvatar='avatars/spurdo.jpg'}else {userAvatar=user.avatar}
+        if(user.avatar==undefined||user.avatar==null){userAvatar='avatars/spurdo.jpg'}else{userAvatar=user.avatar}
         console.log('user found')
         return res.json({
             id:user.id,
@@ -248,14 +247,20 @@ router.put('/passrec', async(req,res)=>{
      }
     
     //unnecessary security stuff
-    let reccds = [];
-    let users = await User.find().select('reccode');
-    users.map(user => reccds.push(user.reccode));
-    const promise = () =>  new Promise((resolve) => {
-        recCode = makeid(6);
-        if(reccds.includes(recCode)){resolve(promise())};
-    });
-    promise()
+    try {
+        let reccds = [];
+        let users = await User.find().select('reccode');
+        users.map(user => reccds.push(user.reccode));
+        const promise = () =>  new Promise((resolve) => {
+            recCode = makeid(6);
+            if(reccds.includes(recCode)){resolve(promise())};
+        });
+        promise()
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({msg:'server error'})
+    }
+    
 
     //send email
     try {
@@ -296,7 +301,7 @@ router.get('/passrec/2',async(req,res)=>{
 })
 
 //new password stuff
-router.put('/passrec/3',async(req,res)=>{
+router.put('/passrec/3', check('password', "Введите пароль длиной не менее 7 и не более 20 символов").isLength({min:7,max:20}), async(req,res)=>{
     if(!req.body.password){return res.json({msg:'Введите новый пароль'})}
     try {
         const salt = await bcrypt.genSalt(10);

@@ -17,6 +17,7 @@ app.use("/auth", require("./routes/auth"));
 app.use("/users", require("./routes/users"));
 app.use("/tickets", require("./routes/tickets"));
 app.use("/projects", require("./routes/projects"));
+app.use("/news", require("./routes/news"));
 
 const PORT = process.env.PORT || 7070;
 
