@@ -117,7 +117,6 @@ router.get('/:auth', async(req,res) => {
     try {
         let project = await Project.findOne({crypt: req.params.auth}).populate('team','-projects -password -permission -avatar -tickets -__v').populate('sprints');
         let projectTitle = await Project.find({title: req.params.auth}).select('dateStart team sprints crypt title crypter status _id').populate('team','-projects -password -avatar -permission -tickets -__v').populate('sprints');
-        console.log(project.team)
         if(!project && !projectTitle) {
             console.log('no projects found')
             return res.status(400).json({msg: "Проект не найден"})

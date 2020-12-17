@@ -146,7 +146,7 @@ router.put('/permchange/:id',auth,async(req,res)=>{
     try {
         let user = await User.findOneAndUpdate({_id:req.params.id},{$set:{permission:req.body.permission}})
         if(!user){return res.json({msg:"Не найден пользователь с указанным id"})}
-        console.log('users permissin changed')
+        console.log('users permission changed')
         return res.json({msg:"Разрешения пользователя изменены"})
     } catch (error) {
         console.error(error)
@@ -154,7 +154,7 @@ router.put('/permchange/:id',auth,async(req,res)=>{
     }
 })
 
-//edit user
+//edit current user
 router.put('/me', auth, async(req,res) =>{
     try {
         await findOneAndUpdate({_id:req.user.id},

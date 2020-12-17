@@ -1,5 +1,6 @@
 const express = require("express");
 const connectDB = require("./config/db");
+connectDB();
 const cors = require("cors");
 require('dotenv').config()
 
@@ -9,8 +10,6 @@ app.use(cors());
 app.use(express.static("public"));
 app.use("/ticketSS", express.static(__dirname + "/ticketSS"));
 app.use("/avatars", express.static(__dirname + "/avatars"));
-
-connectDB();
 
 app.get("/", (req, res) => res.send("Не крашься плиз"));
 
