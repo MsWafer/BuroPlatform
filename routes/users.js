@@ -45,11 +45,11 @@ router.post(
     const { name, email, password, position, permCode } = req.body;
     
     if (permCode == process.env.codeA) {
-      permission = "user";
+      permission1 = "user";
     } else if (permCode == process.env.codeB) {
-      permission = "manager";
+      permission1 = "manager";
     } else if (permCode == process.env.codeC) {
-      permission = "admin";
+      permission1 = "admin";
     } else {
       return res.json({ msg: "Введите правильный код регистрации" });
     }
@@ -68,7 +68,7 @@ router.post(
         password,
         position,
         avatar: "avatars/spurdo.jpg",
-        permission,
+        permission:permission1,
       });
 
       //password encryption
