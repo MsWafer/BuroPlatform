@@ -41,14 +41,14 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    
+
     const { name, email, password, position, permCode } = req.body;
 
     if (permCode == process.env.codeA) {
       permission = "user";
     } else if (permCode == process.env.codeB) {
       permission = "manager";
-    } else if ((permCode = process.env.codeC)) {
+    } else if (permCode = process.env.codeC) {
       permission = "admin";
     } else {
       return res.json({ msg: "Введите правильный код регистрации" });
