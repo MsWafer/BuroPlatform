@@ -8,7 +8,6 @@ const { check, validationResult } = require("express-validator");
 
 const User = require("../models/User");
 
-
 //authentification
 router.post(
   "/",
@@ -27,11 +26,9 @@ router.post(
     try {
       let user = await User.findOne({ email });
       if (!user) {
-        return res
-          .status(400)
-          .json({
-            errors: [{ msg: "Пользователь с указанным email не найден" }],
-          });
+        return res.status(400).json({
+          errors: [{ msg: "Пользователь с указанным email не найден" }],
+        });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -48,7 +45,7 @@ router.post(
 
       jwt.sign(
         payload,
-        config.get("jwtSecret"),
+        process.env.jwtSecret,
         { expiresIn: 360000000 },
         (err, token) => {
           if (err) throw err;
