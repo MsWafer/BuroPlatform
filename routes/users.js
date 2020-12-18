@@ -41,6 +41,8 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    
+    const { name, email, password, position, permCode } = req.body;
 
     if (permCode == process.env.codeA) {
       permission = "user";
@@ -52,7 +54,6 @@ router.post(
       return res.json({ msg: "Введите правильный код регистрации" });
     }
 
-    const { name, email, password, position } = req.body;
 
     try {
       let user = await User.findOne({ email });
