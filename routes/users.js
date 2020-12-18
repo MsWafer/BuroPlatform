@@ -32,11 +32,9 @@ router.post(
   [
     check("name", "Введите имя пользователя").not().isEmpty(),
     check("email", "Введите email").isEmail(),
-    check(
-      "password",
-      "Введите пароль длиной не менее 7 и не более 20 символов"
-    ).isLength({ min: 7, max: 20 }),
+    check("password", "Введите пароль длиной не менее 7 и не более 20 символов").isLength({ min: 7, max: 20 }),
     check("position", "Выберите должность").not().isEmpty(),
+    check("permCode", "Введите код регистрации").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -44,16 +42,24 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    if (permCode == process.env.codeA) {
+      permission = "user";
+    } else if (permCode == process.env.codeB) {
+      permission = "manager";
+    } else if ((permCode = process.env.codeC)) {
+      permission = "admin";
+    } else {
+      return res.json({ msg: "Введите правильный код регистрации" });
+    }
+
     const { name, email, password, position } = req.body;
 
     try {
       let user = await User.findOne({ email });
       if (user) {
-        return res
-          .status(400)
-          .json({
-            errors: [{ msg: "Пользователь с указанным email уже существует" }],
-          });
+        return res.status(400).json({
+          errors: [{ msg: "Пользователь с указанным email уже существует" }],
+        });
       }
 
       user = new User({
@@ -62,6 +68,7 @@ router.post(
         password,
         position,
         avatar: "avatars/spurdo.jpg",
+        permission,
       });
 
       //password encryption
