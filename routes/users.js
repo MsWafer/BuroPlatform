@@ -203,9 +203,9 @@ router.put("/me", auth, async (req, res) => {
       { _id: req.user.id },
       {
         $set: {
-          name: req.body.name ? req.body.name : user1.name,
-          email: req.body.email ? req.body.email : project1.email,
-          position: req.body.position ? req.body.position : project1.position,
+          name: req.body.name,
+          email: req.body.email,
+          position: req.body.position,
         },
       }
     );

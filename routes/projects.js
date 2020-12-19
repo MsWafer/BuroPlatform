@@ -252,21 +252,17 @@ router.put("/:crypt", auth, async (req, res) => {
       { crypt: req.params.crypt },
       {
         $set: {
-          title: req.body.title ? req.body.title : project1.title,
-          dateStart: req.body.dateStart
-            ? req.body.dateStart
-            : project1.dateStart,
-          dateFinish: req.body.dateFinish
-            ? req.body.dateFinish
-            : project1.dateFinish,
-          city: req.body.city ? req.body.city : project1.city,
-          type: req.body.type ? req.body.type : project1.type,
-          stage: req.body.stage ? req.body.stage : project1.stage,
-          area: req.body.area ? req.body.area : project1.area,
-          customer: req.body.customer ? req.body.customer : project1.customer,
-          about: req.body.about ? req.body.about : project1.about,
-          status: req.body.status ? req.body.status : project1.status,
-          about: req.body.about ? req.body.about : project1.about,
+          title: req.body.title,
+          dateStart: req.body.dateStart,
+          dateFinish: req.body.dateFinish,
+          city: req.body.city,
+          type: req.body.type,
+          stage: req.body.stage,
+          area: req.body.area,
+          customer: req.body.customer,
+          about: req.body.about,
+          status: req.body.status,
+          about: req.body.about,
         },
       }
     );
