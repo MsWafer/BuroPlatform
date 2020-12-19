@@ -86,14 +86,14 @@ router.delete("/:id", auth, async (req, res) => {
 //edit news by id
 router.put("/:id", auth, async (req, res) => {
   try {
-    let news1 = await news.findOne({ _id: req.params.id });
+    // let news1 = await news.findOne({ _id: req.params.id });
     let news = await News.findOneAndUpdate(
       { _id: req.params.id },
       {
         $set: {
-          title: req.body.title ? req.body.title : news1.title,
-          subtitle: req.body.subtitle ? req.body.subtitle : news1.subtitle,
-          text: req.body.text ? req.body.text : news1.text,
+          title: req.body.title,
+          subtitle: req.body.subtitle,
+          text: req.body.text,
         },
       }
     );
