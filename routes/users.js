@@ -142,16 +142,13 @@ router.put("/me/pw", auth, async (req, res) => {
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.json({ msg: "Загрузите аватар" });
-    }
     await User.findOneAndUpdate(
       { _id: req.user.id },
       {
         $set: {
           avatar: req.file
             ? "avatars/" + req.file.filename
-            : "avatars/spurdo.jpg",
+            : user.avatar,
         },
       }
     );
