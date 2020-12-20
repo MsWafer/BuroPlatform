@@ -244,9 +244,6 @@ router.delete("/:crypt", auth, async (req, res) => {
 
 //edit project
 router.put("/:crypt", auth, async (req, res) => {
-  let project1 = await Project.findOne({ crypt: req.params.crypt }).select(
-    "-team -sprints"
-  );
   try {
     await Project.findOneAndUpdate(
       { crypt: req.params.crypt },
@@ -267,7 +264,7 @@ router.put("/:crypt", auth, async (req, res) => {
       }
     );
 
-    let editedProject = await Project.findOne({ crypt: req.params.crypt });
+    let editedProject = await Project.findOne({ crypt: req.params.crypt }).populate('team', '-password -permission -avatar').populate('sprints');
     console.log(`project ${req.params.crypt} edited`);
     return res.json({
       id: editedProject.id,
