@@ -199,7 +199,7 @@ router.put("/permchange/:id", auth, async (req, res) => {
 //edit current user
 router.put("/me", auth, async (req, res) => {
   try {
-    await findOneAndUpdate(
+    await User.findOneAndUpdate(
       { _id: req.user.id },
       {
         $set: {
