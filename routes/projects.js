@@ -264,7 +264,9 @@ router.put("/:crypt", auth, async (req, res) => {
       }
     );
 
-    let editedProject = await Project.findOne({ crypt: req.params.crypt }).populate('team', '-password -permission -avatar').populate('sprints');
+    let editedProject = await Project.findOne({ crypt: req.params.crypt })
+      .populate("team", "-password -permission -avatar")
+      .populate("sprints");
     console.log(`project ${req.params.crypt} edited`);
     return res.json({
       id: editedProject.id,
@@ -491,11 +493,9 @@ router.delete("/updteam/:crypt", auth, async (req, res) => {
       { $pull: { projects: project.id } }
     );
 
-    res
-      .status(200)
-      .json({
-        msg: `${user.name} удален из команды проекта ${req.params.crypt}`,
-      });
+    res.status(200).json({
+      msg: `${user.name} удален из команды проекта ${req.params.crypt}`,
+    });
     return console.log(
       `${user.name} удален из команды проекта ${req.params.crypt}`
     );
@@ -617,4 +617,48 @@ router.get("/getsprint/:id", auth, async (req, res) => {
   }
 });
 
+//un/favorite sprint by id
+router.put("/favsprint/:id", auth, async (req, res) => {
+  let huy = await User.findOne({ _id: req.user.id }).select("-id sprints");
+  let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
+  let huy3 = huy2.split(",");
+  if (huy3.includes(req.params.id)) {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $pull: { sprints: sprint.id } }
+    );
+
+    res.status(200).json({
+      msg: `Вы убрали спринт из избранных`,
+      id: sprint.id,
+      tasks: sprint.tasks,
+      dateOpen: sprint.dateOpen,
+      dateClose: sprint.dateClose,
+      status: sprint.status,
+    });
+    return console.log(`user unfavorited sprint`);
+  }
+
+  try {
+    let sprint = await Project.findOne({ _id: req.params.id });
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $push: { sprints: sprint } }
+    );
+
+    res.status(200).json({
+      msg: `Вы добавили спринт в избранные`,
+      id: sprint.id,
+      tasks: sprint.tasks,
+      dateOpen: sprint.dateOpen,
+      dateClose: sprint.dateClose,
+      status: sprint.status,
+    });
+    return console.log(`user favorited sprint`);
+  } catch (error) {
+    res.status(400).send(`server error`);
+    return console.log("произошла якась хуйня");
+  }
+});
 module.exports = router;

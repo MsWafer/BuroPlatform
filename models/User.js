@@ -26,6 +26,12 @@ const UserSchema = new mongoose.Schema({
       ref: "project",
     },
   ],
+  sprints: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "sprint",
+    },
+  ],
   permission: {
     type: String,
     default: "user",
