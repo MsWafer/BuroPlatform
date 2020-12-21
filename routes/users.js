@@ -103,7 +103,11 @@ router.get("/me", auth, async (req, res) => {
       let user = await User.findOne({ _id: req.user.id })
       .select("-password")
       .populate("projects", -"team")
-      .populate("tickets", "-user");
+      .populate("tickets", "-user")
+      .populate({
+        path:'sprints',
+        match: { status: true }
+    });
     if (!user){return res.status(500).json({msg:'Server error'})}
     if (user.avatar == null || user.avatar == undefined) {
       userAvatar = "avatars/spurdo.jpg";
@@ -121,6 +125,7 @@ router.get("/me", auth, async (req, res) => {
       tickets: user.tickets,
       token: req.header("auth-token"),
       avatar: userAvatar,
+      sprints:user.sprints
     });
   } catch (error) {
     console.error(error)
@@ -128,6 +133,18 @@ router.get("/me", auth, async (req, res) => {
   }
 
 });
+
+//get all user's sprints
+router.get('/me/sprints',auth,async(req,res)=>{
+  try {
+    let sprints = await User.findOne({_id:req.user.id}).select('sprints').populate('sprints')
+    return res.json(sprints)    
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'server error'})
+  }
+
+})
 
 //change current user's password
 router.put("/me/pw", auth, async (req, res) => {
