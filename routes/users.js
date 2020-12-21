@@ -99,27 +99,34 @@ router.post(
 
 //get current user's info
 router.get("/me", auth, async (req, res) => {
-  let user = await User.findOne({ _id: req.user.id })
-    .select("-password")
-    .populate("projects", -"team")
-    .populate("tickets", "-user");
-  if (user.avatar == undefined || user.avatar == null) {
-    userAvatar = "avatars/spurdo.jpg";
-  } else {
-    userAvatar = user.avatar;
+  try {
+      let user = await User.findOne({ _id: req.user.id })
+      .select("-password")
+      .populate("projects", -"team")
+      .populate("tickets", "-user");
+    if (!user){return res.status(500).json({msg:'Server error'})}
+    if (user.avatar == null || user.avatar == undefined) {
+      userAvatar = "avatars/spurdo.jpg";
+    } else {
+      userAvatar = user.avatar;
+    }
+    console.log("user found");
+    return res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      position: user.position,
+      permission: user.permission,
+      projects: user.projects,
+      tickets: user.tickets,
+      token: req.header("auth-token"),
+      avatar: userAvatar,
+    });
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'Server error'})
   }
-  console.log("user found");
-  return res.json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    position: user.position,
-    permission: user.permission,
-    projects: user.projects,
-    tickets: user.tickets,
-    token: req.header("auth-token"),
-    avatar: userAvatar,
-  });
+
 });
 
 //change current user's password
