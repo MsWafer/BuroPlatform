@@ -24,7 +24,7 @@ const PropSchema = new Schema({
   },
   date: {
     type: Date,
-  }
+  },
 });
 
 module.exports = Prop = mongoose.model("offer", PropSchema);

@@ -32,7 +32,10 @@ router.post(
   [
     check("name", "Введите имя пользователя").not().isEmpty(),
     check("email", "Введите email").isEmail(),
-    check("password", "Введите пароль длиной не менее 7 и не более 20 символов").isLength({ min: 7, max: 20 }),
+    check(
+      "password",
+      "Введите пароль длиной не менее 7 и не более 20 символов"
+    ).isLength({ min: 7, max: 20 }),
     check("position", "Выберите должность").not().isEmpty(),
     check("permCode", "Введите код регистрации").not().isEmpty(),
   ],
@@ -43,7 +46,7 @@ router.post(
     }
 
     const { name, email, password, position, permCode } = req.body;
-    
+
     if (permCode == process.env.codeA) {
       permission1 = "user";
     } else if (permCode == process.env.codeB) {
@@ -68,7 +71,7 @@ router.post(
         password,
         position,
         avatar: "avatars/spurdo.jpg",
-        permission:permission1,
+        permission: permission1,
       });
 
       //password encryption
@@ -100,15 +103,17 @@ router.post(
 //get current user's info
 router.get("/me", auth, async (req, res) => {
   try {
-      let user = await User.findOne({ _id: req.user.id })
+    let user = await User.findOne({ _id: req.user.id })
       .select("-password")
       .populate("projects", -"team")
       .populate("tickets", "-user")
       .populate({
-        path:'sprints',
-        match: { status: true }
-    });
-    if (!user){return res.status(500).json({msg:'Server error'})}
+        path: "sprints",
+        match: { status: true },
+      });
+    if (!user) {
+      return res.status(500).json({ msg: "Server error" });
+    }
     if (user.avatar == null || user.avatar == undefined) {
       userAvatar = "avatars/spurdo.jpg";
     } else {
@@ -125,26 +130,26 @@ router.get("/me", auth, async (req, res) => {
       tickets: user.tickets,
       token: req.header("auth-token"),
       avatar: userAvatar,
-      sprints:user.sprints
+      sprints: user.sprints,
     });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'Server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "Server error" });
   }
-
 });
 
 //get all user's sprints
-router.get('/me/sprints',auth,async(req,res)=>{
+router.get("/me/sprints", auth, async (req, res) => {
   try {
-    let sprints = await User.findOne({_id:req.user.id}).select('sprints').populate('sprints')
-    return res.json(sprints)    
+    let sprints = await User.findOne({ _id: req.user.id })
+      .select("sprints")
+      .populate("sprints");
+    return res.json(sprints);
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
-
-})
+});
 
 //change current user's password
 router.put("/me/pw", auth, async (req, res) => {
@@ -165,16 +170,14 @@ router.put("/me/pw", auth, async (req, res) => {
 
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
-  const a = await User.findOne({_id:req.user.id})
-  const oldavatar = a.avatar
+  const a = await User.findOne({ _id: req.user.id });
+  const oldavatar = a.avatar;
   try {
     await User.findOneAndUpdate(
       { _id: req.user.id },
       {
         $set: {
-          avatar: req.file
-            ? "avatars/" + req.file.filename
-            : user.avatar,
+          avatar: req.file ? "avatars/" + req.file.filename : user.avatar,
         },
       }
     );
@@ -182,7 +185,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
       if (err) {
         throw err;
       }
-    })
+    });
     console.log("avatar changed/added");
     return res.json({ msg: "Ваш аватар был изменен" });
   } catch (error) {

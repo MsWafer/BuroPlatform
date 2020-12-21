@@ -25,7 +25,7 @@ router.post(
       prop = new Prop({
         text,
         title,
-        date:Date.now()
+        date: Date.now(),
       });
       await prop.save();
       console.log("+prop");
@@ -40,7 +40,7 @@ router.post(
 //get all propositions sorted by likes
 router.get("/all/likes", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ likeCount: 1 }).select('-likes');
+    let props = await Prop.find().sort({ likeCount: 1 }).select("-likes");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -51,7 +51,7 @@ router.get("/all/likes", auth, async (req, res) => {
 //get all propositions sorted by date
 router.get("/all/date", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ date: 1 }).select('-likes');
+    let props = await Prop.find().sort({ date: 1 }).select("-likes");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -72,13 +72,19 @@ router.put("/like/:id", auth, async (req, res) => {
         .map((like) => like.user.toString())
         .indexOf(req.user.id);
       prop.likes.splice(removeIndex, 1);
-      await Prop.findOneAndUpdate({_id:req.params.id},{$inc:{likeCount : -1}})
+      await Prop.findOneAndUpdate(
+        { _id: req.params.id },
+        { $inc: { likeCount: -1 } }
+      );
       await prop.save();
       return res.json({ msg: "-" });
     }
 
     prop.likes.unshift({ user: req.user.id });
-    await Prop.findOneAndUpdate({_id:req.params.id},{$inc:{likeCount : 1}})
+    await Prop.findOneAndUpdate(
+      { _id: req.params.id },
+      { $inc: { likeCount: 1 } }
+    );
     await prop.save();
     return res.json({ msg: "+" });
   } catch (err) {
@@ -88,18 +94,15 @@ router.put("/like/:id", auth, async (req, res) => {
 });
 
 //remove proposition
-router.delete('/:id',auth,async(req,res)=>{
-try {
-  await Prop.findOneAndDelete({_id:req.params.id})
-  console.log('-prop')
-  res.json({msg:'Предложение удалено'})
-} catch (error) {
-  console.error(error)
-  return res.status(500).json({msg:'server error'})
-}
-
-})
-
-
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    await Prop.findOneAndDelete({ _id: req.params.id });
+    console.log("-prop");
+    res.json({ msg: "Предложение удалено" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+});
 
 module.exports = router;
