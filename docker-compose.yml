@@ -15,9 +15,9 @@ services:
     container_name: mongo_platform
     restart: always
     image: mongo:4.4.2
-    # command: mongod --port 27017
+    command: mongod --port 27018
     ports: 
-     - '27017:27017'
+     - '27018:27018'
     volumes:
      - mongo-config:/data/configdb
      - mongoData:/data/db            
