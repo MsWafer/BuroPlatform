@@ -70,7 +70,7 @@ router.post(
         email,
         password,
         position,
-        avatar: "avatars/spurdo.jpg",
+        avatar: "avatars/spurdo.png",
         permission: permission1,
       });
 
@@ -115,7 +115,7 @@ router.get("/me", auth, async (req, res) => {
       return res.status(500).json({ msg: "Server error" });
     }
     if (user.avatar == null || user.avatar == undefined) {
-      userAvatar = "avatars/spurdo.jpg";
+      userAvatar = "avatars/spurdo.png";
     } else {
       userAvatar = user.avatar;
     }
@@ -278,7 +278,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ msg: "Пользователь не найден" });
     }
     if (user.avatar == undefined || user.avatar == null) {
-      userAvatar = "avatars/spurdo.jpg";
+      userAvatar = "avatars/spurdo.png";
     } else {
       userAvatar = user.avatar;
     }

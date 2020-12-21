@@ -41,7 +41,7 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default:'avatars/spurdo.jpg'
+    default:'avatars/spurdo.png'
   },
   reccode: {
     type: String,
