@@ -165,6 +165,8 @@ router.put("/me/pw", auth, async (req, res) => {
 
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
+  const a = await User.findOne({_id:req.user.id})
+  const oldavatar = a.avatar
   try {
     await User.findOneAndUpdate(
       { _id: req.user.id },
@@ -176,6 +178,11 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
         },
       }
     );
+    fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
+      if (err) {
+        throw err;
+      }
+    })
     console.log("avatar changed/added");
     return res.json({ msg: "Ваш аватар был изменен" });
   } catch (error) {
