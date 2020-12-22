@@ -1,10 +1,10 @@
 const express = require("express");
 const connectDB = require("./middleware/db");
-connectDB();
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+connectDB();
 app.use(express.json({ extended: false }));
 app.use(cors());
 app.use(express.static("public"));
