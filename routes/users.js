@@ -170,9 +170,10 @@ router.put("/me/pw", auth, async (req, res) => {
 
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
-  const a = await User.findOne({ _id: req.user.id });
-  const oldavatar = a.avatar;
   try {
+    const a = await User.findOne({ _id: req.user.id });
+    if(!a){return res.json({msg:'Пользователь не найден'})}
+    const oldavatar = a.avatar;
     await User.findOneAndUpdate(
       { _id: req.user.id },
       {

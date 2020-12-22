@@ -15,9 +15,9 @@ services:
     container_name: mongo_platform
     restart: always
     image: mongo:4.1.8-xenial
-    # command: mongod --port 27018
+    command: mongod --port 27018
     ports: 
-     - '27017:27017'
+     - '27018:27018'
     volumes:
      - mongo-config:/data/configdb
      - mongoData:/data/db            
@@ -26,5 +26,5 @@ volumes:
   ticketSS:
   avatars:
   mongoData:
-    external: true
+    external:
       name: mongo_external

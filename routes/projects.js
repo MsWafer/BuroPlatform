@@ -363,48 +363,53 @@ router.put("/updteam/:crypt", auth, async (req, res) => {
 
 //join project's team
 router.put("/jointeam/:crypt", auth, async (req, res) => {
-  let huy = await Project.findOne({ crypt: req.params.crypt }).select(
-    "-_id team"
-  );
-  let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g, "");
-  let huy3 = huy2.split(",");
-  if (huy3.includes(req.user.id)) {
-    let user = await User.findOne({ _id: req.user.id }).select(
-      "-password -permission -avatar"
+  try {
+    let huy = await Project.findOne({ crypt: req.params.crypt }).select(
+      "-_id team"
     );
-    await Project.findOneAndUpdate(
-      { crypt: req.params.crypt },
-      { $pull: { team: user.id } }
-    );
-    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
-      "team",
-      "-password -permission -tickets -projects"
-    );
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      { $pull: { projects: project.id } }
-    );
-
-    res.status(200).json({
-      msg: `Вы вышли из команды проекта ${req.params.crypt}`,
-      crypter: project.crypter,
-      title: project.title,
-      crypt: project.crypt,
-      dateStart: project.dateStart,
-      dateFinish: project.dateFinish,
-      city: project.city,
-      type: project.type,
-      stage: project.stage,
-      area: project.area,
-      about: project.about,
-      status: project.status,
-      team: project.team,
-    });
-    return console.log(
-      `${user.name} удален из команды проекта ${req.params.crypt}`
-    );
+    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g, "");
+    let huy3 = huy2.split(",");
+    if (huy3.includes(req.user.id)) {
+      let user = await User.findOne({ _id: req.user.id }).select(
+        "-password -permission -avatar"
+      );
+      await Project.findOneAndUpdate(
+        { crypt: req.params.crypt },
+        { $pull: { team: user.id } }
+      );
+      let project = await Project.findOne({ crypt: req.params.crypt }).populate(
+        "team",
+        "-password -permission -tickets -projects"
+      );
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $pull: { projects: project.id } }
+      );
+  
+      res.status(200).json({
+        msg: `Вы вышли из команды проекта ${req.params.crypt}`,
+        crypter: project.crypter,
+        title: project.title,
+        crypt: project.crypt,
+        dateStart: project.dateStart,
+        dateFinish: project.dateFinish,
+        city: project.city,
+        type: project.type,
+        stage: project.stage,
+        area: project.area,
+        about: project.about,
+        status: project.status,
+        team: project.team,
+      });
+      return console.log(
+        `${user.name} удален из команды проекта ${req.params.crypt}`
+      );
+    }  
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({msg:'server error'})
   }
-
+  
   try {
     let user = await User.findOne({ _id: req.user.id }).select(
       "-password -permission"
@@ -508,49 +513,70 @@ router.delete("/updteam/:crypt", auth, async (req, res) => {
 
 //add sprint to project found by crypt
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
-  let project = await Project.findOne({ crypt: req.params.crypt });
-  if (!project) {
-    return res.json({ msg: "Не найдено проекта с указанным шифром" });
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt });
+    if (!project) {
+      return res.json({ msg: "Не найдено проекта с указанным шифром" });
+    }
+    sprint = new Sprint({
+      dateOpen: Date.now(),
+    });
+    await sprint.save();
+    await Project.findOneAndUpdate(
+      { crypt: req.params.crypt },
+      { $push: { sprints: sprint, $position: 0 } }
+    );
+    console.log("sprint added to project");
+    return res.json({
+      msg: `Новый спринт добавлен в проект`,
+      id: sprint.id,
+      tasks: sprint.tasks,
+      state: sprint.state,
+      dateOpen: sprint.dateOpen,
+    });
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'server error'})
   }
-  sprint = new Sprint({
-    dateOpen: Date.now(),
-  });
-  await sprint.save();
-  await Project.findOneAndUpdate(
-    { crypt: req.params.crypt },
-    { $push: { sprints: sprint, $position: 0 } }
-  );
-  console.log("sprint added to project");
-  return res.json({
-    msg: `Новый спринт добавлен в проект`,
-    id: sprint.id,
-    tasks: sprint.tasks,
-    state: sprint.state,
-    dateOpen: sprint.dateOpen,
-  });
+  
+  
 });
 
 //find all project's sprints
 router.get("/sprints/:crypt", auth, async (req, res) => {
-  let project = await Project.findOne({ crypt: req.params.crypt })
+  try {
+    if((/[a-zA-Z]/).test(req.params.crypt)){return res.json({msg:'Неверно введен шифр'})}
+    let project = await Project.findOne({ crypt: req.params.crypt })
     .select("sprints")
     .populate("sprints");
+    if(!project){return res.json({msg:'Не найдено проектов с указанным шифром'})}
   console.log("found all projects sprints");
   return res.json({
     projectid: project.id,
     sprints: project.sprints.reverse(),
   });
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'server error'})
+  }
+  
 });
 
 //add new task to sprint
 router.post("/sprints/addtask/:id", auth, async (req, res) => {
-  let sprint = await Sprint.findOne({ _id: req.params.id });
-  if (!sprint) {
-    return res.json({ msg: "Указанный спринт не найден" });
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.json({ msg: "Указанный спринт не найден" });
+    }
+    if (!req.body.tasks) {
+      return res.json({ msg: "Добавьте задачу" });
+    }
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'server error'})
   }
-  if (!req.body.tasks) {
-    return res.json({ msg: "Добавьте задачу" });
-  }
+  
   try {
     await Sprint.findOneAndUpdate(
       { _id: req.params.id },
@@ -621,27 +647,34 @@ router.get("/getsprint/:id", auth, async (req, res) => {
 
 //un/favorite sprint by id
 router.put("/favsprint/:id", auth, async (req, res) => {
-  let huy = await User.findOne({ _id: req.user.id }).select("-id sprints");
-  let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
-  let huy3 = huy2.split(",");
-  if (huy3.includes(req.params.id)) {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      { $pull: { sprints: sprint.id } }
-    );
+  //unfavorite
+  try {
+    let huy = await User.findOne({ _id: req.user.id }).select("-id sprints");
+    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
+    let huy3 = huy2.split(",");
+    if (huy3.includes(req.params.id)) {
+      let sprint = await Sprint.findOne({ _id: req.params.id });
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $pull: { sprints: sprint.id } }
+      );
 
-    res.status(200).json({
-      msg: `Вы убрали спринт из избранных`,
-      id: sprint.id,
-      tasks: sprint.tasks,
-      dateOpen: sprint.dateOpen,
-      dateClose: sprint.dateClose,
-      status: sprint.status,
-    });
-    return console.log(`user unfavorited sprint`);
+      res.status(200).json({
+        msg: `Вы убрали спринт из избранных`,
+        id: sprint.id,
+        tasks: sprint.tasks,
+        dateOpen: sprint.dateOpen,
+        dateClose: sprint.dateClose,
+        status: sprint.status,
+      });
+      return console.log(`user unfavorited sprint`);
+  }    
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({msg:'server error'})
   }
-
+  
+//favorite
   try {
     let sprint = await Project.findOne({ _id: req.params.id });
     await User.findOneAndUpdate(
