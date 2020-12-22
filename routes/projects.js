@@ -649,10 +649,13 @@ router.get("/getsprint/:id", auth, async (req, res) => {
 router.put("/favsprint/:id", auth, async (req, res) => {
   //unfavorite
   try {
-    let huy = await User.findOne({ _id: req.user.id }).select("-id sprints");
+    let huy = await User.findOne({ _id: req.user.id }).select("sprints");
+    console.log(huy)
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
+    console.log(huy3)
     if (huy3.includes(req.params.id)) {
+      console.log(huy3)
       let sprint = await Sprint.findOne({ _id: req.params.id });
       await User.findOneAndUpdate(
         { _id: req.user.id },
@@ -676,7 +679,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
   
 //favorite
   try {
-    let sprint = await Project.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({ _id: req.params.id });
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $push: { sprints: sprint } }
