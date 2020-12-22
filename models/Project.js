@@ -56,6 +56,7 @@ const ProjectSchema = new Schema({
   },
   status: {
     type: Boolean,
+    default:false
   },
 });
 

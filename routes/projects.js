@@ -293,6 +293,29 @@ router.put("/:crypt", auth, async (req, res) => {
   }
 });
 
+//finish project
+router.put('/finish/:id',auth,async(req,res)=>{
+  try {
+    let project = await Project.findOne({ _id: req.params.id });
+    if (project.status == false) {
+        await Project.findOneAndUpdate(
+        { _id: req.params.id },
+        { $set: { status: true } }
+      );
+    } else if (project.status == true) {
+      await Project.findOneAndUpdate(
+        { _id: req.params.id },
+        { $set: { status: false } }
+      );
+    }
+    console.log("project status changed");
+    return res.json({ msg: "Статус проекта изменен" });
+  } catch (error) {
+    console.log(error);
+    return res.json({ err: "server error" });
+  }
+});
+
 //add user to project's team
 router.put("/updteam/:crypt", auth, async (req, res) => {
   try {
