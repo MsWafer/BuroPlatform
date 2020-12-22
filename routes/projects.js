@@ -294,18 +294,18 @@ router.put("/:crypt", auth, async (req, res) => {
 });
 
 //finish project
-router.put('/finish/:id',auth,async(req,res)=>{
+router.put('/finish/:crypt',auth,async(req,res)=>{
   try {
-    let project = await Project.findOne({ _id: req.params.id });
+    let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project){return res.json({msg:'Проект не найден'})}
     if (project.status == false) {
         await Project.findOneAndUpdate(
-        { _id: req.params.id },
+        { crypt: req.params.crypt },
         { $set: { status: true } }
       );
     } else if (project.status == true) {
       await Project.findOneAndUpdate(
-        { _id: req.params.id },
+        { crypt: req.params.crypt },
         { $set: { status: false } }
       );
     }
