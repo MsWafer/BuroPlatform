@@ -297,6 +297,7 @@ router.put("/:crypt", auth, async (req, res) => {
 router.put('/finish/:id',auth,async(req,res)=>{
   try {
     let project = await Project.findOne({ _id: req.params.id });
+    if (!project){return res.json({msg:'Проект не найден'})}
     if (project.status == false) {
         await Project.findOneAndUpdate(
         { _id: req.params.id },
