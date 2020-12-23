@@ -109,7 +109,7 @@ router.get("/me", auth, async (req, res) => {
       .populate("tickets", "-user")
       .populate({
         path: "sprints",
-        match: { status: true },
+        match: { status: false },
       });
     if (!user) {
       return res.status(500).json({ msg: "Server error" });
@@ -172,7 +172,9 @@ router.put("/me/pw", auth, async (req, res) => {
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
   try {
     const a = await User.findOne({ _id: req.user.id });
-    if(!a){return res.json({msg:'Пользователь не найден'})}
+    if (!a) {
+      return res.json({ msg: "Пользователь не найден" });
+    }
     const oldavatar = a.avatar;
     await User.findOneAndUpdate(
       { _id: req.user.id },

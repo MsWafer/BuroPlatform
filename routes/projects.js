@@ -294,11 +294,11 @@ router.put("/:crypt", auth, async (req, res) => {
 });
 
 //finish project
-router.put('/finish/:id',auth,async(req,res)=>{
+router.put("/finish/:id", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ _id: req.params.id });
     if (project.status == false) {
-        await Project.findOneAndUpdate(
+      await Project.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: true } }
       );
@@ -408,7 +408,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { _id: req.user.id },
         { $pull: { projects: project.id } }
       );
-  
+
       res.status(200).json({
         msg: `Вы вышли из команды проекта ${req.params.crypt}`,
         crypter: project.crypter,
@@ -427,12 +427,12 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       return console.log(
         `${user.name} удален из команды проекта ${req.params.crypt}`
       );
-    }  
+    }
   } catch (error) {
-    console.error(error)
-    res.status(500).json({msg:'server error'})
+    console.error(error);
+    res.status(500).json({ msg: "server error" });
   }
-  
+
   try {
     let user = await User.findOne({ _id: req.user.id }).select(
       "-password -permission"
@@ -558,31 +558,32 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       dateOpen: sprint.dateOpen,
     });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
-  
-  
 });
 
 //find all project's sprints
 router.get("/sprints/:crypt", auth, async (req, res) => {
   try {
-    if((/[a-zA-Z]/).test(req.params.crypt)){return res.json({msg:'Неверно введен шифр'})}
+    if (/[a-zA-Z]/.test(req.params.crypt)) {
+      return res.json({ msg: "Неверно введен шифр" });
+    }
     let project = await Project.findOne({ crypt: req.params.crypt })
-    .select("sprints")
-    .populate("sprints");
-    if(!project){return res.json({msg:'Не найдено проектов с указанным шифром'})}
-  console.log("found all projects sprints");
-  return res.json({
-    projectid: project.id,
-    sprints: project.sprints.reverse(),
-  });
+      .select("sprints")
+      .populate("sprints");
+    if (!project) {
+      return res.json({ msg: "Не найдено проектов с указанным шифром" });
+    }
+    console.log("found all projects sprints");
+    return res.json({
+      projectid: project.id,
+      sprints: project.sprints.reverse(),
+    });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
-  
 });
 
 //add new task to sprint
@@ -596,10 +597,10 @@ router.post("/sprints/addtask/:id", auth, async (req, res) => {
       return res.json({ msg: "Добавьте задачу" });
     }
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
-  
+
   try {
     await Sprint.findOneAndUpdate(
       { _id: req.params.id },
@@ -673,12 +674,12 @@ router.put("/favsprint/:id", auth, async (req, res) => {
   //unfavorite
   try {
     let huy = await User.findOne({ _id: req.user.id }).select("sprints");
-    console.log(huy)
+    console.log(huy);
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
-    console.log(huy3)
+    console.log(huy3);
     if (huy3.includes(req.params.id)) {
-      console.log(huy3)
+      console.log(huy3);
       let sprint = await Sprint.findOne({ _id: req.params.id });
       await User.findOneAndUpdate(
         { _id: req.user.id },
@@ -694,13 +695,13 @@ router.put("/favsprint/:id", auth, async (req, res) => {
         status: sprint.status,
       });
       return console.log(`user unfavorited sprint`);
-  }    
+    }
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({msg:'server error'})
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
-  
-//favorite
+
+  //favorite
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     await User.findOneAndUpdate(
