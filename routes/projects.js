@@ -686,8 +686,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
         { _id: req.user.id },
         { $pull: { sprints: sprint.id } }
       );
-      
-
+      let upduser = User.findOne({_id: req.user.id})
       res.status(200).json({
         msg: `Вы убрали спринт из избранных`,
         user: upduser
