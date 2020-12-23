@@ -685,12 +685,11 @@ router.put("/favsprint/:id", auth, async (req, res) => {
           { _id: req.user.id },
           { $pull: { sprints: sprint.id } }
         );
-        // let upduser = User.findOne({ _id: req.user.id });
+        
         console.log(`user unfavorited sprint`);
-
         return res.status(200).json({
           msg: `Вы убрали спринт из избранных`,
-          // userinf: upduser,
+          user: req.user,
         });
       } catch (error) {
         console.error(error);
@@ -703,11 +702,11 @@ router.put("/favsprint/:id", auth, async (req, res) => {
           { _id: req.user.id },
           { $push: { sprints: sprint } }
         );
-        // let upduser = User.findOne({ _id: req.user.id });
+        
         console.log(`user favorited sprint`);
         return res.status(200).json({
           msg: `Вы добавили спринт в избранные`,
-          // userinf: upduser,
+          user: req.user,
         });
       } catch (error) {
         res.status(400).send(`server error`);
