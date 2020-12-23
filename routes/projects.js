@@ -690,7 +690,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
 
         return res.status(200).json({
           msg: `Вы убрали спринт из избранных`,
-          userinf: upduser,
+          // userinf: upduser,
         });
       } catch (error) {
         console.error(error);
@@ -707,7 +707,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
         console.log(`user favorited sprint`);
         return res.status(200).json({
           msg: `Вы добавили спринт в избранные`,
-          userinf: upduser,
+          // userinf: upduser,
         });
       } catch (error) {
         res.status(400).send(`server error`);
