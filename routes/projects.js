@@ -677,9 +677,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
     let huy = await User.findOne({ _id: req.user.id }).select("sprints");
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
-    console.log(huy3);
     if (huy3.includes(req.params.id)) {
-      console.log(huy3);
       let sprint = await Sprint.findOne({ _id: req.params.id });
       await User.findOneAndUpdate(
         { _id: req.user.id },
@@ -688,7 +686,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
       let upduser = User.findOne({_id: req.user.id})
       res.status(200).json({
         msg: `Вы убрали спринт из избранных`,
-        user: upduser
+        userinf: upduser
       });
       return console.log(`user unfavorited sprint`);
     }
@@ -707,7 +705,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
     let upduser = User.findOne({_id: req.user.id})
     res.status(200).json({
       msg: `Вы добавили спринт в избранные`,
-      user: upduser
+      userinf: upduser
     });
     return console.log(`user favorited sprint`);
   } catch (error) {
