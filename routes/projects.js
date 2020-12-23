@@ -672,45 +672,51 @@ router.get("/getsprint/:id", auth, async (req, res) => {
 
 //un/favorite sprint by id
 router.put("/favsprint/:id", auth, async (req, res) => {
-  //unfavorite
   try {
     let huy = await User.findOne({ _id: req.user.id }).select("sprints");
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+
     if (huy3.includes(req.params.id)) {
-      let sprint = await Sprint.findOne({ _id: req.params.id });
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
-        { $pull: { sprints: sprint.id } }
-      );
-      let upduser = User.findOne({_id: req.user.id})
-      res.status(200).json({
-        msg: `Вы убрали спринт из избранных`,
-        userinf: upduser
-      });
-      return console.log(`user unfavorited sprint`);
+      //unfavorite
+      try {
+        await User.findOneAndUpdate(
+          { _id: req.user.id },
+          { $pull: { sprints: sprint.id } }
+        );
+        let upduser = User.findOne({ _id: req.user.id });
+        console.log(`user unfavorited sprint`);
+
+        return res.status(200).json({
+          msg: `Вы убрали спринт из избранных`,
+          userinf: upduser,
+        });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "server error" });
+      }
+    } else {
+      //favorite
+      try {
+        await User.findOneAndUpdate(
+          { _id: req.user.id },
+          { $push: { sprints: sprint } }
+        );
+        let upduser = User.findOne({ _id: req.user.id });
+        console.log(`user favorited sprint`);
+        return res.status(200).json({
+          msg: `Вы добавили спринт в избранные`,
+          userinf: upduser,
+        });
+      } catch (error) {
+        res.status(400).send(`server error`);
+        return console.error(error);
+      }
     }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
-  }
-
-  //favorite
-  try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      { $push: { sprints: sprint } }
-    );
-    let upduser = User.findOne({_id: req.user.id})
-    res.status(200).json({
-      msg: `Вы добавили спринт в избранные`,
-      userinf: upduser
-    });
-    return console.log(`user favorited sprint`);
-  } catch (error) {
-    res.status(400).send(`server error`);
-    return console.error(error);
   }
 });
 module.exports = router;
