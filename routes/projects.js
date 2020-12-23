@@ -675,7 +675,6 @@ router.put("/favsprint/:id", auth, async (req, res) => {
   //unfavorite
   try {
     let huy = await User.findOne({ _id: req.user.id }).select("sprints");
-    console.log(huy);
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
     console.log(huy3);
@@ -713,7 +712,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
     return console.log(`user favorited sprint`);
   } catch (error) {
     res.status(400).send(`server error`);
-    return console.log("произошла якась хуйня");
+    return console.error(error);
   }
 });
 module.exports = router;
