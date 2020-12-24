@@ -639,11 +639,10 @@ router.put("/sprints/:id", auth, async (req, res) => {
   try {
     let project = await Sprint.findOne({ _id: req.params.id });
     if (project.status == false) {
-      /*let sprint = */ await Sprint.findOneAndUpdate(
+        await Sprint.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: true } }
       );
-      // await User.updateMany({},{$pull:{sprints:sprint.id}})
     } else if (project.status == true) {
       await Sprint.findOneAndUpdate(
         { _id: req.params.id },

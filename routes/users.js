@@ -194,11 +194,14 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
         },
       }
     );
-    fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
-      if (err) {
-        throw err;
-      }
-    });
+    if (oldavatar != "avatars/spurdo.png") {
+      fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    }
+    
     console.log("avatar changed/added");
     return res.json({ msg: "Ваш аватар был изменен" });
   } catch (error) {
