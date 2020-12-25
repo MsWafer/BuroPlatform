@@ -42,10 +42,12 @@
   - **POST /projects/sprints/new/:crypt** - добавляет пустой спринт к проекту с шифром, указанным в юрл
   - **GET /projects/sprints/:crypt** - показывает все спринты проекта, найденного по его шифру в юрл
   - **POST /projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив *tasks* с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
-  - **PUT /projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*, если все таски спринта выполнены, меняет статус спринта(этот раут вообще нихуя не тестил, так что возможно не работает)
+  - **PUT /projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*
+  - **DELETE /projects/sprints/deltask/:id** - находит спринт по ид в юрл, удаляет таск, чей ид указан в *taskid*
   - **PUT /projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
   - **GET /projects/getsprint/:id** - находит спринт по *id*
   - **PUT /projects/favsprint/:id** - добавляет спринт, чей ид в юрл, в избранные пользователя, или убирает, если он там уже был
+  - **DELETE /projects/sprints/:id** - удаляет спринт по ид, указанному в юрл
 
 
   ### НовостьОчка

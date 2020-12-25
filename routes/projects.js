@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { check, validationResult, Result } = require("express-validator");
 const auth = require("../middleware/auth");
+const manauth = require("../middleware/manauth");
 
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
@@ -221,7 +222,7 @@ router.get("/city/:city", async (req, res) => {
 });
 
 //delete project
-router.delete("/:crypt", auth, async (req, res) => {
+router.delete("/:crypt", manauth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt }).populate(
       "team"
@@ -244,7 +245,7 @@ router.delete("/:crypt", auth, async (req, res) => {
 });
 
 //edit project
-router.put("/:crypt", auth, async (req, res) => {
+router.put("/:crypt", manauth, async (req, res) => {
   try {
     await Project.findOneAndUpdate(
       { crypt: req.params.crypt },
@@ -294,12 +295,14 @@ router.put("/:crypt", auth, async (req, res) => {
 });
 
 //finish project
-router.put('/finish/:crypt',auth,async(req,res)=>{
+router.put("/finish/:crypt", manauth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
-    if (!project){return res.json({msg:'Проект не найден'})}
+    if (!project) {
+      return res.json({ msg: "Проект не найден" });
+    }
     if (project.status == false) {
-        await Project.findOneAndUpdate(
+      await Project.findOneAndUpdate(
         { crypt: req.params.crypt },
         { $set: { status: true } }
       );
@@ -318,7 +321,7 @@ router.put('/finish/:crypt',auth,async(req,res)=>{
 });
 
 //add user to project's team
-router.put("/updteam/:crypt", auth, async (req, res) => {
+router.put("/updteam/:crypt", manauth, async (req, res) => {
   try {
     let usercheck = await User.findOne({ _id: req.body.userid }).select(
       "-password -permission -avatar"
@@ -476,7 +479,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
 });
 
 //remove user from project's team
-router.delete("/updteam/:crypt", auth, async (req, res) => {
+router.delete("/updteam/:crypt", manauth, async (req, res) => {
   try {
     let usercheck = await User.findOne({ _id: req.body.userid }).select(
       "-password -avatar -permission"
@@ -536,7 +539,7 @@ router.delete("/updteam/:crypt", auth, async (req, res) => {
 });
 
 //add sprint to project found by crypt
-router.post("/sprints/new/:crypt", auth, async (req, res) => {
+router.post("/sprints/new/:crypt", manauth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
@@ -588,7 +591,7 @@ router.get("/sprints/:crypt", auth, async (req, res) => {
 });
 
 //add new task to sprint
-router.post("/sprints/addtask/:id", auth, async (req, res) => {
+router.post("/sprints/addtask/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
@@ -617,7 +620,7 @@ router.post("/sprints/addtask/:id", auth, async (req, res) => {
 });
 
 //deactivate task
-router.put("/sprints/DAtask/:id", auth, async (req, res) => {
+router.put("/sprints/DAtask/:id", manauth, async (req, res) => {
   try {
     let tasks = await Sprint.findOne({ _id: req.params.id });
     let status = tasks.tasks.filter((task) => task._id == req.body.taskid)[0]
@@ -634,12 +637,29 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
   }
 });
 
-//change sprint status sprint
-router.put("/sprints/:id", auth, async (req, res) => {
+//delete task
+router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let deltask = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id, "tasks._id": req.body.taskid },
+      { $pull: { tasks: deltask } }
+    );
+    console.log("task deleted");
+    return res.json({ msg: "Задача удалена" });
+  } catch (error) {
+    console.log(error);
+    return res.json({ err: "server error" });
+  }
+});
+
+//change sprint status
+router.put("/sprints/:id", manauth, async (req, res) => {
   try {
     let project = await Sprint.findOne({ _id: req.params.id });
     if (project.status == false) {
-        await Sprint.findOneAndUpdate(
+      await Sprint.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: true } }
       );
@@ -684,7 +704,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
           { _id: req.user.id },
           { $pull: { sprints: sprint.id } }
         );
-        
+
         console.log(`user unfavorited sprint`);
         return res.status(200).json({
           msg: `Вы убрали спринт из избранных`,
@@ -701,7 +721,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
           { _id: req.user.id },
           { $push: { sprints: sprint } }
         );
-        
+
         console.log(`user favorited sprint`);
         return res.status(200).json({
           msg: `Вы добавили спринт в избранные`,
@@ -712,6 +732,22 @@ router.put("/favsprint/:id", auth, async (req, res) => {
         return console.error(error);
       }
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+});
+
+//delete sprint by id
+router.delete("/sprints/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.json({ msg: "Не найден спринт с указанным id" });
+    }
+    await Sprint.findOneAndRemove({ _id: req.params.id });
+    console.log("sprint deleted");
+    return res.json({ msg: "Спринт удален" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });

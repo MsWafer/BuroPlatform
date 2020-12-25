@@ -4,6 +4,7 @@ const auth = require("../middleware/auth");
 const { check, validationResult } = require("express-validator");
 
 const Prop = require("../models/Prop");
+const manauth = require("../middleware/manauth");
 
 //add proposition
 router.post(
@@ -94,7 +95,7 @@ router.put("/like/:id", auth, async (req, res) => {
 });
 
 //remove proposition
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", manauth, async (req, res) => {
   try {
     await Prop.findOneAndDelete({ _id: req.params.id });
     console.log("-prop");

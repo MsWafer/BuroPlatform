@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { check, validationResult } = require("express-validator");
 const auth = require("../middleware/auth");
+const manauth = require("../middleware/manauth");
+const admauth = require("../middleware/admauth");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -35,6 +37,7 @@ const upload = multer({
 const User = require("../models/User");
 const Project = require("../models/Project");
 const { findOneAndUpdate } = require("../models/User");
+
 
 //registration
 router.post(
@@ -211,7 +214,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
 });
 
 //change user's position
-router.put("/poschange/:id", auth, async (req, res) => {
+router.put("/poschange/:id", manauth, async (req, res) => {
   try {
     let user = await User.findOneAndUpdate(
       { _id: req.params.id },
@@ -229,7 +232,7 @@ router.put("/poschange/:id", auth, async (req, res) => {
 });
 
 //change user's permission
-router.put("/permchange/:id", auth, async (req, res) => {
+router.put("/permchange/:id", admauth, async (req, res) => {
   try {
     let user = await User.findOneAndUpdate(
       { _id: req.params.id },
@@ -316,7 +319,7 @@ router.get("/:id", async (req, res) => {
 });
 
 //delete user by id
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", admauth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.params.id });
     if (!user) {
@@ -411,7 +414,7 @@ router.put("/passrec", async (req, res) => {
 //check recovery code
 router.get("/passrec/2", async (req, res) => {
   let user = await User.findOne({ recCode: rec.body.recCode });
-  if (!user) {
+  if (!user||rec.body.recCode=='a') {
     return res.json({ err: "Введен неверный код" });
   }
   return res.json({
@@ -437,7 +440,7 @@ router.put(
       let user = await User.findOneAndUpdate(
         { recCode: req.body.recCode },
         { $set: { password: newPassword } },
-        { $set: { recCode: null } }
+        { $set: { recCode: 'a' } }
       );
       console.log("Пароль изменен");
       return res.json({

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const auth = require("../middleware/auth");
+const admauth = require("../middleware/admauth");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -163,7 +164,7 @@ router.get("/all/emergency", async (req, res) => {
 });
 
 //deactivate ticket by id
-router.put("/:id", async (req, res) => {
+router.put("/:id", admauth,  async (req, res) => {
   try {
     let ticket = await Ticket.findOneAndUpdate(
       { id: req.params._id },
@@ -178,7 +179,7 @@ router.put("/:id", async (req, res) => {
 });
 
 //delete ticket by id
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", admauth, async (req, res) => {
   try {
     let ticket = await Ticket.findOne({ _id: req.params.id });
     await User.updateMany(

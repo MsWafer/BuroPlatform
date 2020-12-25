@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
+const manauth = require("../middleware/manauth");
 const { check, validationResult } = require("express-validator");
 
 const User = require("../models/User");
@@ -9,7 +10,7 @@ const News = require("../models/News");
 //post new news
 router.post(
   "/",
-  auth,
+  manauth,
   [
     check("title", "Введите заголовок новости").not().isEmpty(),
     check("text", "Введите текст новости").not().isEmpty(),
@@ -72,7 +73,7 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 //remove news by id
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", manauth, async (req, res) => {
   try {
     await News.findOneAndDelete({ _id: req.params.id });
     console.log("news deleted");
@@ -84,7 +85,7 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 //edit news by id
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", manauth, async (req, res) => {
   try {
     // let news1 = await news.findOne({ _id: req.params.id });
     let news = await News.findOneAndUpdate(
