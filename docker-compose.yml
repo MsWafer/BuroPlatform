@@ -15,7 +15,7 @@ services:
     container_name: mongo_platform
     restart: always
     image: mongo:4.1.8-xenial
-    command: mongod --config /data/configdb/mongodb.conf
+    command: mongod --auth --config /data/configdb/mongodb.conf
     ports: 
      - '27018:27018'
     volumes:
