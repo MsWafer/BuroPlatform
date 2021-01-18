@@ -45,7 +45,7 @@
   - **POST /projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив *tasks* с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
   - **PUT /projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*
   - **DELETE /projects/sprints/deltask/:id** - находит спринт по ид в юрл, удаляет таск, чей ид указан в *taskid*
-  - **PUT /projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус
+  - **PUT /projects/sprints/:id** -  находит спринт по *id* в юрл, меняет его статус. Также меняет фактическую дату окончания на текущую дату или *null*
   - **GET /projects/getsprint/:id** - находит спринт по *id*
   - **PUT /projects/favsprint/:id** - добавляет спринт, чей ид в юрл, в избранные пользователя, или убирает, если он там уже был
   - **DELETE /projects/sprints/:id** - удаляет спринт по ид, указанному в юрл
