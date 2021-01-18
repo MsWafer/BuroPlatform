@@ -40,6 +40,7 @@
 
   ### СпринтОчка :a: :shark: :a:
   - **POST /projects/sprints/new/:crypt** - добавляет пустой спринт к проекту с шифром, указанным в юрл
+  - **PUT /projects/sprints/d+d/:id** - добавляет *description* и *date*(планируемая дата окончания) спринту по его *id* в юрл
   - **GET /projects/sprints/:crypt** - показывает все спринты проекта, найденного по его шифру в юрл
   - **POST /projects/sprints/addtask/:id** - находит спринт по *id* в юрл, добавляет массив *tasks* с *taskTitle*(string), *workVolume*(number),*taskState*:false(boolean) из body
   - **PUT /projects/sprints/DAtask/:id** -  находит спринт по *id* в юрл, меняет статус таска, чей ид указан в *taskid*

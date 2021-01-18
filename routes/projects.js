@@ -539,7 +539,7 @@ router.delete("/updteam/:crypt", manauth, async (req, res) => {
 });
 
 //add sprint to project found by crypt
-router.post("/sprints/new/:crypt", manauth, async (req, res) => {
+router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
@@ -565,6 +565,20 @@ router.post("/sprints/new/:crypt", manauth, async (req, res) => {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
   }
+});
+
+//add sprint description and planned closing date
+router.put("/sprints/d+d/:id", auth, async(req,res)=>{
+try {
+  let spr = await Sprint.findOne({_id:req.params.id})
+  if(!spr){return res.status(404).json({msg:"Не найден спринт с указанным id"})}
+  await Sprint.findOneAndUpdate({_id:req.params.id},{$set:{dateClosePlan: req.body.date, description: req.body.description}})
+  return res.json({msg:"Uspeh"})
+} catch (error) {
+  console.error(error)
+  return res.status(500).json({msg:"server error"})
+}
+
 });
 
 //find all project's sprints
@@ -661,12 +675,12 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     if (project.status == false) {
       await Sprint.findOneAndUpdate(
         { _id: req.params.id },
-        { $set: { status: true } }
+        { $set: { status: true, dateCloseFact: Date.now() } }
       );
     } else if (project.status == true) {
       await Sprint.findOneAndUpdate(
         { _id: req.params.id },
-        { $set: { status: false } }
+        { $set: { status: false, dateCloseFact: null } }
       );
     }
     console.log("srint status changed");

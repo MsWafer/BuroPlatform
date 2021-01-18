@@ -9,9 +9,17 @@ const SprintSchema = new Schema({
   dateOpen: {
     type: Date,
   },
-  dateClose: {
+  dateClosePlan: {
     type: Date,
     default: null,
+  },
+  dateCloseFact: {
+    type:Date,
+    default: null
+  },
+  description: {
+    type: String,
+    default: ""
   },
   tasks: [
     {
