@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./middleware/db");
 const cors = require("cors");
+const fetch = require("node-fetch");
 require("dotenv").config();
 
 const app = express();
@@ -19,6 +20,26 @@ app.use("/tickets", require("./routes/tickets"));
 app.use("/projects", require("./routes/projects"));
 app.use("/news", require("./routes/news"));
 app.use("/props", require("./routes/props"));
+
+let a = async () => {
+  await fetch("http://195.2.71.115:3000/api/v1/login", {
+    method: "post",
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ user: process.env.R_U, password: process.env.R_P }),
+  })
+    .then((res) => res.json())
+    .then(
+      (res) => (
+        (process.env.tokena = res.data.authToken),
+        (process.env.userid = res.data.userId)
+      )
+    )
+    .then(() => console.log(process.env.tokena));
+};
+a();
 
 const PORT = process.env.PORT || 7070;
 

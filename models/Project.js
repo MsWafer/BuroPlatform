@@ -58,6 +58,9 @@ const ProjectSchema = new Schema({
     type: Boolean,
     default:false
   },
+  rocketchat: {
+    type: String
+  }
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);

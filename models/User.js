@@ -47,6 +47,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default:'a',
   },
+  rocketname: {
+    type: String
+  }
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

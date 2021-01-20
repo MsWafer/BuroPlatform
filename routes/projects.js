@@ -37,7 +37,7 @@ router.post(
       customer,
       about,
       status,
-      userid,
+      // userid,
     } = req.body;
 
     try {
@@ -83,47 +83,67 @@ router.post(
       });
 
       await project.save();
-      if (!userid || userid == null || userid == undefined) {
-        console.log(`Проект ${crypt} добавлен`);
-        return res.status(200).json({
-          crypter: project.crypter,
-          title: project.title,
-          crypt: project.crypt,
-          dateStart: project.dateStart,
-          dateFinish: project.dateFinish,
-          city: project.city,
-          type: project.type,
-          stage: project.stage,
-          area: project.area,
-          about: project.about,
-          status: project.status,
-        });
-      }
 
-      let newProject = await Project.findOneAndUpdate(
-        { crypt: crypt },
-        { $addToSet: { team: { $each: userid } } }
-      );
-      await User.updateMany(
-        { _id: { $in: userid } },
-        { $push: { projects: newProject } },
-        { multi: true }
-      );
+      await fetch("http://195.2.71.115:3000/api/v1/channels.create", {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Auth-Token": process.env.tokena,
+          "X-User-Id": process.env.userId,
+        },
+        body: JSON.stringify({ name: crypter }),
+      })
+        .then((res) => res.json())
+        // .then((res) => console.log(res.success))
+        .then((res) =>
+          Project.findOneAndUpdate(
+            { crypt: crypt },
+            { $set: { rocketchat: res.channel._id } }
+          )
+        );
+
+      // if (!userid || userid == null || userid == undefined) {
       console.log(`Проект ${crypt} добавлен`);
       return res.status(200).json({
-        title: newProject.title,
-        crypt: newProject.crypt,
-        dateStart: newProject.dateStart,
-        dateFinish: newProject.dateFinish,
-        city: newProject.city,
-        type: newProject.type,
-        stage: newProject.stage,
-        area: newProject.area,
-        team: newProject.team ? project.team : [],
-        about: newProject.about,
-        status: newProject.status,
-        crypter: newProject.crypter,
+        crypter: project.crypter,
+        title: project.title,
+        crypt: project.crypt,
+        dateStart: project.dateStart,
+        dateFinish: project.dateFinish,
+        city: project.city,
+        type: project.type,
+        stage: project.stage,
+        area: project.area,
+        about: project.about,
+        status: project.status,
       });
+      // }
+
+      // let newProject = await Project.findOneAndUpdate(
+      //   { crypt: crypt },
+      //   { $addToSet: { team: { $each: userid } } }
+      // );
+      // await User.updateMany(
+      //   { _id: { $in: userid } },
+      //   { $push: { projects: newProject } },
+      //   { multi: true }
+      // );
+      // console.log(`Проект ${crypt} добавлен`);
+      // return res.status(200).json({
+      //   title: newProject.title,
+      //   crypt: newProject.crypt,
+      //   dateStart: newProject.dateStart,
+      //   dateFinish: newProject.dateFinish,
+      //   city: newProject.city,
+      //   type: newProject.type,
+      //   stage: newProject.stage,
+      //   area: newProject.area,
+      //   team: newProject.team ? project.team : [],
+      //   about: newProject.about,
+      //   status: newProject.status,
+      //   crypter: newProject.crypter,
+      // });
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("server error");
@@ -568,17 +588,26 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
 });
 
 //add sprint description and planned closing date
-router.put("/sprints/d+d/:id", auth, async(req,res)=>{
-try {
-  let spr = await Sprint.findOne({_id:req.params.id})
-  if(!spr){return res.status(404).json({msg:"Не найден спринт с указанным id"})}
-  await Sprint.findOneAndUpdate({_id:req.params.id},{$set:{dateClosePlan: req.body.date, description: req.body.description}})
-  return res.json({msg:"Uspeh"})
-} catch (error) {
-  console.error(error)
-  return res.status(500).json({msg:"server error"})
-}
-
+router.put("/sprints/dd/:id", auth, async (req, res) => {
+  try {
+    let spr = await Sprint.findOne({ _id: req.params.id });
+    if (!spr) {
+      return res.status(404).json({ msg: "Не найден спринт с указанным id" });
+    }
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: {
+          dateClosePlan: req.body.date,
+          description: req.body.description,
+        },
+      }
+    );
+    return res.json({ msg: "Uspeh" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
 });
 
 //find all project's sprints
