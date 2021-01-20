@@ -95,7 +95,7 @@ router.post(
         body: JSON.stringify({ name: crypter }),
       })
         .then((res) => res.json())
-        // .then((res) => console.log(res.success))
+        .then((res) => console.log(res))
         .then((res) =>
           Project.findOneAndUpdate(
             { crypt: crypt },
@@ -161,6 +161,7 @@ router.get("/", async (req, res) => {
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
       .populate("sprints");
     console.log("GET all projects");
+    console.log(process.env.tokena);
     return res.json(projects);
   } catch (err) {
     console.error(err.message);
