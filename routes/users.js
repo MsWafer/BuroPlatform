@@ -11,6 +11,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
+const fetch = require("node-fetch");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/usr/src/app/public/avatars");
@@ -24,33 +25,31 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage: storage,
-  limits: { fileSize : 3 * 1024 * 1024 },
+  limits: { fileSize: 3 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
       cb(null, true);
     } else {
       cb(null, false);
-      return cb(new Error('Разрешенны только .jpg, .png, .jpeg'));
+      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
     }
-}});
+  },
+});
 
 const User = require("../models/User");
 const Project = require("../models/Project");
 const { findOneAndUpdate } = require("../models/User");
 
-
 //registration
 router.post(
   "/",
   [
-    check("name", "Введите имя пользователя").not().isEmpty(),
     check("email", "Введите email").isEmail(),
-    check(
-      "password",
-      "Введите пароль длиной не менее 7 и не более 20 символов"
-    ).isLength({ min: 7, max: 20 }),
-    check("position", "Выберите должность").not().isEmpty(),
-    check("permCode", "Введите код регистрации").not().isEmpty(),
+    check("rocketname", "Введите имя пользователя rocket.chat").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -58,16 +57,49 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, position, permCode } = req.body;
+    await fetch(
+      `${process.env.CHAT}/api/v1/users.info?username=${req.body.rocketname}`,
+      {
+        method: "get",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Auth-Token": process.env.tokena,
+          "X-User-Id": process.env.userId,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 400) {
+          return res.json({
+            msg: "Не найден пользователь с указанным именем пользователя",
+          });
+        }
+      });
 
-    if (permCode == process.env.codeA) {
-      permission1 = "user";
-    } else if (permCode == process.env.codeB) {
-      permission1 = "manager";
-    } else if (permCode == process.env.codeC) {
-      permission1 = "admin";
-    } else {
-      return res.json({ msg: "Введите правильный код регистрации" });
+    const { email, rocketname } = req.body;
+
+    // if (permCode == process.env.codeA) {
+    //   permission1 = "user";
+    // } else if (permCode == process.env.codeB) {
+    //   permission1 = "manager";
+    // } else if (permCode == process.env.codeC) {
+    //   permission1 = "admin";
+    // } else {
+    //   return res.json({ msg: "Введите правильный код регистрации" });
+    // }
+
+    function makeid(length) {
+      let result = "";
+      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let charactersLength = characters.length;
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
     }
 
     try {
@@ -78,18 +110,55 @@ router.post(
         });
       }
 
+      let pwd = makeid(6);
+
       user = new User({
-        name,
         email,
+        rocketname,
         password,
-        position,
         avatar: "avatars/spurdo.png",
-        permission: permission1,
+        password: pwd,
       });
 
-      //password encryption
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      await fetch(
+        `${process.env.CHAT}/api/v1/users.info?username=${req.body.rocketname}`,
+        {
+          method: "get",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "X-Auth-Token": process.env.tokena,
+            "X-User-Id": process.env.userId,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((res) =>
+          User.findOneAndUpdate(
+            { email: req.body.email },
+            {
+              $set: {
+                rocketname: req.body.rocketname,
+                rocketId: res.user._id,
+              },
+            }
+          )
+        );
+      console.log(a);
+      await fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Auth-Token": process.env.tokena,
+          "X-User-Id": process.env.userId,
+        },
+        body: JSON.stringify({ channel: `@${req.body.rocketchat}`, text: pwd }),
+      });
+
+      // //password encryption
+      // const salt = await bcrypt.genSalt(10);
+      // user.password = await bcrypt.hash(password, salt);
 
       await user.save();
       console.log("new user registered");
@@ -103,12 +172,61 @@ router.post(
         { expiresIn: 360000000 },
         (err, token) => {
           if (err) throw err;
-          res.json({ token: token, id: user.id });
+          res.json({
+            token: token,
+            id: user.id,
+            msg: "Пароль был отправлен вам в rocket.chat",
+          });
         }
       );
     } catch (err) {
       console.error(err.message);
       res.status(500).send("server error");
+    }
+  }
+);
+
+//reg2
+router.put(
+  "/reg2",
+  [
+    check("name", "Введите имя").not().isEmpty(),
+    check("lastname", "Введите фамилию").not().isEmpty(),
+    check("division", "Выберите отдел").not().isEmpty(),
+    check("position", "Введите должность").not().isEmpty(),
+  ],
+  upload.single("file"),
+  auth,
+  async (req, res) => {
+    try {
+      const a = await User.findOne({ _id: req.user.id });
+      if (!a) {
+        return res.json({ msg: "Пользователь не найден" });
+      }
+      const oldavatar = a.avatar;
+      await User.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $set: {
+            name: req.body.name,
+            lastname: req.body.lastname,
+            division: req.body.division,
+            position: req.body.position,
+            avatar: req.file ? "avatars/" + req.file.filename : user.avatar,
+          },
+        }
+      );
+      if (oldavatar != "avatars/spurdo.png") {
+        fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
+          if (err) {
+            throw err;
+          }
+        });
+      }
+      return res.json({ msg: "uspeh", userid: user.id });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ msg: "server error" });
     }
   }
 );
@@ -144,6 +262,7 @@ router.get("/me", auth, async (req, res) => {
       token: req.header("auth-token"),
       avatar: userAvatar,
       sprints: user.sprints,
+      rocketchat: user.rocketname,
     });
   } catch (error) {
     console.error(error);
@@ -204,7 +323,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
         }
       });
     }
-    
+
     console.log("avatar changed/added");
     return res.json({ msg: "Ваш аватар был изменен" });
   } catch (error) {
@@ -246,6 +365,40 @@ router.put("/permchange/:id", admauth, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(400).json({ err: "server error" });
+  }
+});
+
+//change rocket username
+router.put("/me/rocket", auth, async (req, res) => {
+  try {
+    await fetch(
+      `${process.env.CHAT}/api/v1/users.info?username=${req.body.rocketname}`,
+      {
+        method: "get",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Auth-Token": process.env.tokena,
+          "X-User-Id": process.env.userId,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) =>
+        User.findOneAndUpdate(
+          { _id: req.user.id },
+          {
+            $set: {
+              rocketname: req.body.rocketname,
+              rocketId: res.user._id,
+            },
+          }
+        )
+      );
+    return res.json({ msg: "Юзернейм рокетчата изменен" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
 });
 
@@ -310,6 +463,7 @@ router.get("/:id", async (req, res) => {
       projects: user.projects,
       tickets: user.tickets,
       permission: user.permission,
+      rocketchat: user.rocketname,
       avatar: userAvatar,
     });
   } catch (err) {
@@ -414,7 +568,7 @@ router.put("/passrec", async (req, res) => {
 //check recovery code
 router.get("/passrec/2", async (req, res) => {
   let user = await User.findOne({ recCode: rec.body.recCode });
-  if (!user||rec.body.recCode=='a') {
+  if (!user || rec.body.recCode == "a") {
     return res.json({ err: "Введен неверный код" });
   }
   return res.json({
@@ -440,7 +594,7 @@ router.put(
       let user = await User.findOneAndUpdate(
         { recCode: req.body.recCode },
         { $set: { password: newPassword } },
-        { $set: { recCode: 'a' } }
+        { $set: { recCode: "a" } }
       );
       console.log("Пароль изменен");
       return res.json({

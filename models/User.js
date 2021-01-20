@@ -5,6 +5,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  lastname: {
+    type: String,
+  },
   email: {
     type: String,
     required: true,
@@ -32,6 +35,10 @@ const UserSchema = new mongoose.Schema({
       ref: "sprint",
     },
   ],
+  division: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "div",
+  },
   permission: {
     type: String,
     default: "user",
@@ -41,15 +48,18 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default:'avatars/spurdo.png'
+    default: "avatars/spurdo.png",
   },
   reccode: {
     type: String,
-    default:'a',
+    default: "a",
   },
   rocketname: {
-    type: String
-  }
+    type: String,
+  },
+  rocketId: {
+    type: String,
+  },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

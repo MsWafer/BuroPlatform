@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult, Result } = require("express-validator");
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
+const fetch = require("node-fetch");
 
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
@@ -84,7 +85,7 @@ router.post(
 
       await project.save();
 
-      await fetch("http://195.2.71.115:3000/api/v1/channels.create", {
+      await fetch(`${process.env.CHAT}/api/v1/channels.create`, {
         method: "post",
         headers: {
           Accept: "application/json, text/plain, */*",
@@ -434,6 +435,20 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { $pull: { projects: project.id } }
       );
 
+      await fetch(`${process.env.CHAT}/api/v1/channels.kick`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Auth-Token": process.env.tokena,
+          "X-User-Id": process.env.userId,
+        },
+        body: JSON.stringify({
+          roomId: project.rocketchat,
+          userId: user.rocketId,
+        }),
+      });
+
       res.status(200).json({
         msg: `Вы вышли из команды проекта ${req.params.crypt}`,
         crypter: project.crypter,
@@ -474,6 +489,20 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       { _id: req.user.id },
       { $push: { projects: project } }
     );
+
+    await fetch(`${process.env.CHAT}/api/v1/channels.invite`, {
+      method: "post",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "X-Auth-Token": process.env.tokena,
+        "X-User-Id": process.env.userId,
+      },
+      body: JSON.stringify({
+        roomId: project.rocketchat,
+        userId: user.rocketId,
+      }),
+    });
 
     res.status(200).json({
       msg: `Вы были добавлены в команду проекта ${req.params.crypt}`,
@@ -559,6 +588,14 @@ router.delete("/updteam/:crypt", manauth, async (req, res) => {
   }
 });
 
+///////////////////
+///////////////////
+///////////////////
+/////SPRINTS///////
+///////////////////
+///////////////////
+///////////////////
+
 //add sprint to project found by crypt
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
@@ -631,70 +668,6 @@ router.get("/sprints/:crypt", auth, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
-  }
-});
-
-//add new task to sprint
-router.post("/sprints/addtask/:id", manauth, async (req, res) => {
-  try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
-    if (!sprint) {
-      return res.json({ msg: "Указанный спринт не найден" });
-    }
-    if (!req.body.tasks) {
-      return res.json({ msg: "Добавьте задачу" });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ msg: "server error" });
-  }
-
-  try {
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id },
-      { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
-      { multi: true }
-    );
-    console.log("new tasks added to sprint");
-    res.json({ msg: "Задача добавлена" });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ msg: "server error" });
-  }
-});
-
-//deactivate task
-router.put("/sprints/DAtask/:id", manauth, async (req, res) => {
-  try {
-    let tasks = await Sprint.findOne({ _id: req.params.id });
-    let status = tasks.tasks.filter((task) => task._id == req.body.taskid)[0]
-      .taskStatus;
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $set: { "tasks.$.taskStatus": !status } }
-    );
-    console.log("task de/activated");
-    return res.json({ msg: "Изменен статус задачи" });
-  } catch (error) {
-    console.log(error);
-    return res.json({ err: "server error" });
-  }
-});
-
-//delete task
-router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
-  try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
-    let deltask = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $pull: { tasks: deltask } }
-    );
-    console.log("task deleted");
-    return res.json({ msg: "Задача удалена" });
-  } catch (error) {
-    console.log(error);
-    return res.json({ err: "server error" });
   }
 });
 
@@ -792,6 +765,121 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     await Sprint.findOneAndRemove({ _id: req.params.id });
     console.log("sprint deleted");
     return res.json({ msg: "Спринт удален" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+});
+
+/////////TASKS//////////
+
+//add new task to sprint
+router.post("/sprints/addtask/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.json({ msg: "Указанный спринт не найден" });
+    }
+    if (!req.body.tasks) {
+      return res.json({ msg: "Добавьте задачу" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+
+  try {
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id },
+      { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
+      { multi: true }
+    );
+    console.log("new tasks added to sprint");
+    res.json({ msg: "Задача добавлена" });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ msg: "server error" });
+  }
+});
+
+//deactivate task
+router.put("/sprints/DAtask/:id", manauth, async (req, res) => {
+  try {
+    let tasks = await Sprint.findOne({ _id: req.params.id });
+    let status = tasks.tasks.filter((task) => task._id == req.body.taskid)[0]
+      .taskStatus;
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id, "tasks._id": req.body.taskid },
+      { $set: { "tasks.$.taskStatus": !status } }
+    );
+    console.log("task de/activated");
+    return res.json({ msg: "Изменен статус задачи" });
+  } catch (error) {
+    console.log(error);
+    return res.json({ err: "server error" });
+  }
+});
+
+//delete task
+router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let deltask = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id, "tasks._id": req.body.taskid },
+      { $pull: { tasks: deltask } }
+    );
+    console.log("task deleted");
+    return res.json({ msg: "Задача удалена" });
+  } catch (error) {
+    console.log(error);
+    return res.json({ err: "server error" });
+  }
+});
+
+///////////////////
+///////////////////
+///////////////////
+///////TAGS////////
+///////////////////
+///////////////////
+///////////////////
+
+//add tag to project
+router.put("/tag/:crypt", auth, async (req, res) => {
+  try {
+    await Project.findOneAndUpdate(
+      { crypt: req.params.crypt },
+      { $push: { tags: req.body.tag } }
+    );
+    console.log("+tag");
+    return res.json({ msg: "Тэг добавлен" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+});
+
+//remove tag from project
+router.delete("/tag/:crypt", auth, async (req, res) => {
+  try {
+    await Project.findOneAndUpdate(
+      { crypt: req.params.crypt },
+      { $pull: { tags: req.body.tag } }
+    );
+    console.log("-tag");
+    return res.json({ msg: "Тэг удален" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+});
+
+//find by tags
+router.get("/tag/search", auth, async (req, res) => {
+  try {
+    let projects = await Project.find({ tags: { $all: req.body.tags } });
+    return res.json(projects);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });

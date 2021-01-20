@@ -56,11 +56,16 @@ const ProjectSchema = new Schema({
   },
   status: {
     type: Boolean,
-    default:false
+    default: false,
   },
   rocketchat: {
-    type: String
-  }
+    type: String,
+  },
+  tags: [
+    {
+      type: String,
+    },
+  ],
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);

@@ -20,9 +20,10 @@ app.use("/tickets", require("./routes/tickets"));
 app.use("/projects", require("./routes/projects"));
 app.use("/news", require("./routes/news"));
 app.use("/props", require("./routes/props"));
+app.use("/divisions", require("./routes/div"));
 
-let a = async () => {
-  await fetch("http://195.2.71.115:3000/api/v1/login", {
+let rc = async () => {
+  await fetch(`${process.env.CHAT}/api/v1/login`, {
     method: "post",
     headers: {
       Accept: "application/json, text/plain, */*",
@@ -36,10 +37,10 @@ let a = async () => {
         (process.env.tokena = res.data.authToken),
         (process.env.userid = res.data.userId)
       )
-    )
-    .then(() => console.log(process.env.tokena));
+    );
+  // .then(() => console.log(process.env.tokena));
 };
-a();
+rc();
 
 const PORT = process.env.PORT || 7070;
 
