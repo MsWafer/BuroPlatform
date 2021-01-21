@@ -66,7 +66,7 @@ router.post(
       {
         method: "get",
         headers: {
-          Accept: "application/json, text/plain, */*",
+          Accept: "application/json",
           "Content-Type": "application/json",
           "X-Auth-Token": process.env.tokena,
           "X-User-Id": process.env.userId,
@@ -74,7 +74,7 @@ router.post(
       }
     )
       .then((response) => response.json())
-      .then((response) => console.log(response))
+      // .then((response) => console.log(response))
       .then((response) => {
         if (!response.success) {
           rocketId = undefined;
@@ -82,8 +82,8 @@ router.post(
           rocketId = response.user._id;
         }
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((response) => {
+        console.error(response.message);
         return res.status(400).json({ msg: "server error" });
       });
 
@@ -128,7 +128,7 @@ router.post(
       await fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
         method: "post",
         headers: {
-          Accept: "application/json, text/plain, */*",
+          Accept: "application/json",
           "Content-Type": "application/json",
           "X-Auth-Token": process.env.tokena,
           "X-User-Id": process.env.userId,
