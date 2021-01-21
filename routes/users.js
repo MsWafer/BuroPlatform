@@ -74,7 +74,7 @@ router.post(
       }
     )
       .then((response) => response.json())
-      .then((response) => console.log(process.env))
+      .then((response) => console.log(response))
       .then((response) => {
         if (!response.success) {
           rocketId = undefined;
