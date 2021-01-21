@@ -254,6 +254,7 @@ router.get("/me", auth, async (req, res) => {
     return res.json({
       id: user.id,
       name: user.name,
+      lastname: user.lastname,
       email: user.email,
       position: user.position,
       permission: user.permission,
@@ -458,6 +459,7 @@ router.get("/:id", async (req, res) => {
     return res.json({
       id: user.id,
       name: user.name,
+      lastname: user.lastname,
       email: user.email,
       position: user.position,
       projects: user.projects,
