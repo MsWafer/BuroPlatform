@@ -32,7 +32,6 @@ let rc = async () => {
     body: JSON.stringify({ user: process.env.R_U, password: process.env.R_P }),
   })
     .then((res) => res.json())
-    // .then((res) => console.log(res))
     .then(
       (res) => (
         (process.env.tokena = res.data.authToken),
