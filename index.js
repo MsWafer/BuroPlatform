@@ -32,14 +32,14 @@ let rc = async () => {
     body: JSON.stringify({ user: process.env.R_U, password: process.env.R_P }),
   })
     .then((res) => res.json())
-    .then((res) => console.log(res.data.authToken))
+    // .then((res) => console.log(res))
     .then(
       (res) => (
         (process.env.tokena = res.data.authToken),
         (process.env.userid = res.data.userId)
       )
-    );
-  // .then(() => console.log(process.env.tokena));
+    )
+    .then(() => console.log(process.env.tokena));
 };
 rc();
 
