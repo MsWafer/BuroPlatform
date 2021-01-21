@@ -57,8 +57,10 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    const { email, rocketname } = req.body;
+
     await fetch(
-      `${process.env.CHAT}/api/v1/users.info?username=${req.body.rocketname}`,
+      `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
       {
         method: "get",
         headers: {
@@ -69,16 +71,16 @@ router.post(
         },
       }
     )
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.status === 400) {
+      .then((response) => response.json())
+      .then((response) => {
+        if (!response.success) {
           return res.json({
             msg: "Не найден пользователь с указанным именем пользователя",
           });
+        } else {
+          rocketId = response.user._id;
         }
       });
-
-    const { email, rocketname } = req.body;
 
     // if (permCode == process.env.codeA) {
     //   permission1 = "user";
@@ -116,35 +118,12 @@ router.post(
         email,
         rocketname,
         avatar: "avatars/spurdo.png",
-        password: pwd,
+        rocketId,
       });
 
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(pwd, salt);
 
-      await fetch(
-        `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
-        {
-          method: "get",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-            "X-Auth-Token": process.env.tokena,
-            "X-User-Id": process.env.userId,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((res) =>
-          User.findOneAndUpdate(
-            { email: req.body.email },
-            {
-              $set: {
-                rocketId: res.user._id,
-              },
-            }
-          )
-        );
       await fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
         method: "post",
         headers: {
@@ -153,7 +132,7 @@ router.post(
           "X-Auth-Token": process.env.tokena,
           "X-User-Id": process.env.userId,
         },
-        body: JSON.stringify({ channel: `@${req.body.rocketchat}`, text: pwd }),
+        body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
       });
 
       // //password encryption
