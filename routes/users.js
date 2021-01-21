@@ -61,25 +61,6 @@ router.post(
     let { email, rocketname } = req.body;
     rocketname = encodeURI(rocketname);
 
-    await fetch(`${process.env.CHAT}/api/v1/login`, {
-      method: "post",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user: process.env.R_U,
-        password: process.env.R_P,
-      }),
-    })
-      .then((res) => res.json())
-      .then(
-        (res) => (
-          (process.env.tokena = res.data.authToken),
-          (process.env.userid = res.data.userId)
-        )
-      );
-
     await fetch(
       `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
       {
@@ -94,19 +75,16 @@ router.post(
     )
       .then((response) => response.json())
       .then((response) => {
-        return console.log(response);
-      })
-      .then((response) => {
         if (!response.success) {
           rocketId = undefined;
         } else {
           rocketId = response.user._id;
         }
-      })
-      .catch((response) => {
-        console.error(response.message);
-        return res.status(400).json({ msg: "server error" });
       });
+    // .catch((response) => {
+    //   console.error(response.message);
+    //   return res.status(400).json({ msg: "server error" });
+    // });
 
     if (typeof rocketId === "undefined") {
       return res
