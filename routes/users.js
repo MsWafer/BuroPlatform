@@ -57,7 +57,8 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, rocketname } = req.body;
+    let { email, rocketname } = req.body;
+    rocketname = encodeURI(rocketname);
 
     await fetch(
       `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
@@ -74,23 +75,21 @@ router.post(
       .then((response) => response.json())
       .then((response) => {
         if (!response.success) {
-          return res.json({
-            msg: "Не найден пользователь с указанным именем пользователя",
-          });
+          rocketId = undefined;
         } else {
           rocketId = response.user._id;
         }
+      })
+      .catch((error) => {
+        console.error(error);
+        return res.status(400).json({ msg: "server error" });
       });
 
-    // if (permCode == process.env.codeA) {
-    //   permission1 = "user";
-    // } else if (permCode == process.env.codeB) {
-    //   permission1 = "manager";
-    // } else if (permCode == process.env.codeC) {
-    //   permission1 = "admin";
-    // } else {
-    //   return res.json({ msg: "Введите правильный код регистрации" });
-    // }
+    if (typeof rocketId === "undefined") {
+      return res
+        .status(404)
+        .json({ msg: "Указанный пользователь rocket.chat не найден" });
+    }
 
     function makeid(length) {
       let result = "";
@@ -107,9 +106,9 @@ router.post(
     try {
       let user = await User.findOne({ email });
       if (user) {
-        return res.status(400).json({
-          errors: [{ msg: "Пользователь с указанным email уже существует" }],
-        });
+        return res
+          .status(400)
+          .json({ msg: "Пользователь с указанным email уже существует" });
       }
 
       let pwd = makeid(6);
@@ -134,10 +133,6 @@ router.post(
         },
         body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
       });
-
-      // //password encryption
-      // const salt = await bcrypt.genSalt(10);
-      // user.password = await bcrypt.hash(password, salt);
 
       await user.save();
       console.log("new user registered");
