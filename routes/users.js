@@ -43,6 +43,7 @@ const upload = multer({
 const User = require("../models/User");
 const Project = require("../models/Project");
 const { findOneAndUpdate } = require("../models/User");
+const { response } = require("express");
 
 //registration
 router.post(
@@ -73,6 +74,7 @@ router.post(
       }
     )
       .then((response) => response.json())
+      .then((response) => console.log(response))
       .then((response) => {
         if (!response.success) {
           rocketId = undefined;
