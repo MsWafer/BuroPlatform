@@ -115,7 +115,6 @@ router.post(
       user = new User({
         email,
         rocketname,
-        password,
         avatar: "avatars/spurdo.png",
         password: pwd,
       });
