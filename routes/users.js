@@ -119,8 +119,11 @@ router.post(
         password: pwd,
       });
 
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(pwd, salt);
+
       await fetch(
-        `${process.env.CHAT}/api/v1/users.info?username=${req.body.rocketname}`,
+        `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
         {
           method: "get",
           headers: {
@@ -137,13 +140,11 @@ router.post(
             { email: req.body.email },
             {
               $set: {
-                rocketname: req.body.rocketname,
                 rocketId: res.user._id,
               },
             }
           )
         );
-      console.log(a);
       await fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
         method: "post",
         headers: {
