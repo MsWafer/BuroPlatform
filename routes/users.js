@@ -61,6 +61,20 @@ router.post(
     let { email, rocketname } = req.body;
     rocketname = encodeURI(rocketname);
 
+    await fetch(`${process.env.CHAT}/api/v1/login`, {
+      method: "post",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user: process.env.R_U,
+        password: process.env.R_P,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => (tokena = res.data.authToken), (userId = res.data.userId));
+
     await fetch(
       `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
       {
@@ -68,8 +82,8 @@ router.post(
         headers: {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
-          "X-Auth-Token": process.env.tokena,
-          "X-User-Id": process.env.userId,
+          "X-Auth-Token": tokena,
+          "X-User-Id": userId,
         },
       }
     )
