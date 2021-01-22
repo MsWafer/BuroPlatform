@@ -211,8 +211,8 @@ router.put(
   auth,
   async (req, res) => {
     try {
-      const a = await User.findOne({ _id: req.user.id });
-      if (!a) {
+      const user = await User.findOne({ _id: req.user.id });
+      if (!user) {
         return res.json({ msg: "Пользователь не найден" });
       }
 
