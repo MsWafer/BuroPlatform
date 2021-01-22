@@ -45,6 +45,8 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const { findOneAndUpdate } = require("../models/User");
 const { response } = require("express");
+const rcusercheck = require("../middleware/rcusercheck");
+const rcpwdsend = require("../middleware/rcpwdsend");
 
 //registration
 router.post(
@@ -81,37 +83,38 @@ router.post(
       return res.status(500).json({ msg: "server error" });
     }
 
-    await fetch(`${process.env.CHAT}/api/v1/login`, {
-      method: "post",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user: process.env.R_U,
-        password: process.env.R_P,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) =>
-        fetch(`${process.env.CHAT}/api/v1/users.info?username=${rocketname}`, {
-          method: "get",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-            "X-Auth-Token": res.data.authToken,
-            "X-User-Id": res.data.userId,
-          },
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            if (!response.success) {
-              rocketId = undefined;
-            } else {
-              rocketId = response.user._id;
-            }
-          })
-      );
+    await rcusercheck(req,res)
+    // fetch(`${process.env.CHAT}/api/v1/login`, {
+    //   method: "post",
+    //   headers: {
+    //     Accept: "application/json, text/plain, */*",
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     user: process.env.R_U,
+    //     password: process.env.R_P,
+    //   }),
+    // })
+    //   .then((res) => res.json())
+    //   .then((res) =>
+    //     fetch(`${process.env.CHAT}/api/v1/users.info?username=${rocketname}`, {
+    //       method: "get",
+    //       headers: {
+    //         Accept: "application/json, text/plain, */*",
+    //         "Content-Type": "application/json",
+    //         "X-Auth-Token": res.data.authToken,
+    //         "X-User-Id": res.data.userId,
+    //       },
+    //     })
+    //       .then((response) => response.json())
+    //       .then((response) => {
+    //         if (!response.success) {
+    //           rocketId = undefined;
+    //         } else {
+    //           rocketId = response.user._id;
+    //         }
+    //       })
+    //   );
 
     if (typeof rocketId === "undefined") {
       return res
@@ -144,30 +147,31 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(pwd, salt);
 
-      await fetch(`${process.env.CHAT}/api/v1/login`, {
-        method: "post",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: process.env.R_U,
-          password: process.env.R_P,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) =>
-          fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
-            method: "post",
-            headers: {
-              Accept: "application/json, text/plain, */*",
-              "Content-Type": "application/json",
-              "X-Auth-Token": res.data.authToken,
-              "X-User-Id": res.data.userId,
-            },
-            body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
-          })
-        );
+      await rcpwdsend(req,res,pwd)
+      // fetch(`${process.env.CHAT}/api/v1/login`, {
+      //   method: "post",
+      //   headers: {
+      //     Accept: "application/json, text/plain, */*",
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     user: process.env.R_U,
+      //     password: process.env.R_P,
+      //   }),
+      // })
+      //   .then((res) => res.json())
+      //   .then((res) =>
+      //     fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+      //       method: "post",
+      //       headers: {
+      //         Accept: "application/json, text/plain, */*",
+      //         "Content-Type": "application/json",
+      //         "X-Auth-Token": res.data.authToken,
+      //         "X-User-Id": res.data.userId,
+      //       },
+      //       body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
+      //     })
+      //   );
 
       await user.save();
       console.log("new user registered");
