@@ -190,11 +190,11 @@ router.get("/", async (req, res) => {
 router.get("/:auth", async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
-      .populate("team", "-projects -password -permission -avatar -tickets -__v")
+      .populate("team", "-projects -password -permission -tickets -__v")
       .populate("sprints");
     let projectTitle = await Project.find({ title: req.params.auth })
       .select("dateStart team sprints crypt title crypter status _id")
-      .populate("team", "-projects -password -avatar -permission -tickets -__v")
+      .populate("team", "-projects -password -permission -tickets -__v")
       .populate("sprints");
     if (!project && !projectTitle) {
       console.log("no projects found");
@@ -521,7 +521,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
     );
 
     await rcinvprj(req,res,project,user)
-    
+
     // fetch(`${process.env.CHAT}/api/v1/login`, {
     //   method: "post",
     //   headers: {
