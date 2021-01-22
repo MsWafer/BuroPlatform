@@ -93,6 +93,7 @@ router.post(
             }
           })
       );
+    console.log(rocketId);
 
     // await fetch(
     //   `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
@@ -157,16 +158,30 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(pwd, salt);
 
-      await fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
         headers: {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
-          "X-Auth-Token": process.env.tokena,
-          "X-User-Id": process.env.userId,
         },
-        body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
-      });
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) =>
+          fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": res.data.authToken,
+              "X-User-Id": res.data.userId,
+            },
+            body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
+          })
+        );
 
       await user.save();
       console.log("new user registered");
