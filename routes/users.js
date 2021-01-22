@@ -73,28 +73,47 @@ router.post(
       }),
     })
       .then((res) => res.json())
-      .then((res) => (tokena = res.data.authToken), (userId = res.data.userId));
+      // .then((res) => (tokena = res.data.authToken), (userId = res.data.userId))
+      .then((res) =>
+        fetch(`${process.env.CHAT}/api/v1/users.info?username=${rocketname}`, {
+          method: "get",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "X-Auth-Token": res.data.authToken,
+            "X-User-Id": res.data.userId,
+          },
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (!response.success) {
+              rocketId = undefined;
+            } else {
+              rocketId = response.user._id;
+            }
+          })
+      );
 
-    await fetch(
-      `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
-      {
-        method: "get",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-          "X-Auth-Token": tokena,
-          "X-User-Id": userId,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((response) => {
-        if (!response.success) {
-          rocketId = undefined;
-        } else {
-          rocketId = response.user._id;
-        }
-      });
+    // await fetch(
+    //   `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
+    //   {
+    //     method: "get",
+    //     headers: {
+    //       Accept: "application/json, text/plain, */*",
+    //       "Content-Type": "application/json",
+    //       "X-Auth-Token": tokena,
+    //       "X-User-Id": userId,
+    //     },
+    //   }
+    // )
+    //   .then((response) => response.json())
+    //   .then((response) => {
+    //     if (!response.success) {
+    //       rocketId = undefined;
+    //     } else {
+    //       rocketId = response.user._id;
+    //     }
+    //   });
     // .catch((response) => {
     //   console.error(response.message);
     //   return res.status(400).json({ msg: "server error" });
