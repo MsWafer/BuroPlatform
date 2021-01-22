@@ -7,6 +7,7 @@ const { check, validationResult } = require("express-validator");
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const admauth = require("../middleware/admauth");
+const rocketlogin = require("../middleware/rocketlogin");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -61,6 +62,25 @@ router.post(
     let { email, rocketname } = req.body;
     rocketname = encodeURI(rocketname);
 
+    //existing user check
+    try {
+      let rcheck = await User.findOne({ rocketname });
+      if (rcheck) {
+        return res.status(400).json({
+          msg: "Пользователь с указанным именем rocket.chat уже существует",
+        });
+      }
+      let user = await User.findOne({ email });
+      if (user) {
+        return res
+          .status(400)
+          .json({ msg: "Пользователь с указанным email уже существует" });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ msg: "server error" });
+    }
+
     await fetch(`${process.env.CHAT}/api/v1/login`, {
       method: "post",
       headers: {
@@ -73,7 +93,6 @@ router.post(
       }),
     })
       .then((res) => res.json())
-      // .then((res) => (tokena = res.data.authToken), (userId = res.data.userId))
       .then((res) =>
         fetch(`${process.env.CHAT}/api/v1/users.info?username=${rocketname}`, {
           method: "get",
@@ -93,32 +112,6 @@ router.post(
             }
           })
       );
-    console.log(rocketId);
-
-    // await fetch(
-    //   `${process.env.CHAT}/api/v1/users.info?username=${rocketname}`,
-    //   {
-    //     method: "get",
-    //     headers: {
-    //       Accept: "application/json, text/plain, */*",
-    //       "Content-Type": "application/json",
-    //       "X-Auth-Token": tokena,
-    //       "X-User-Id": userId,
-    //     },
-    //   }
-    // )
-    //   .then((response) => response.json())
-    //   .then((response) => {
-    //     if (!response.success) {
-    //       rocketId = undefined;
-    //     } else {
-    //       rocketId = response.user._id;
-    //     }
-    //   });
-    // .catch((response) => {
-    //   console.error(response.message);
-    //   return res.status(400).json({ msg: "server error" });
-    // });
 
     if (typeof rocketId === "undefined") {
       return res
@@ -139,13 +132,6 @@ router.post(
     }
 
     try {
-      let user = await User.findOne({ email });
-      if (user) {
-        return res
-          .status(400)
-          .json({ msg: "Пользователь с указанным email уже существует" });
-      }
-
       let pwd = makeid(6);
 
       user = new User({
@@ -209,16 +195,15 @@ router.post(
   }
 );
 
-//reg2
+//user edit
 router.put(
-  "/reg2",
+  "/me",
   [
     check("name", "Введите имя").not().isEmpty(),
     check("lastname", "Введите фамилию").not().isEmpty(),
     check("division", "Выберите отдел").not().isEmpty(),
     check("position", "Введите должность").not().isEmpty(),
   ],
-  upload.single("file"),
   auth,
   async (req, res) => {
     try {
@@ -226,7 +211,7 @@ router.put(
       if (!a) {
         return res.json({ msg: "Пользователь не найден" });
       }
-      const oldavatar = a.avatar;
+
       await User.findOneAndUpdate(
         { _id: req.params.id },
         {
@@ -235,17 +220,10 @@ router.put(
             lastname: req.body.lastname,
             division: req.body.division,
             position: req.body.position,
-            avatar: req.file ? "avatars/" + req.file.filename : user.avatar,
           },
         }
       );
-      if (oldavatar != "avatars/spurdo.png") {
-        fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
-          if (err) {
-            throw err;
-          }
-        });
-      }
+
       return res.json({ msg: "uspeh", userid: user.id });
     } catch (error) {
       console.error(error);
@@ -427,25 +405,25 @@ router.put("/me/rocket", auth, async (req, res) => {
 });
 
 //edit current user
-router.put("/me", auth, async (req, res) => {
-  try {
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      {
-        $set: {
-          name: req.body.name,
-          email: req.body.email,
-          position: req.body.position,
-        },
-      }
-    );
-    console.log("user info updated");
-    return res.json({ msg: "Ваш профиль был обновлен" });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("server error");
-  }
-});
+// router.put("/me", auth, async (req, res) => {
+//   try {
+//     await User.findOneAndUpdate(
+//       { _id: req.user.id },
+//       {
+//         $set: {
+//           name: req.body.name,
+//           email: req.body.email,
+//           position: req.body.position,
+//         },
+//       }
+//     );
+//     console.log("user info updated");
+//     return res.json({ msg: "Ваш профиль был обновлен" });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send("server error");
+//   }
+// });
 
 //find all users
 router.get("/all", async (req, res) => {

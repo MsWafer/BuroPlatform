@@ -22,26 +22,6 @@ app.use("/news", require("./routes/news"));
 app.use("/props", require("./routes/props"));
 app.use("/divisions", require("./routes/div"));
 
-let rc = async () => {
-  await fetch(`${process.env.CHAT}/api/v1/login`, {
-    method: "post",
-    headers: {
-      Accept: "application/json, text/plain, */*",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ user: process.env.R_U, password: process.env.R_P }),
-  })
-    .then((res) => res.json())
-    .then(
-      (res) => (
-        (process.env.tokena = res.data.authToken),
-        (process.env.userid = res.data.userId)
-      )
-    )
-    .then(() => console.log(process.env.tokena));
-};
-rc();
-
 const PORT = process.env.PORT || 7070;
 
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));

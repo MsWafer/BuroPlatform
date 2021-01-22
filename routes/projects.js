@@ -84,24 +84,36 @@ router.post(
       });
 
       await project.save();
-
-      await fetch(`${process.env.CHAT}/api/v1/channels.create`, {
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
         headers: {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
-          "X-Auth-Token": process.env.tokena,
-          "X-User-Id": process.env.userId,
         },
-        body: JSON.stringify({ name: crypter }),
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
       })
         .then((res) => res.json())
-        .then((res) => console.log(res))
         .then((res) =>
-          Project.findOneAndUpdate(
-            { crypt: crypt },
-            { $set: { rocketchat: res.channel._id } }
-          )
+          fetch(`${process.env.CHAT}/api/v1/channels.create`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": res.data.authToken,
+              "X-User-Id": res.data.userId,
+            },
+            body: JSON.stringify({ name: crypter }),
+          })
+            .then((response) => response.json())
+            .then((response) =>
+              Project.findOneAndUpdate(
+                { crypt: crypt },
+                { $set: { rocketchat: response.channel._id } }
+              )
+            )
         );
 
       // if (!userid || userid == null || userid == undefined) {
@@ -434,20 +446,33 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { _id: req.user.id },
         { $pull: { projects: project.id } }
       );
-
-      await fetch(`${process.env.CHAT}/api/v1/channels.kick`, {
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
         headers: {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
-          "X-Auth-Token": process.env.tokena,
-          "X-User-Id": process.env.userId,
         },
         body: JSON.stringify({
-          roomId: project.rocketchat,
-          userId: user.rocketId,
+          user: process.env.R_U,
+          password: process.env.R_P,
         }),
-      });
+      })
+        .then((res) => res.json())
+        .then((res) =>
+          fetch(`${process.env.CHAT}/api/v1/channels.kick`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": res.data.authToken,
+              "X-User-Id": res.data.userId,
+            },
+            body: JSON.stringify({
+              roomId: project.rocketchat,
+              userId: user.rocketId,
+            }),
+          })
+        );
 
       res.status(200).json({
         msg: `Вы вышли из команды проекта ${req.params.crypt}`,
@@ -489,20 +514,33 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       { _id: req.user.id },
       { $push: { projects: project } }
     );
-
-    await fetch(`${process.env.CHAT}/api/v1/channels.invite`, {
+    await fetch(`${process.env.CHAT}/api/v1/login`, {
       method: "post",
       headers: {
         Accept: "application/json, text/plain, */*",
         "Content-Type": "application/json",
-        "X-Auth-Token": process.env.tokena,
-        "X-User-Id": process.env.userId,
       },
       body: JSON.stringify({
-        roomId: project.rocketchat,
-        userId: user.rocketId,
+        user: process.env.R_U,
+        password: process.env.R_P,
       }),
-    });
+    })
+      .then((res) => res.json())
+      .then((res) =>
+        fetch(`${process.env.CHAT}/api/v1/channels.invite`, {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "X-Auth-Token": res.data.authToken,
+            "X-User-Id": res.data.userId,
+          },
+          body: JSON.stringify({
+            roomId: project.rocketchat,
+            userId: user.rocketId,
+          }),
+        })
+      );
 
     res.status(200).json({
       msg: `Вы были добавлены в команду проекта ${req.params.crypt}`,
