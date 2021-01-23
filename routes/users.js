@@ -263,6 +263,7 @@ router.get("/me", auth, async (req, res) => {
       id: user.id,
       name: user.name,
       lastname: user.lastname,
+      division: user.division,
       email: user.email,
       position: user.position,
       permission: user.permission,
@@ -436,7 +437,7 @@ router.put("/me/rocket", auth, async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     let users = await User.find()
-      .select("-password -avatar")
+      .select("-password")
       .populate("projects", "-team")
       .populate("tickets", "-user");
     console.log("GET all users");
@@ -468,6 +469,7 @@ router.get("/:id", async (req, res) => {
       id: user.id,
       name: user.name,
       lastname: user.lastname,
+      division: user.division,
       email: user.email,
       position: user.position,
       projects: user.projects,

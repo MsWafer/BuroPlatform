@@ -27,7 +27,7 @@ router.post(
         description: req.body.description,
       });
       await div.save();
-      return res.json({ msg: "Отдел создан" });
+      return res.json({ msg: "Отдел создан", div:div });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ msg: "server error" });
