@@ -47,6 +47,7 @@ const { findOneAndUpdate } = require("../models/User");
 const { response } = require("express");
 const rcusercheck = require("../middleware/rcusercheck");
 const rcpwdsend = require("../middleware/rcpwdsend");
+const Division = require("../models/Division");
 
 //registration
 router.post(
@@ -215,6 +216,8 @@ router.put(
       if (!user) {
         return res.json({ msg: "Пользователь не найден" });
       }
+      let div = await Division.findOne({divname: req.body.division})
+      if(!div){return res.json({msg:'Отдел не найден'})}
 
       await User.findOneAndUpdate(
         { _id: req.params.id },
@@ -222,7 +225,7 @@ router.put(
           $set: {
             name: req.body.name,
             lastname: req.body.lastname,
-            division: req.body.division,
+            division: div,
             position: req.body.position,
           },
         }
