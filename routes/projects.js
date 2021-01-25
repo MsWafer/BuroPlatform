@@ -375,7 +375,7 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
         .status(400)
         .json({ msg: "Не найден пользователь с указанным _id" });
     }
-    res.status(500).send("server error");
+    res.status(500).json({msg:"server error"});
   }
   let huy = await Project.findOne({ crypt: req.params.crypt }).select(
     "-_id team"
@@ -402,8 +402,10 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
       { $push: { projects: project } }
     );
 
+    await rcinvprj(req,res,project,user)
+
     res.status(200).json({
-      msg: `Пользователи добавлены в команду проекта ${req.params.crypt}`,
+      msg: `Пользователь добавлены в команду проекта ${req.params.crypt}`,
       crypter: project.crypter,
       title: project.title,
       crypt: project.crypt,
