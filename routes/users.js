@@ -246,6 +246,7 @@ router.get("/me", auth, async (req, res) => {
       .select("-password")
       .populate("projects", -"team")
       .populate("tickets", "-user")
+      .populate("division")
       .populate({
         path: "sprints",
         match: { status: false },
@@ -439,6 +440,7 @@ router.get("/all", async (req, res) => {
     let users = await User.find()
       .select("-password")
       .populate("projects", "-team")
+      .populate("division")
       .populate("tickets", "-user");
     console.log("GET all users");
     return res.json(users);
@@ -454,6 +456,7 @@ router.get("/:id", async (req, res) => {
     let user = await User.findById(req.params.id)
       .select("-password")
       .populate("projects", "-team")
+      .populate("division")
       .populate("tickets", "-user");
     if (!user) {
       console.log("user not found");
