@@ -65,7 +65,7 @@ router.put("/:divname", auth, async (req, res) => {
       return res.json({ msg: "Отдел не найден" });
     }
     await Division.findOneAndUpdate(
-      { divname: req.params.divname },
+      { divname: div.divname },
       { $push: { members: user } }
     );
     await User.findOneAndUpdate(
@@ -86,8 +86,9 @@ router.put("/:divname", auth, async (req, res) => {
 router.delete("/:divname", auth, async (req, res) => {
   try {
     let div = await Division.findOne({ divname: req.params.divname });
+    if(!div){return res.json({msg:'Отдел не найден'})}
     await Division.findOneAndUpdate(
-      { divname: req.params.divname },
+      { divname: div.divname },
       { $pull: { members: user } }
     );
     await User.findOneAndUpdate(

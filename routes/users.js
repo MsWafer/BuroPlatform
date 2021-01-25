@@ -220,7 +220,7 @@ router.put(
       if(!div){return res.json({msg:'Отдел не найден'})}
 
       await User.findOneAndUpdate(
-        { _id: req.params.id },
+        { _id: req.user.id },
         {
           $set: {
             name: req.body.name,
