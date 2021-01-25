@@ -851,7 +851,7 @@ router.post("/sprints/addtask/:id", manauth, async (req, res) => {
 });
 
 //deactivate task
-router.put("/sprints/DAtask/:id", manauth, async (req, res) => {
+router.put("/sprints/DAtask/:id", auth, async (req, res) => {
   try {
     let tasks = await Sprint.findOne({ _id: req.params.id });
     let status = tasks.tasks.filter((task) => task._id == req.body.taskid)[0]
