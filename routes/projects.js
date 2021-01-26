@@ -218,6 +218,7 @@ router.get("/:auth", async (req, res) => {
         status: project.status,
         crypter: project.crypter,
         customer: project.customer,
+        urn: project.urn
       });
     } else if (projectTitle) {
       console.log("found projects by title");
