@@ -13,7 +13,7 @@ module.exports = async (project,user) => fetch(`${process.env.CHAT}/api/v1/login
 })
   .then((res) => res.json())
   .then((res) =>
-    fetch(`${process.env.CHAT}/api/v1/channels.kick`, {
+    fetch(`${process.env.CHAT}/api/v1/groups.kick`, {
       method: "post",
       headers: {
         Accept: "application/json, text/plain, */*",

@@ -71,37 +71,9 @@ router.post(
 
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
-      let rname;
+      let rname = title.replace(/:/g,"")
 
-      await rcprojcreate(title, rocketchat, rname)
-
-      // fetch(`${process.env.CHAT}/api/v1/login`, {
-      //   method: "post",
-      //   headers: {
-      //     Accept: "application/json, text/plain, */*",
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     user: process.env.R_U,
-      //     password: process.env.R_P,
-      //   }),
-      // })
-      //   .then((res) => res.json())
-      //   .then((res) =>
-      //     fetch(`${process.env.CHAT}/api/v1/channels.create`, {
-      //       method: "post",
-      //       headers: {
-      //         Accept: "application/json, text/plain, */*",
-      //         "Content-Type": "application/json",
-      //         "X-Auth-Token": res.data.authToken,
-      //         "X-User-Id": res.data.userId,
-      //       },
-      //       body: JSON.stringify({ name: crypter }),
-      //     })
-      //       .then((response) => response.json())
-      //       .then((response) => rocketchat = response.channel._id)
-      //   );
-
+      await rcprojcreate(rname, rocketchat)
 
       project = new Project({
         crypt,
@@ -455,33 +427,6 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { $pull: { projects: project.id } }
       );
       await rckickprj(project,user)
-      // fetch(`${process.env.CHAT}/api/v1/login`, {
-      //   method: "post",
-      //   headers: {
-      //     Accept: "application/json, text/plain, */*",
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     user: process.env.R_U,
-      //     password: process.env.R_P,
-      //   }),
-      // })
-      //   .then((res) => res.json())
-      //   .then((res) =>
-      //     fetch(`${process.env.CHAT}/api/v1/channels.kick`, {
-      //       method: "post",
-      //       headers: {
-      //         Accept: "application/json, text/plain, */*",
-      //         "Content-Type": "application/json",
-      //         "X-Auth-Token": res.data.authToken,
-      //         "X-User-Id": res.data.userId,
-      //       },
-      //       body: JSON.stringify({
-      //         roomId: project.rocketchat,
-      //         userId: user.rocketId,
-      //       }),
-      //     })
-      //   );
 
       res.status(200).json({
         msg: `Вы вышли из команды проекта ${req.params.crypt}`,
@@ -525,34 +470,6 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
     );
 
     await rcinvprj(project,user)
-
-    // fetch(`${process.env.CHAT}/api/v1/login`, {
-    //   method: "post",
-    //   headers: {
-    //     Accept: "application/json, text/plain, */*",
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     user: process.env.R_U,
-    //     password: process.env.R_P,
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then((res) =>
-    //     fetch(`${process.env.CHAT}/api/v1/channels.invite`, {
-    //       method: "post",
-    //       headers: {
-    //         Accept: "application/json, text/plain, */*",
-    //         "Content-Type": "application/json",
-    //         "X-Auth-Token": res.data.authToken,
-    //         "X-User-Id": res.data.userId,
-    //       },
-    //       body: JSON.stringify({
-    //         roomId: project.rocketchat,
-    //         userId: user.rocketId,
-    //       }),
-    //     })
-    //   );
 
     res.status(200).json({
       msg: `Вы были добавлены в команду проекта ${req.params.crypt}`,
