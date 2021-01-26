@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-module.exports = async (title, rocketchat) => 
+module.exports = async (title, rocketchat, rname) => 
 fetch(`${process.env.CHAT}/api/v1/login`, {
   method: "post",
   headers: {
@@ -13,7 +13,7 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
   }),
 })
   .then((res) => res.json())
-  .then((res) =>
+  .then(() =>{rname = title.replace(/:/g, "")},
     fetch(`${process.env.CHAT}/api/v1/channels.create`, {
       method: "post",
       headers: {
@@ -22,7 +22,7 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
         "X-Auth-Token": res.data.authToken,
         "X-User-Id": res.data.userId,
       },
-      body: JSON.stringify({ name: title }),
+      body: JSON.stringify({ name: rname }),
     })
       .then((response) => response.json())
       .then((response) => rocketchat = response.channel._id)
