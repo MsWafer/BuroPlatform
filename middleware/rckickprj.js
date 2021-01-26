@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-module.exports = async (req,res,project,user) => fetch(`${process.env.CHAT}/api/v1/login`, {
+module.exports = async (project,user) => fetch(`${process.env.CHAT}/api/v1/login`, {
   method: "post",
   headers: {
     Accept: "application/json, text/plain, */*",
@@ -25,5 +25,5 @@ module.exports = async (req,res,project,user) => fetch(`${process.env.CHAT}/api/
         roomId: project.rocketchat,
         userId: user.rocketId,
       }),
-    })
-  );
+    }).catch((error)=>console.error(error))
+  ).catch((error)=>console.error(error));

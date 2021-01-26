@@ -453,7 +453,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { _id: req.user.id },
         { $pull: { projects: project.id } }
       );
-      await rckickprj(req,res,project,user)
+      await rckickprj(project,user)
       // fetch(`${process.env.CHAT}/api/v1/login`, {
       //   method: "post",
       //   headers: {
@@ -523,7 +523,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       { $push: { projects: project } }
     );
 
-    await rcinvprj(req,res,project,user)
+    await rcinvprj(project,user)
 
     // fetch(`${process.env.CHAT}/api/v1/login`, {
     //   method: "post",
