@@ -18,7 +18,6 @@ router.post(
   auth,
   [
     check("title", "Введите название проекта").not().isEmpty(),
-    check("dateStart", "Введите дату говна").isDate(),
     check("city", "Введите город").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
     check("stage", "Выберите этап мочи").not().isEmpty(),
@@ -42,6 +41,8 @@ router.post(
       about,
       status,
     } = req.body;
+
+    if(!dateStart){dateStart = Date.now()}
 
     try {
       function getRndInteger(min, max) {
@@ -69,10 +70,9 @@ router.post(
       promise();
 
       let crypter = `${dateStart}-${crypt}-${title}`;
-      let rname = `${title.replace(/ /g, "-")}`
       let rocketchat;
 
-      await rcprojcreate(rname, rocketchat)
+      await rcprojcreate(crypt, rocketchat)
 
       // fetch(`${process.env.CHAT}/api/v1/login`, {
       //   method: "post",
