@@ -71,8 +71,9 @@ router.post(
 
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
+      let rname;
 
-      await rcprojcreate(title, rocketchat)
+      await rcprojcreate(title, rocketchat, rname)
 
       // fetch(`${process.env.CHAT}/api/v1/login`, {
       //   method: "post",
@@ -233,7 +234,6 @@ router.get("/user/:id", async (req, res) => {
   try {
     let projects = await Project.find({ team: req.params.id })
       .sort({ date: -1 })
-      .select("-__v")
       .populate("team", "-projects -password -avatar -permission -tickets -__v")
       .populate("sprints");
 
