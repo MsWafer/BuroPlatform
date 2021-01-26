@@ -71,7 +71,7 @@ router.post(
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
 
-      await rcprojcreate(res, crypter, rocketchat)
+      await rcprojcreate(crypter, rocketchat)
 
       // fetch(`${process.env.CHAT}/api/v1/login`, {
       //   method: "post",

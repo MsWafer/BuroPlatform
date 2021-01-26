@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 
-module.exports = async (res,crypter, response, rocketchat) => fetch(`${process.env.CHAT}/api/v1/login`, {
+module.exports = async (crypter, rocketchat) => 
+fetch(`${process.env.CHAT}/api/v1/login`, {
   method: "post",
   headers: {
     Accept: "application/json, text/plain, */*",
