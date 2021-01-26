@@ -13,7 +13,8 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
   }),
 })
   .then((res) => res.json())
-  .then(() =>{rname = title.replace(/:/g, "")},
+  // .then(()=>rname=title.replace(/:/g,""))
+  .then((res) =>
     fetch(`${process.env.CHAT}/api/v1/channels.create`, {
       method: "post",
       headers: {
