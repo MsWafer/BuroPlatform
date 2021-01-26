@@ -41,7 +41,7 @@ router.post(
 //get all propositions sorted by likes
 router.get("/all/likes", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ likeCount: 1 }).select("-likes");
+    let props = await Prop.find().sort({ likeCount: -1 }).select("-likes");
     res.json(props);
   } catch (error) {
     console.error(error);
