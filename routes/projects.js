@@ -69,6 +69,7 @@ router.post(
       promise();
 
       let crypter = `${dateStart}-${crypt}-${title}`;
+      let rname = `${title.replace(/ /g, "-")}`
       let rocketchat;
 
       await rcprojcreate(crypter, rocketchat)
