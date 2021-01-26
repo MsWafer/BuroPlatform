@@ -37,6 +37,9 @@ const SprintSchema = new Schema({
       },
     },
   ],
+  urn: {
+    type: String,
+  },
 });
 
 module.exports = Sprint = mongoose.model("sprint", SprintSchema);

@@ -66,6 +66,9 @@ const ProjectSchema = new Schema({
       type: String,
     },
   ],
+  urn: {
+    type: String,
+  },
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);
