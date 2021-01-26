@@ -72,7 +72,7 @@ router.post(
       let rname = `${title.replace(/ /g, "-")}`
       let rocketchat;
 
-      await rcprojcreate(crypter, rocketchat)
+      await rcprojcreate(rname, rocketchat)
 
       // fetch(`${process.env.CHAT}/api/v1/login`, {
       //   method: "post",
