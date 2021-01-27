@@ -214,7 +214,7 @@ router.put(
     try {
       const user = await User.findOne({ _id: req.user.id });
       if (!user) {
-        return res.json({ msg: "Пользователь не найден" });
+        return res.status(404).json({ err: "Пользователь не найден" });
       }
       let div = await Division.findOne({divname: req.body.division})
       if(!div){return res.json({msg:'Отдел не найден'})}
@@ -231,10 +231,10 @@ router.put(
         }
       );
 
-      return res.json({ msg: "uspeh", userid: user.id });
+      return res.json({ msg: "Данные пользователя обновлены", userid: user.id });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "server error" });
+      return res.status(500).json({ err: "server error" });
     }
   }
 );
@@ -307,7 +307,7 @@ router.put("/me/pw", auth, async (req, res) => {
     res.json({ msg: "Ваш пароль был успешно изменен" });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -339,7 +339,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
     return res.json({ msg: "Ваш аватар был изменен" });
   } catch (error) {
     console.error(error);
-    res.status(400).json({ err: "server error" });
+    res.status(500).json({ err: "server error" });
   }
 });
 
@@ -351,13 +351,13 @@ router.put("/poschange/:id", manauth, async (req, res) => {
       { $set: { position: req.body.position } }
     );
     if (!user) {
-      return res.json({ msg: "Не найден пользователь с указанным id" });
+      return res.status(404).json({ msg: "Указанный пользователь не найден" });
     }
     console.log("users position changed");
     return res.json({ msg: "Должность пользователя изменена" });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -369,13 +369,13 @@ router.put("/permchange/:id", admauth, async (req, res) => {
       { $set: { permission: req.body.permission } }
     );
     if (!user) {
-      return res.json({ msg: "Не найден пользователь с указанным id" });
+      return res.status(404).json({ msg: "Не найден пользователь с указанным id" });
     }
     console.log("users permission changed");
     return res.json({ msg: "Разрешения пользователя изменены" });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 

@@ -17,7 +17,7 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ err: errors.array() });
     }
 
     const { email, password } = req.body;
@@ -26,13 +26,13 @@ router.post(
       let user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({
-          errors: [{ msg: "Пользователь с указанным email не найден" }],
+          errors: [{ err: "Пользователь с указанным email не найден" }],
         });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return res.status(400).json({ errors: [{ msg: "Неверный пароль" }] });
+        return res.status(400).json({ errors: [{ err: "Неверный пароль" }] });
       }
 
       //jsonwebtoken return
@@ -53,7 +53,7 @@ router.post(
       );
     } catch (err) {
       console.error(err.message);
-      res.status(500).send("server error");
+      res.status(500).json({err:"server error"});
     }
   }
 );

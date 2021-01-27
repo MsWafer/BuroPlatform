@@ -38,7 +38,7 @@ router.post(
       console.log("Новая новость добавлена");
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "Server error" });
+      return res.status(500).json({ err: "Server error" });
     }
   }
 );
@@ -64,6 +64,7 @@ router.get("/:id", auth, async (req, res) => {
       "author",
       "-password -permission -projects -tickets"
     );
+    if(!news){return res.status(404).json({err:'Новость не найдена'})}
     console.log("get news by id");
     return res.json(news);
   } catch (error) {

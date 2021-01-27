@@ -33,7 +33,7 @@ router.post(
       return res.json({ msg: "Предложение добавлено" });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ msg: "server error" });
+      return res.status(500).json({ err: "server error" });
     }
   }
 );

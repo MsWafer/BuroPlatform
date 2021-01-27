@@ -26,7 +26,7 @@ router.post(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ err: errors.array() });
     }
 
     let {
@@ -108,6 +108,7 @@ router.post(
         area: project.area,
         about: project.about,
         status: project.status,
+        msg: `Проект ${title} добавлен`
       });
       // }
 
@@ -152,11 +153,10 @@ router.get("/", async (req, res) => {
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
       .populate("sprints");
     console.log("GET all projects");
-    console.log(process.env.tokena);
     return res.json(projects);
   } catch (err) {
     console.error(err.message);
-    return res.status(500).send("server error");
+    return res.status(500).json({err:"server error"});
   }
 });
 
@@ -171,8 +171,7 @@ router.get("/:auth", async (req, res) => {
       .populate("team", "-projects -password -permission -tickets -__v")
       .populate("sprints");
     if (!project && !projectTitle) {
-      console.log("no projects found");
-      return res.status(400).json({ msg: "Проект не найден" });
+      return res.status(404).json({ err: "Проект не найден" });
     } else if (project) {
       console.log("found project by crypt");
       return res.json({
@@ -198,7 +197,7 @@ router.get("/:auth", async (req, res) => {
     }
   } catch (err) {
     console.error(err.message);
-    return res.status(500).send("server error");
+    return res.status(500).json({msg:"server error"});
   }
 });
 
@@ -214,7 +213,7 @@ router.get("/user/:id", async (req, res) => {
     return res.json(projects);
   } catch (err) {
     console.error(err.messsage);
-    return res.status(500).send("server error");
+    return res.status(500).json({msg:"server error"});
   }
 });
 
@@ -229,7 +228,7 @@ router.get("/city/:city", async (req, res) => {
     return res.json(projects);
   } catch (err) {
     console.error(err.message);
-    return res.status(500).send("server error");
+    return res.status(500).json({msg:"server error"});
   }
 });
 
@@ -252,13 +251,15 @@ router.delete("/:crypt", manauth, async (req, res) => {
     return res.json({ msg: `Проект удален` });
   } catch (err) {
     console.error(err.message);
-    return res.status(500).send("server error");
+    return res.status(500).json({msg:"server error"});
   }
 });
 
 //edit project
 router.put("/:crypt", manauth, async (req, res) => {
   try {
+    let check = await Project.findOne({crypt:req.params.crypt})
+    if(!check){return res.status(404).json({err:'Проект не найден'})}
     await Project.findOneAndUpdate(
       { crypt: req.params.crypt },
       {
@@ -299,10 +300,11 @@ router.put("/:crypt", manauth, async (req, res) => {
       about: editedProject.about,
       projects: editedProject.projects,
       sprints: editedProject.sprints,
+      msg: "Проект изменен"
     });
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send("server error");
+    return res.status(500).json({msg:"server error"});
   }
 });
 
@@ -311,7 +313,7 @@ router.put("/finish/:crypt", manauth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
-      return res.json({ msg: "Проект не найден" });
+      return res.status(404).json({ err: "Проект не найден" });
     }
     if (project.status == false) {
       await Project.findOneAndUpdate(
@@ -405,6 +407,8 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
 //join project's team
 router.put("/jointeam/:crypt", auth, async (req, res) => {
   try {
+    let check = await Project.findOne({crypt:req.params.crypt})
+    if(!check){return res.status(404).json({err:'Проект не найден'})}
     let huy = await Project.findOne({ crypt: req.params.crypt }).select(
       "-_id team"
     );
@@ -490,7 +494,7 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       `Пользователь добавлен в команду проекта ${req.params.crypt}`
     );
   } catch (error) {
-    res.status(400).send(`server error`);
+    res.status(500).json({msg:"server error"});
     return console.log("произошла якась хуйня");
   }
 });
@@ -568,7 +572,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
-      return res.json({ msg: "Не найдено проекта с указанным шифром" });
+      return res.status(404).json({ msg: "Не найдено проекта с указанным шифром" });
     }
     sprint = new Sprint({
       dateOpen: Date.now(),
@@ -608,7 +612,7 @@ router.put("/sprints/dd/:id", auth, async (req, res) => {
         },
       }
     );
-    return res.json({ msg: "Uspeh" });
+    return res.json({ msg: "Описание спринта обновлено" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -625,7 +629,7 @@ router.get("/sprints/:crypt", auth, async (req, res) => {
       .select("sprints")
       .populate("sprints");
     if (!project) {
-      return res.json({ msg: "Не найдено проектов с указанным шифром" });
+      return res.status(404).json({ msg: "Не найдено проектов с указанным шифром" });
     }
     console.log("found all projects sprints");
     return res.json({
@@ -641,13 +645,13 @@ router.get("/sprints/:crypt", auth, async (req, res) => {
 //change sprint status
 router.put("/sprints/:id", manauth, async (req, res) => {
   try {
-    let project = await Sprint.findOne({ _id: req.params.id });
-    if (project.status == false) {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (sprint.status == false) {
       await Sprint.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: true, dateCloseFact: Date.now() } }
       );
-    } else if (project.status == true) {
+    } else if (sprint.status == true) {
       await Sprint.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: false, dateCloseFact: null } }
@@ -665,11 +669,12 @@ router.put("/sprints/:id", manauth, async (req, res) => {
 router.get("/getsprint/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
+    if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
     console.log("sprint found by id");
     return res.json(sprint);
   } catch (error) {
     console.log(error);
-    return res.json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -680,6 +685,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
     let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
     let huy3 = huy2.split(",");
     let sprint = await Sprint.findOne({ _id: req.params.id });
+    if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
 
     if (huy3.includes(req.params.id)) {
       //unfavorite
@@ -696,7 +702,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
         });
       } catch (error) {
         console.error(error);
-        return res.status(500).json({ msg: "server error" });
+        return res.status(500).json({ err: "server error" });
       }
     } else {
       //favorite
@@ -712,13 +718,13 @@ router.put("/favsprint/:id", auth, async (req, res) => {
           user: req.user,
         });
       } catch (error) {
-        res.status(400).send(`server error`);
+        res.status(500).json({err:"server error"});
         return console.error(error);
       }
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -727,14 +733,14 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
-      return res.json({ msg: "Не найден спринт с указанным id" });
+      return res.status(404).json({ err: "Не найден спринт с указанным id" });
     }
     await Sprint.findOneAndRemove({ _id: req.params.id });
     console.log("sprint deleted");
     return res.json({ msg: "Спринт удален" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -748,11 +754,11 @@ router.post("/sprints/addtask/:id", manauth, async (req, res) => {
       return res.json({ msg: "Указанный спринт не найден" });
     }
     if (!req.body.tasks) {
-      return res.json({ msg: "Добавьте задачу" });
+      return res.json({ err: "Добавьте задачу" });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 
   try {
@@ -765,15 +771,16 @@ router.post("/sprints/addtask/:id", manauth, async (req, res) => {
     res.json({ msg: "Задача добавлена" });
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ msg: "server error" });
+    return res.status(500).json({ msg: "server error" });
   }
 });
 
 //deactivate task
 router.put("/sprints/DAtask/:id", auth, async (req, res) => {
   try {
-    let tasks = await Sprint.findOne({ _id: req.params.id });
-    let status = tasks.tasks.filter((task) => task._id == req.body.taskid)[0]
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if(!sprint){return res.status(404).json({msg:'Спринт не найден'})}
+    let status = sprint.tasks.filter((task) => task._id == req.body.taskid)[0]
       .taskStatus;
     await Sprint.findOneAndUpdate(
       { _id: req.params.id, "tasks._id": req.body.taskid },
@@ -783,7 +790,7 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
     return res.json({ msg: "Изменен статус задачи" });
   } catch (error) {
     console.log(error);
-    return res.json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -791,6 +798,7 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
 router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
+    if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
     let deltask = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
     await Sprint.findOneAndUpdate(
       { _id: req.params.id, "tasks._id": req.body.taskid },
@@ -800,7 +808,7 @@ router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
     return res.json({ msg: "Задача удалена" });
   } catch (error) {
     console.log(error);
-    return res.json({ err: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -823,7 +831,7 @@ router.put("/tag/:crypt", auth, async (req, res) => {
     return res.json({ msg: "Тэг добавлен" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -838,7 +846,7 @@ router.delete("/tag/:crypt", auth, async (req, res) => {
     return res.json({ msg: "Тэг удален" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -846,6 +854,7 @@ router.delete("/tag/:crypt", auth, async (req, res) => {
 router.get("/tag/search", auth, async (req, res) => {
   try {
     let projects = await Project.find({ tags: { $all: req.body.tags } });
+    if(!projects){return res.status(404).json({err:'Проектов с казанными тэгами не найдено'})}
     return res.json(projects);
   } catch (error) {
     console.error(error);
