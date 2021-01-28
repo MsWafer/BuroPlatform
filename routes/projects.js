@@ -189,7 +189,8 @@ router.get("/:auth", async (req, res) => {
         status: project.status,
         crypter: project.crypter,
         customer: project.customer,
-        urn: project.urn
+        urn: project.urn,
+        msg:''
       });
     } else if (projectTitle) {
       console.log("found projects by title");
@@ -300,7 +301,7 @@ router.put("/:crypt", manauth, async (req, res) => {
       about: editedProject.about,
       projects: editedProject.projects,
       sprints: editedProject.sprints,
-      msg: "Проект изменен"
+      msg: `Проект изменен ${editedProject.id}`
     });
   } catch (error) {
     console.error(error.message);
@@ -327,7 +328,7 @@ router.put("/finish/:crypt", manauth, async (req, res) => {
       );
     }
     console.log("project status changed");
-    return res.json({ msg: "Статус проекта изменен" });
+    return res.json({ msg: `Статус проекта изменен${project.id}` });
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });
@@ -584,7 +585,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     );
     console.log("sprint added to project");
     return res.json({
-      msg: `Новый спринт добавлен в проект ${project.title}`,
+      msg: `Новый спринт добавлен в проект ${sprint.dateOpen}`,
       id: sprint.id,
       tasks: sprint.tasks,
       state: sprint.state,
@@ -612,7 +613,7 @@ router.put("/sprints/dd/:id", auth, async (req, res) => {
         },
       }
     );
-    return res.json({ msg: "Описание спринта обновлено" });
+    return res.json({ msg: `Описание спринта обновлено${spr.id}` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -671,7 +672,7 @@ router.get("/getsprint/:id", auth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
     console.log("sprint found by id");
-    return res.json(sprint);
+    return res.json({sprint:sprint, msg:''});
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });

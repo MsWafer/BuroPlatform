@@ -78,7 +78,7 @@ router.put("/:divname", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -95,7 +95,7 @@ router.delete("/:divname", auth, async (req, res) => {
       { _id: req.user.id },
       { $set: { division: null } }
     );
-    return res.json({ msg: "Вы покинули отдел" });
+    return res.json({ msg: `Вы покинули отдел ${req.params.divname}` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
