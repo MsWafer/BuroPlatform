@@ -20,6 +20,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    let user = await User.findOne({_id:req.user.id})
 
     try {
       let { text, title } = req.body;
@@ -27,7 +28,7 @@ router.post(
         text,
         title,
         date: Date.now(),
-        user: req.user
+        user: user
       });
       await prop.save();
       console.log("+prop");
