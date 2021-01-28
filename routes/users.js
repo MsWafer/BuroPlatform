@@ -413,27 +413,6 @@ router.put("/me/rocket", auth, async (req, res) => {
   }
 });
 
-//edit current user
-// router.put("/me", auth, async (req, res) => {
-//   try {
-//     await User.findOneAndUpdate(
-//       { _id: req.user.id },
-//       {
-//         $set: {
-//           name: req.body.name,
-//           email: req.body.email,
-//           position: req.body.position,
-//         },
-//       }
-//     );
-//     console.log("user info updated");
-//     return res.json({ msg: "Ваш профиль был обновлен" });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("server error");
-//   }
-// });
-
 //find all users
 router.get("/all", async (req, res) => {
   try {

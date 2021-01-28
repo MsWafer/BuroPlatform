@@ -71,9 +71,9 @@ router.post(
 
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
-      let rname = title.replace(/:/g,"")
+      // let rname = title.replace(/:/g,"")
 
-      await rcprojcreate(rname, rocketchat)
+      await rcprojcreate(title, rocketchat)
 
       project = new Project({
         crypt,
