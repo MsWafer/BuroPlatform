@@ -34,7 +34,7 @@ router.post(
       } catch (error) {
         console.log(error);
       }
-      res.json(newNews);
+      res.json({news:newNews,msg:`Новость добавлена ${newNews.title}`});
       console.log("Новая новость добавлена");
     } catch (error) {
       console.error(error);

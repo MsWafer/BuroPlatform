@@ -67,7 +67,7 @@ router.post(
         console.log(error);
       }
 
-      res.json({ msg: "Новая проблема добавлена" });
+      res.json({ msg: `Новая проблема добавлена ${newTicket.problemname}` });
       console.log("Новый тикет добавлен");
     } catch (err) {
       res.status(500).send("serve error");
