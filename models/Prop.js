@@ -25,6 +25,14 @@ const PropSchema = new Schema({
   date: {
     type: Date,
   },
+  status: {
+    type: Boolean,
+    default: false,
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+  },
 });
 
 module.exports = Prop = mongoose.model("offer", PropSchema);

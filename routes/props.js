@@ -27,6 +27,7 @@ router.post(
         text,
         title,
         date: Date.now(),
+        user: req.user
       });
       await prop.save();
       console.log("+prop");
@@ -41,7 +42,7 @@ router.post(
 //get all propositions sorted by likes
 router.get("/all/likes", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ likeCount: -1 }).select("-likes");
+    let props = await Prop.find().sort({ likeCount: -1 }).select("-likes").populate("user","-password - permission");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -52,7 +53,7 @@ router.get("/all/likes", auth, async (req, res) => {
 //get all propositions sorted by date
 router.get("/all/date", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ date: 1 }).select("-likes");
+    let props = await Prop.find().sort({ date: 1 }).select("-likes").populate("user","-password - permission");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -105,5 +106,28 @@ router.delete("/:id", manauth, async (req, res) => {
     return res.status(500).json({ msg: "server error" });
   }
 });
+
+//change prop status
+router.put('/sts/:id',manauth,async(req,res)=>{
+  try {
+    let prop = await Prop.findOne({ _id: req.params.id });
+    if (prop.status == false) {
+      await Prop.findOneAndUpdate(
+        { _id: req.params.id },
+        { $set: { status: true} }
+      );
+    } else if (prop.status == true) {
+      await Prop.findOneAndUpdate(
+        { _id: req.params.id },
+        { $set: { status: false} }
+      );
+    }
+    console.log("prop status changed");
+    return res.json({ msg: `Статус изменен ${req.params.id}` });
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({err:'server error'})
+  }
+})
 
 module.exports = router;

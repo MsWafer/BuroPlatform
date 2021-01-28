@@ -190,7 +190,6 @@ router.get("/:auth", async (req, res) => {
         crypter: project.crypter,
         customer: project.customer,
         urn: project.urn,
-        msg:''
       });
     } else if (projectTitle) {
       console.log("found projects by title");
@@ -672,7 +671,7 @@ router.get("/getsprint/:id", auth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
     console.log("sprint found by id");
-    return res.json({sprint:sprint, msg:''});
+    return res.json(sprint);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });
