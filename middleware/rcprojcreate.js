@@ -1,3 +1,4 @@
+const { response } = require("express");
 const fetch = require("node-fetch");
 
 module.exports = async (title, rocketchat) => 
@@ -25,5 +26,6 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
       body: JSON.stringify({ name: title }),
     })
       .then((response) => response.json())
+      .then((response)=>console.log(response))
       .then((response) => rocketchat = response.channel._id)
   );
