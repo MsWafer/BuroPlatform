@@ -584,7 +584,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     );
     console.log("sprint added to project");
     return res.json({
-      msg: `Новый спринт добавлен в проект`,
+      msg: `Новый спринт добавлен в проект ${project.title}`,
       id: sprint.id,
       tasks: sprint.tasks,
       state: sprint.state,
@@ -658,7 +658,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
       );
     }
     console.log("srint status changed");
-    return res.json({ msg: "Статус спринта изменен" });
+    return res.json({ msg: `Статус спринта изменен ${req.params.id}` });
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });
@@ -787,7 +787,7 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
       { $set: { "tasks.$.taskStatus": !status } }
     );
     console.log("task de/activated");
-    return res.json({ msg: "Изменен статус задачи" });
+    return res.json({ msg: `Изменен статус задачи ${req.body.taskid}` });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });
