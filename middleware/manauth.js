@@ -14,7 +14,7 @@ module.exports = function (req, res, next) {
     const decoded = jwt.verify(token, process.env.jwtSecret);
 
     req.user = decoded.user;
-    if (req.user.permission == "user") {
+    if (req.user.permission === "user") {
       return res
         .status(401)
         .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
