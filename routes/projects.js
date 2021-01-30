@@ -747,7 +747,7 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
 /////////TASKS//////////
 
 //add new task to sprint
-router.post("/sprints/addtask/:id", manauth, async (req, res) => {
+router.post("/sprints/addtask/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
