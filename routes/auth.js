@@ -25,14 +25,13 @@ router.post(
     try {
       let user = await User.findOne({ email });
       if (!user) {
-        return res.status(400).json({
-          errors: [{ err: "Пользователь с указанным email не найден" }],
-        });
+        return res.status(400).json({err: "Пользователь с указанным email не найден" }
+        );
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return res.status(400).json({ errors: [{ err: "Неверный пароль" }] });
+        return res.status(400).json({ err: "Неверный пароль" });
       }
 
       //jsonwebtoken return

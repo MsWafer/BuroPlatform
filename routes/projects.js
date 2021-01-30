@@ -20,7 +20,7 @@ router.post(
     check("title", "Введите название проекта").not().isEmpty(),
     check("city", "Введите город").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
-    check("stage", "Выберите этап мочи").not().isEmpty(),
+    check("stage", "Выберите этап строительства").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
