@@ -28,5 +28,5 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
       .then((response) => response.json())
       // .then((response)=>console.log(response.group._id))
       .then((response) => rocketchat = response.group._id)
-      // .then((rocketchat)=>{return rocketchat})
+      .then((rocketchat)=>{return rocketchat})
   );

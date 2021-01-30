@@ -98,17 +98,7 @@ router.post(
       // if (!userid || userid == null || userid == undefined) {
       console.log(`Проект ${crypt} добавлен`);
       return res.status(200).json({
-        crypter: project.crypter,
-        title: project.title,
-        crypt: project.crypt,
-        dateStart: project.dateStart,
-        dateFinish: project.dateFinish,
-        city: project.city,
-        type: project.type,
-        stage: project.stage,
-        area: project.area,
-        about: project.about,
-        status: project.status,
+        project:project,
         msg: `Проект ${title} добавлен`
       });
       // }
