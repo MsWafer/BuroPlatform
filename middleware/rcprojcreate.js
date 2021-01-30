@@ -1,7 +1,7 @@
 const { response } = require("express");
 const fetch = require("node-fetch");
 
-module.exports = async (title, rocketchat) => 
+module.exports = async (title, rocketchat, crypt) => 
 fetch(`${process.env.CHAT}/api/v1/login`, {
   method: "post",
   headers: {
@@ -23,7 +23,7 @@ fetch(`${process.env.CHAT}/api/v1/login`, {
         "X-Auth-Token": res.data.authToken,
         "X-User-Id": res.data.userId,
       },
-      body: JSON.stringify({ name: title }),
+      body: JSON.stringify({ name: crypt+`-`+title }),
     })
       .then((response) => response.json())
       // .then((response)=>console.log(response))

@@ -73,7 +73,7 @@ router.post(
       let rocketchat;
       // let rname = title.replace(/:/g,"")
 
-      await rcprojcreate(title, rocketchat)
+      await rcprojcreate(title, rocketchat, crypt)
 
       project = new Project({
         crypt,
