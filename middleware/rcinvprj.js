@@ -25,5 +25,5 @@ module.exports = async (project,user) => fetch(`${process.env.CHAT}/api/v1/login
         roomId: project.rocketchat,
         userId: user.rocketId,
       }),
-    }).then((ra)=>console.log(ra.json())).catch((error)=>console.error(error))
+    }).then((ra)=>ra.json()).then((ra)=>console.log(ra)).catch((error)=>console.error(error))
   ).catch((errorr)=>console.error(errorr));
