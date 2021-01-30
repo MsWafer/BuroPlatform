@@ -18,8 +18,10 @@ module.exports = function (req, res, next) {
       return res
         .status(401)
         .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
+    }else{
+     next(); 
     }
-    next();
+    
   } catch (err) {
     res.status(401).json({ msg: "Неверный токен авторизации" });
   }
