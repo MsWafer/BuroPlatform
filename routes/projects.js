@@ -576,12 +576,12 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       { crypt: req.params.crypt },
       { $push: { sprints: sprint, $position: 0 } }
     );
-    console.log(req.body)
-    await Sprint.findOneAndUpdate(
-      { dateClosePlan: req.body.date },
-      { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
-      { multi: true }
-    );
+    // console.log(req.body)
+    // await Sprint.findOneAndUpdate(
+    //   { dateClosePlan: req.body.date },
+    //   { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
+    //   { multi: true }
+    // );
     console.log("sprint added to project");
     return res.json({                   
       msg: `Новый спринт добавлен в проект ${sprint.dateOpen}`,
