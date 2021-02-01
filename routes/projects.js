@@ -69,7 +69,7 @@ router.post(
 
       // promise();
       let count = await Project.find()
-      let crypt = count.length()+1
+      let crypt = count.array().length()+1
 
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
