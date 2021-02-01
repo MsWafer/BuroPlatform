@@ -93,7 +93,7 @@ router.delete("/:divname", auth, async (req, res) => {
     if(!div){return res.json({msg:'Отдел не найден'})}
     await Division.findOneAndUpdate(
       { divname: div.divname },
-      { $pull: { members: user } }
+      { $pull: { members: req.user } }
     );
     await User.findOneAndUpdate(
       { _id: req.user.id },
