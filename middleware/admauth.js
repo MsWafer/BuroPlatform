@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-module.exports = async(req, res, next) => {
+module.exports = async (req, res, next) => {
   //get token from header
   const token = req.header("auth-token");
 
@@ -14,8 +15,14 @@ module.exports = async(req, res, next) => {
     const decoded = jwt.verify(token, process.env.jwtSecret);
 
     req.user = await decoded.user;
-    if (req.user.permission == 'user' || req.user.permission == "manager"){return res.status(401).json({msg:'У вас недостаточно прав для просмотра этой страницы'})}
-    next();
+    let user = await User.findOne({ _id: req.user.id });
+    if (user.permission != "manager" && user.permission != "admin") {
+      return res
+        .status(401)
+        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
+    }else{
+    next()
+    }
   } catch (err) {
     res.status(401).json({ msg: "Неверный токен авторизации" });
   }
