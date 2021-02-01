@@ -52,16 +52,10 @@ const Division = require("../models/Division");
 //registration
 router.post(
   "/",
-  [
-    check("email", "Введите email").isEmail(),
-    check("rocketname", "Введите имя пользователя rocket.chat").not().isEmpty(),
-  ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
+    if(!req.body.email&&!req.body.password){return res.json({err: "Заполните поля"})}
+    if(!req.body.email){return res.json({err:'Введите email'})}
+    if(!req.body.password){return res.json({err:"Введите пароль"})}
     let { email, rocketname } = req.body;
     rocketname = encodeURI(rocketname);
 
