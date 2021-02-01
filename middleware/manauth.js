@@ -14,12 +14,13 @@ module.exports = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.jwtSecret);
 
-    req.user = await decoded.user;
+    req.user = decoded.user;
     let user = await User.findOne({ _id: req.user.id });
-    if (user.permission == "user"){
-      return res
+    // if (user.permission == "user"){
+       res
         .status(401)
-        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });}
+        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
+      // }
 
     // else{
     next();
