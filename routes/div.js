@@ -67,9 +67,7 @@ router.put("/:divname", auth, async (req, res) => {
     if (!div) {
       return res.json({ msg: "Отдел не найден" });
     }
-    console.log(div)
-    console.log(req.user.id)
-    if(div.members.includes(req.user.id)){return res.json({msg:'Вы уже находитесь в этом отделе'})}
+    if(div.members.includes(req.user.id)){return res.json({err:'Вы уже находитесь в этом отделе'})}
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: req.user.id } }
@@ -92,7 +90,7 @@ router.put("/:divname", auth, async (req, res) => {
 router.delete("/:divname", auth, async (req, res) => {
   try {
     let div = await Division.findOne({ divname: req.params.divname });
-    if(!div){return res.json({msg:'Отдел не найден'})}
+    if(!div){return res.json({err:'Отдел не найден'})}
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $pull: { members: req.user } }
