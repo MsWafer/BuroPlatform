@@ -22,6 +22,7 @@ const upload = multer({ storage: storage });
 
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
+const manauth = require("../middleware/manauth");
 
 //create ticket
 router.post(
@@ -76,7 +77,7 @@ router.post(
 );
 
 //get all tickets
-router.get("/all", async (req, res) => {
+router.get("/all", manauth, async (req, res) => {
   try {
     let tickets = await Ticket.find()
       .sort({ date: -1 })
@@ -90,7 +91,7 @@ router.get("/all", async (req, res) => {
 });
 
 //get ticket by id
-router.get("/:id", async (req, res) => {
+router.get("/:id", manauth, async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id).populate(
       "user",
@@ -122,7 +123,7 @@ router.get("/:id", async (req, res) => {
 });
 
 //get all user's tickets
-router.get("/user/:id", async (req, res) => {
+router.get("/user/:id", manauth, async (req, res) => {
   try {
     let tickets = await Ticket.find({ user: req.params.id })
       .sort({ date: -1 })
@@ -136,7 +137,7 @@ router.get("/user/:id", async (req, res) => {
 });
 
 //get all active tickets
-router.get("/all/active", async (req, res) => {
+router.get("/all/active", manauth, async (req, res) => {
   try {
     let tickets = await Ticket.find({ status: true })
       .sort({ date: -1 })
@@ -150,7 +151,7 @@ router.get("/all/active", async (req, res) => {
 });
 
 //get all tickets sorted by emergency
-router.get("/all/emergency", async (req, res) => {
+router.get("/all/emergency", manauth, async (req, res) => {
   try {
     let tickets = await Ticket.find()
       .sort({ emergency: -1 })
