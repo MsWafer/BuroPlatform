@@ -10,15 +10,16 @@ const User = require("../models/User");
 //authentification
 router.post(
   "/",
-  [
-    check("email", "Введите email").isEmail(),
-    check("password", "Введите пароль").not().isEmpty(),
-  ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({err:[{ err: errors.array()}] });
+    try {
+      if(!req.body.email&&!req.body.password){return res.json({err: "Заполните поля"})}
+      if(!req.body.email){return res.json({err:'Введите email'})}
+      if(!req.body.password){return res.json({err:"Введите пароль"})}
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({err:'server error'})
     }
+
 
     const { email, password } = req.body;
 
