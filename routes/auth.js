@@ -11,13 +11,13 @@ const User = require("../models/User");
 router.post(
   "/",
   [
-    check("email", "Введите email").isEmail().not().isEmpty(),
+    check("email", "Введите email").isEmail(),
     check("password", "Введите пароль").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({err:errors });
+      return res.status(400).json({err:[errors.array()] });
     }
 
     const { email, password } = req.body;
