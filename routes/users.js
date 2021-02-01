@@ -53,9 +53,9 @@ const Division = require("../models/Division");
 router.post(
   "/",
   async (req, res) => {
-    if(!req.body.email&&!req.body.password){return res.json({err: "Заполните поля"})}
+    if(!req.body.email&&!req.body.rocketname){return res.json({err: "Заполните поля"})}
     if(!req.body.email){return res.json({err:'Введите email'})}
-    if(!req.body.password){return res.json({err:"Введите пароль"})}
+    if(!req.body.rocketname){return res.json({err:"Введите логин рокетчата"})}
     let { email, rocketname } = req.body;
     rocketname = encodeURI(rocketname);
 
