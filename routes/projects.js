@@ -572,7 +572,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       dateOpen: Date.now(),
       description: req.body.description,
       dateClosePlan: req.body.date,
-      tasks: req.body.tasks
+      tasks: req.body.tasks?req.body.tasks:[]
     });
     await sprint.save();
     await Project.findOneAndUpdate(
