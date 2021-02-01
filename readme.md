@@ -21,11 +21,11 @@
 
 ### Отделы
 
-- **POST /div** - создает новый отдел с _divname_ и _description_ из бади
-- **GET /div/all** - выдает все отделы
-- **GET /div/:divname** - находит отдел, чей _divname_ указан в юрл
-- **PUT /div/:divname** - вступает в отдел, чей _divname_ указан в юрл, если юзер уже состоял в отделе выходит из него и входит в новый
-- **DELETE /div/:divname** - выходит из отдела, чей _divname_ указан в юрл
+- **POST /divisions** - создает новый отдел с _divname_ и _description_ из бади
+- **GET /divisions/all** - выдает все отделы
+- **GET /divisions/:divname** - находит отдел, чей _divname_ указан в юрл
+- **PUT /divisions/:divname** - вступает в отдел, чей _divname_ указан в юрл, если юзер уже состоял в отделе выходит из него и входит в новый
+- **DELETE /divisions/:divname** - выходит из отдела, чей _divname_ указан в юрл
 
 ### СисадминОчка :mechanic: :man_mechanic: :mechanic: :place_of_worship:
 
