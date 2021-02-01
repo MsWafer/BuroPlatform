@@ -14,10 +14,8 @@ module.exports = async(req, res, next)=> {
     const decoded = jwt.verify(token, process.env.jwtSecret);
 
     req.user = await decoded.user;
-    console.log(req.user.permission)
-    if (req.user.permission != "manager"&&req.user.permission != "admin") {
-      // console.log(req.user.permission)
-      return res
+    if (req.user.permission == "user") {
+      res
         .status(401)
         .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
     }else{
