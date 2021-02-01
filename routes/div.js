@@ -69,7 +69,7 @@ router.put("/:divname", auth, async (req, res) => {
     }
     console.log(div)
     console.log(req.user.id)
-    // if(div.includes(req.user.id)){return res.json({msg:'Вы уже находитесь в этом отделе'})}
+    if(div.members.includes(req.user.id)){return res.json({msg:'Вы уже находитесь в этом отделе'})}
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: user } }
