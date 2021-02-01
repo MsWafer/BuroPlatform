@@ -15,6 +15,7 @@ module.exports = async(req, res, next)=> {
 
     req.user = await decoded.user;
     if (req.user.permission == "user") {
+      console.log(req.user.permission)
       return res
         .status(401)
         .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
