@@ -79,6 +79,12 @@ router.post(
 //get all tickets
 router.get("/all", auth, async (req, res) => {
   try {
+    let user = await User.findOne({_id:req.user.id})
+    if (user.permission == "user") {
+      return res
+        .status(401)
+        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
+    }
       let tickets = await Ticket.find()
       .sort({ date: -1 })
       .populate("user", "-tickets -projects -avatar");
