@@ -294,7 +294,7 @@ router.put("/:crypt", manauth, async (req, res) => {
       about: editedProject.about,
       projects: editedProject.projects,
       sprints: editedProject.sprints,
-      msg: `Проект изменен ${editedProject.id}`
+      msg: `Проект изменен`
     });
   } catch (error) {
     console.error(error.message);
@@ -321,7 +321,7 @@ router.put("/finish/:crypt", manauth, async (req, res) => {
       );
     }
     console.log("project status changed");
-    return res.json({ msg: `Статус проекта изменен${project.id}` });
+    return res.json({ msg: `Статус проекта изменен` });
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });
@@ -581,7 +581,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     );
     console.log("sprint added to project");
     return res.json({                   
-      msg: `Новый спринт добавлен в проект ${sprint.dateOpen}`,
+      msg: `Новый спринт добавлен в проект`,
       id: sprint.id,
       tasks: sprint.tasks,
       state: sprint.state,
@@ -609,7 +609,7 @@ router.put("/sprints/dd/:id", auth, async (req, res) => {
         },
       }
     );
-    return res.json({ msg: `Описание спринта обновлено${spr.id}` });
+    return res.json({ msg: `Описание спринта обновлено` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
