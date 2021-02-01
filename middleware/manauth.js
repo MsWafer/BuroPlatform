@@ -16,16 +16,14 @@ module.exports = async (req, res, next) => {
 
     req.user = decoded.user;
     let user = await User.findOne({ _id: req.user.id });
-    if (user.permission == "user"){
-       res
+    if (user.permission == "user") {
+      res
         .status(401)
-        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
-      }
+        .json({ err: "У вас недостаточно прав для просмотра этой страницы" });
+    }
 
-    // else{
     next();
-    // }
   } catch (err) {
-    res.status(401).json({ msg: "Неверный токен авторизации" });
+    res.status(401).json({ err: "Неверный токен авторизации" });
   }
 };

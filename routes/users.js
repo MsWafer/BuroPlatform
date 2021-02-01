@@ -408,7 +408,7 @@ router.put("/me/rocket", auth, async (req, res) => {
 });
 
 //find all users
-router.get("/all", async (req, res) => {
+router.get("/all", auth, async (req, res) => {
   try {
     let users = await User.find()
       .select("-password")
@@ -424,7 +424,7 @@ router.get("/all", async (req, res) => {
 });
 
 //find user by id
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
     let user = await User.findById(req.params.id)
       .select("-password")

@@ -17,13 +17,12 @@ module.exports = async (req, res, next) => {
     req.user = await decoded.user;
     let user = await User.findOne({ _id: req.user.id });
     if (user.permission != "manager" && user.permission != "admin") {
-      return res
+      res
         .status(401)
-        .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
-    }else{
-    next()
+        .json({ err: "У вас недостаточно прав для просмотра этой страницы" });
     }
+    next();
   } catch (err) {
-    res.status(401).json({ msg: "Неверный токен авторизации" });
+    res.status(401).json({ err: "Неверный токен авторизации" });
   }
 };

@@ -138,7 +138,7 @@ router.post(
 );
 
 //find all projects
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
@@ -155,7 +155,7 @@ router.get("/", async (req, res) => {
 });
 
 //find project by crypt/title
-router.get("/:auth", async (req, res) => {
+router.get("/:auth",auth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
       .populate("team", "-projects -password -permission -tickets -__v")
@@ -196,7 +196,7 @@ router.get("/:auth", async (req, res) => {
 });
 
 //get all user's projects
-router.get("/user/:id", async (req, res) => {
+router.get("/user/:id",auth, async (req, res) => {
   try {
     let projects = await Project.find({ team: req.params.id })
       .sort({ date: -1 })
