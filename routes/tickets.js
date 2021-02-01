@@ -79,6 +79,7 @@ router.post(
 //get all tickets
 router.get("/all", manauth, async (req, res) => {
   try {
+    console.log(req.user.permission)
     if(req.user.permission == 'user'){return res.status(401).json({err:'У вас недостаточно прав для просмотра данной страницы'})}
     let tickets = await Ticket.find()
       .sort({ date: -1 })
