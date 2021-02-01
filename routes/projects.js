@@ -45,29 +45,31 @@ router.post(
     if(!dateStart){dateStart = Date.now()}
 
     try {
-      function getRndInteger(min, max) {
-        return Math.floor(Math.random() * (max - min)) + min;
-      }
-      let crypts = [];
-      let projects = await Project.find().select("crypt");
-      projects.map((project123) => crypts.push(project123.crypt));
+      // function getRndInteger(min, max) {
+      //   return Math.floor(Math.random() * (max - min)) + min;
+      // }
+      // let crypts = [];
+      // let projects = await Project.find().select("crypt");
+      // projects.map((project123) => crypts.push(project123.crypt));
 
-      if (crypts.length == 8999) {
-        console.log("Места нет, пизда");
-        return res
-          .status(400)
-          .json({ err: "Закончились свободные шифры, въебите бекендеру" });
-      }
+      // if (crypts.length == 8999) {
+      //   console.log("Места нет, пизда");
+      //   return res
+      //     .status(400)
+      //     .json({ err: "Закончились свободные шифры, въебите бекендеру" });
+      // }
 
-      const promise = () =>
-        new Promise((resolve) => {
-          crypt = getRndInteger(1000, 10000).toString();
-          if (crypts.includes(crypt)) {
-            resolve(promise());
-          }
-        });
+      // const promise = () =>
+      //   new Promise((resolve) => {
+      //     crypt = getRndInteger(1000, 10000).toString();
+      //     if (crypts.includes(crypt)) {
+      //       resolve(promise());
+      //     }
+      //   });
 
-      promise();
+      // promise();
+      let count = await Project.find()
+      let crypt = count.length()+1
 
       let crypter = `${dateStart}-${crypt}-${title}`;
       let rocketchat;
