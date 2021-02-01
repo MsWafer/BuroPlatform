@@ -490,7 +490,8 @@ router.delete("/:id", admauth, async (req, res) => {
 //recover password via RC
 router.post("/passRC", async(req,res)=>{
   try {
-    let check = await User.findOne({email: req.body.email})
+    let {email} = req.body
+    let check = await User.findOne({email})
     if(!check){return res.json({err:'Пользователь с указанным email не найден'})}
     await rcusercheck(req,res)
     if (typeof rocketId === "undefined") {

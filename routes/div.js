@@ -51,8 +51,8 @@ router.get("/find/:divname", auth, async (req, res) => {
 //get all divisions
 router.get("/all", auth, async (req, res) => {
   try {
-    let divs = await Division.find().populate("members", "-password -permission");
-    console.log(divs)
+    let divs = await Division.find()
+    .populate("members", "-password -permission");
     return res.json(divs);
   } catch (error) {
     console.error(error);

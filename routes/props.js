@@ -43,7 +43,7 @@ router.post(
 //get all propositions sorted by likes
 router.get("/all/likes", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ likeCount: -1 }).select("-likes").populate("user","-password -permission");
+    let props = await Prop.find().sort({ likeCount: -1 }).populate("user","-password -permission");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -54,7 +54,7 @@ router.get("/all/likes", auth, async (req, res) => {
 //get all propositions sorted by date
 router.get("/all/date", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ date: 1 }).select("-likes").populate("user","-password -permission");
+    let props = await Prop.find().sort({ date: 1 }).populate("user","-password -permission");
     res.json(props);
   } catch (error) {
     console.error(error);
