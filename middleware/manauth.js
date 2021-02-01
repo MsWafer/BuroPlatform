@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = function (req, res, next) {
+module.exports = async(req, res, next)=> {
   //get token from header
   const token = req.header("auth-token");
 
@@ -13,8 +13,8 @@ module.exports = function (req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.jwtSecret);
 
-    req.user = decoded.user;
-    if (req.user.permission === "user") {
+    req.user = await decoded.user;
+    if (req.user.permission == "user") {
       return res
         .status(401)
         .json({ msg: "У вас недостаточно прав для просмотра этой страницы" });
