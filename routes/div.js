@@ -50,7 +50,7 @@ router.get("/:divname", auth, async (req, res) => {
 //get all divisions
 router.get("/all", auth, async (req, res) => {
   try {
-    let divs = await Division.find();
+    let divs = await Division.find({});
     console.log(divs)
     return res.json(divs);
   } catch (error) {
