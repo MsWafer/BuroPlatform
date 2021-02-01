@@ -77,7 +77,7 @@ router.post(
 );
 
 //get all tickets
-router.get("/all", auth, async (req, res) => {
+router.get("/all", manauth, async (req, res) => {
   try {
       let tickets = await Ticket.find()
       .sort({ date: -1 })
