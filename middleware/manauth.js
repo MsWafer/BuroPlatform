@@ -15,7 +15,7 @@ module.exports = async(req, res, next)=> {
 
     req.user = await decoded.user;
     console.log(req.user.permission)
-    if (req.user.permission == "user") {
+    if (req.user.permission != "user"&&req.user.permission != "admin") {
       // console.log(req.user.permission)
       return res
         .status(401)
