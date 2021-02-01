@@ -21,6 +21,6 @@ module.exports = async (req,res,pwd) => fetch(`${process.env.CHAT}/api/v1/login`
         "X-Auth-Token": res.data.authToken,
         "X-User-Id": res.data.userId,
       },
-      body: JSON.stringify({ channel: `@${req.body.rocketname}`, text: pwd }),
+      body: JSON.stringify({ channel: `@${req.body.rocketname}`, text: `Ваш пароль: **${pwd}**` }),
     })
   );

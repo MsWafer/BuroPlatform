@@ -70,14 +70,14 @@ router.post(
       let rcheck = await User.findOne({ rocketname });
       if (rcheck) {
         return res.status(400).json({
-          msg: "Пользователь с указанным именем rocket.chat уже существует",
+          err: "Пользователь с указанным именем rocket.chat уже существует",
         });
       }
       let user = await User.findOne({ email });
       if (user) {
         return res
           .status(400)
-          .json({ msg: "Пользователь с указанным email уже существует" });
+          .json({ err: "Пользователь с указанным email уже существует" });
       }
     } catch (error) {
       console.error(error);
