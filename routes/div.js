@@ -37,9 +37,10 @@ router.post(
 );
 
 //get division by name
-router.get("/:divname", auth, async (req, res) => {
+router.get("/find/:divname", auth, async (req, res) => {
   try {
     let div = await Division.findOne({ divname: req.params.divname });
+    if(!div){return res.status(400).json({msg:'Отдел не найден'})}
     return res.json(div);
   } catch (error) {
     console.error(error);
@@ -50,7 +51,7 @@ router.get("/:divname", auth, async (req, res) => {
 //get all divisions
 router.get("/all", auth, async (req, res) => {
   try {
-    let divs = await Division.find().populate("members");
+    let divs = await Division.find().populate("members", "-password -permission");
     console.log(divs)
     return res.json(divs);
   } catch (error) {

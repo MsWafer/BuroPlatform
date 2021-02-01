@@ -23,7 +23,7 @@
 
 - **POST /divisions** - создает новый отдел с _divname_ и _description_ из бади
 - **GET /divisions/all** - выдает все отделы
-- **GET /divisions/:divname** - находит отдел, чей _divname_ указан в юрл
+- **GET /find/divisions/:divname** - находит отдел, чей _divname_ указан в юрл
 - **PUT /divisions/:divname** - вступает в отдел, чей _divname_ указан в юрл, если юзер уже состоял в отделе выходит из него и входит в новый
 - **DELETE /divisions/:divname** - выходит из отдела, чей _divname_ указан в юрл
 
@@ -92,3 +92,4 @@
 - **PUT /users/passrec** - находит юзера по _email_ в body, создает _recCode_, сохраняет его в модель и отправляет пользователю на указанный email
 - **GET /users/passrec/2** - проверяет введенный пользователем _recCode_ из бади, возвращает _recCode_ на всякий случай
 - **PUT /users/passrec/3** - находит пользователя по _recCode_ из body, меняет его пароль на новый _password_ из body, удаляет старый _recCode_ из модели, зачем-то возвращает юзер айди
+- **POST /users/passRC** - требует _email_ и _rocketname_ в бади, если все верно отправляет новый пароль в рокет

@@ -487,6 +487,44 @@ router.delete("/:id", admauth, async (req, res) => {
   }
 });
 
+//recover password via RC
+router.post("/passRC", async(req,res)=>{
+  try {
+    let check = await User.findOne({email: req.body.email})
+    if(!check){return res.json({err:'Пользователь с указанным email не найден'})}
+    await rcusercheck(req,res)
+    if (typeof rocketId === "undefined") {
+      return res
+        .status(404)
+        .json({ msg: "Указанный пользователь rocket.chat не найден" });
+    }
+
+    function makeid(length) {
+      let result = "";
+      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let charactersLength = characters.length;
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    }
+
+      let pwd = makeid(6);
+      const salt = await bcrypt.genSalt(10);
+      check.password = await bcrypt.hash(pwd, salt);
+      await check.save()
+
+      await rcpwdsend(req,res,pwd)
+
+      return res.json({msg:'Новый пароль был отправлен вам в rocket.chat'})
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({err:'server error'})
+  }
+})
+
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put("/passrec", async (req, res) => {
   let user = await User.findOne({ email: req.body.email }).select(
