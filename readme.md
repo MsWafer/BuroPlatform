@@ -5,7 +5,6 @@
 ### ЮзерОчка :eye: :lips: :eye:
 
 - **POST /users** - регистрация нового пользователя, требует _rocketname_(логин от рокетчата), _email_ в json в body, выдает **_auth-token_** в респонс, отправляет ему пароль в рокетчат.
-<!-- - **PUT /users/reg2** - **_требует_** _name_, _lastname_, _position_, _division_(айди существующего отдела) в бади -->
 - **PUT users/me/rocket** - меняет существующий _rocketname_ юзера на новый из бади
 - **POST /auth** - авторизация, требует _email_ и _password_ ранее зарегестрированного пользователя в json в body, выдает **_auth-token_** в респонс, пользователь остается авторизованным 360000000 секунд(дев).
 - **GET /users/me** - показывает инфу текущего авторизованного пользователя
@@ -40,7 +39,7 @@
 
 ### ПроектОчка :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
 
-- **POST /projects/add** - добавить новый проект, указав _title_, _dateStart_, _city_, _type_, _stage_(опционально - _dateFinish_, _customer_, _area_, _about_, создает канал в рокете
+- **POST /projects/add** - добавить новый проект, указав _title_, _dateStart_, _city_, _type_, _stage_, _par_(опционально - _dateFinish_, _customer_, _area_, _about_, создает канал в рокете
 - **GET /projects** - получить список всех проектов
 - **GET /projects/:auth** - найти проект по _auth_, где _auth_ это _crypt_ или _title_ проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
 - **DELETE /projects/:crypt** - удалить проект, указав его _crypt_ в хедере

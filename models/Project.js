@@ -14,6 +14,7 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
+
   about: {
     type: String,
     default: "a",
@@ -24,6 +25,10 @@ const ProjectSchema = new Schema({
   dateFinish: {
     type: Date,
     default: null,
+  },
+  par: {
+    type:String,
+    required: true,
   },
   team: [
     {

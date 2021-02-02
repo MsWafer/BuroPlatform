@@ -21,6 +21,7 @@ router.post(
     check("city", "Введите город").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
     check("stage", "Выберите этап строительства").not().isEmpty(),
+    check("par", "Выберите раздел").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -40,44 +41,23 @@ router.post(
       customer,
       about,
       status,
+      par,
     } = req.body;
 
     if(!dateStart){dateStart = Date.now()}
 
     try {
-      // function getRndInteger(min, max) {
-      //   return Math.floor(Math.random() * (max - min)) + min;
-      // }
-      // let crypts = [];
-      // let projects = await Project.find().select("crypt");
-      // projects.map((project123) => crypts.push(project123.crypt));
-
-      // if (crypts.length == 8999) {
-      //   console.log("Места нет, пизда");
-      //   return res
-      //     .status(400)
-      //     .json({ err: "Закончились свободные шифры, въебите бекендеру" });
-      // }
-
-      // const promise = () =>
-      //   new Promise((resolve) => {
-      //     crypt = getRndInteger(1000, 10000).toString();
-      //     if (crypts.includes(crypt)) {
-      //       resolve(promise());
-      //     }
-      //   });
-
-      // promise();
       let count = await Project.find()
-      // console.log({count:count,type:typeof(count),length:count.length})
       let crypt = count.length+1
+      function pad(crypt) {
+        return (crypt < 10) ? '0' + crypt.toString() : crypt.toString();
+    }
 
-      let crypter = `${dateStart}-${crypt}-${title}`;
+      let pepo = pad(crypt)+stage.slice(0,1)+'-'+par;
+      let crypter = `${dateStart.toString().slice(0,3)}-${pad(crypt)}${stage.slice(0,1)}-${par}`;
       let rocketchat;
-      // let rname = title.replace(/:/g,"")
 
-      rocketchat = await rcprojcreate(title, rocketchat, crypt)
-      
+      rocketchat = await rcprojcreate(title, rocketchat, pepo)
 
       project = new Project({
         crypt,
@@ -93,6 +73,7 @@ router.post(
         about,
         status,
         rocketchat,
+        par,
       });
 
       await project.save();
@@ -142,7 +123,7 @@ router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
-        "dateStart dateFinish team sprints crypt title crypter _id status"
+        "dateStart dateFinish team sprints crypt title crypter _id status par"
       )
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
       .populate("sprints");
@@ -184,6 +165,7 @@ router.get("/:auth",auth, async (req, res) => {
         crypter: project.crypter,
         customer: project.customer,
         urn: project.urn,
+        par: project.par,
       });
     } else if (projectTitle) {
       console.log("found projects by title");
@@ -269,6 +251,7 @@ router.put("/:crypt", manauth, async (req, res) => {
           about: req.body.about,
           status: req.body.status,
           about: req.body.about,
+          par: req.body.par
         },
       }
     );
