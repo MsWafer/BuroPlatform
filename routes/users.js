@@ -146,39 +146,44 @@ router.put(
   [
     check("name", "Введите имя").not().isEmpty(),
     check("lastname", "Введите фамилию").not().isEmpty(),
-    // check("division", "Выберите отдел").not().isEmpty(),
     check("position", "Введите должность").not().isEmpty(),
   ],
   auth,
   async (req, res) => {
     try {
-      let user = await User.findOne({ _id: req.user.id });
-      if (!user) {
-        return res.status(404).json({ err: "Пользователь не найден" });
+      if (!req.body.position&&!req.body.name&&!req.body.lastname) {
+        return res.json({ err: "Заполните поля" });
       }
-      // let div = await Division.findOne({ divname: req.body.division });
-      // let user = await User.findOne({_id:req.user.id})      
-      // if (!div) {
-      //   return res.json({ msg: "Отдел не найден" });
-      // }
+      if (!req.body.position) {
+        return res.json({ err: "Введите должность" });
+      }
+      if (!req.body.name) {
+        return res.json({ err: "Введите имя" });
+      }
+      if (!req.body.lastname) {
+        return res.json({ err: "Введите логин фамилию" });
+      }      
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({err:'server error'})
+    }
 
-
-
+    try {
       await User.findOneAndUpdate(
         { _id: req.user.id },
         {
           $set: {
             name: req.body.name,
             lastname: req.body.lastname,
-            // division: div,
             position: req.body.position,
+            email:req.body.email,
           },
         }
       );
 
       return res.json({
         msg: "Данные пользователя обновлены",
-        userid: user.id,
+        userid: req.user.id,
       });
     } catch (error) {
       console.error(error);
