@@ -146,20 +146,23 @@ router.put(
   [
     check("name", "Введите имя").not().isEmpty(),
     check("lastname", "Введите фамилию").not().isEmpty(),
-    check("division", "Выберите отдел").not().isEmpty(),
+    // check("division", "Выберите отдел").not().isEmpty(),
     check("position", "Введите должность").not().isEmpty(),
   ],
   auth,
   async (req, res) => {
     try {
-      const user = await User.findOne({ _id: req.user.id });
+      let user = await User.findOne({ _id: req.user.id });
       if (!user) {
         return res.status(404).json({ err: "Пользователь не найден" });
       }
-      let div = await Division.findOne({ divname: req.body.division });
-      if (!div) {
-        return res.json({ msg: "Отдел не найден" });
-      }
+      // let div = await Division.findOne({ divname: req.body.division });
+      // let user = await User.findOne({_id:req.user.id})      
+      // if (!div) {
+      //   return res.json({ msg: "Отдел не найден" });
+      // }
+
+
 
       await User.findOneAndUpdate(
         { _id: req.user.id },
@@ -167,7 +170,7 @@ router.put(
           $set: {
             name: req.body.name,
             lastname: req.body.lastname,
-            division: div,
+            // division: div,
             position: req.body.position,
           },
         }
