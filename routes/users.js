@@ -146,7 +146,7 @@ router.put(
   [
     check("name", "Введите имя").not().isEmpty(),
     check("lastname", "Введите фамилию").not().isEmpty(),
-    // check("division", "Выберите отдел").not().isEmpty(),
+    check("division", "Выберите отдел").not().isEmpty(),
     check("position", "Введите должность").not().isEmpty(),
   ],
   auth,
@@ -167,7 +167,7 @@ router.put(
           $set: {
             name: req.body.name,
             lastname: req.body.lastname,
-            // division: div,
+            division: div,
             position: req.body.position,
           },
         }
