@@ -54,7 +54,7 @@ router.post(
     }
 
       let pepo = pad(crypt)+stage.slice(0,1)+'-'+par;
-      let crypter = `${dateStart.toString().slice(0,3)}-${pad(crypt)}${stage.slice(0,1)}-${par}`;
+      let crypter = `${dateStart.toString().slice(0,4)}-${pad(crypt)}${stage.slice(0,1)}-${par}`;
       let rocketchat;
 
       rocketchat = await rcprojcreate(title, rocketchat, pepo)
