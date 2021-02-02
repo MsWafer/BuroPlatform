@@ -77,7 +77,7 @@ router.put("/:divname", auth, async (req, res) => {
     }
     let a = await User.findOne({ _id: req.user.id }).populate("division");
     console.log(a)
-    if(a.division.divname != null || a.division.divname != undefined){
+    if(a.division != null || a.division != undefined){
     await Division.findOneAndUpdate(
       { divname: a.division.divname },
       { $pull: { members: req.user.id } }
