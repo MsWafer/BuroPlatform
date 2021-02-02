@@ -76,10 +76,12 @@ router.put("/:divname", auth, async (req, res) => {
       return res.json({ err: "Вы уже находитесь в этом отделе" });
     }
     let a = await User.findOne({ _id: req.user.id }).populate("division");
+    if(a.division.divname){
     await Division.findOneAndUpdate(
       { divname: a.division.divname },
       { $pull: { members: req.user.id } }
-    );
+    );      
+    }
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: req.user.id } }
