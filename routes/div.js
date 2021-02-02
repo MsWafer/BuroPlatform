@@ -6,6 +6,7 @@ const { check, validationResult } = require("express-validator");
 const manauth = require("../middleware/manauth");
 const Division = require("../models/Division");
 const User = require("../models/User");
+const { findOneAndUpdate } = require("../models/User");
 
 //create new division
 router.post(
@@ -27,8 +28,8 @@ router.post(
         description: req.body.description,
       });
       await div.save();
-      console.log("ОТДЕЛ СОЗДАН")
-      return res.json({ msg: "Отдел создан", div:div });
+      console.log("ОТДЕЛ СОЗДАН");
+      return res.json({ msg: "Отдел создан", div: div });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ msg: "server error" });
@@ -40,7 +41,9 @@ router.post(
 router.get("/find/:divname", auth, async (req, res) => {
   try {
     let div = await Division.findOne({ divname: req.params.divname });
-    if(!div){return res.status(400).json({msg:'Отдел не найден'})}
+    if (!div) {
+      return res.status(400).json({ msg: "Отдел не найден" });
+    }
     return res.json(div);
   } catch (error) {
     console.error(error);
@@ -51,8 +54,10 @@ router.get("/find/:divname", auth, async (req, res) => {
 //get all divisions
 router.get("/all", auth, async (req, res) => {
   try {
-    let divs = await Division.find()
-    .populate("members", "-password -permission");
+    let divs = await Division.find().populate(
+      "members",
+      "-password -permission"
+    );
     return res.json(divs);
   } catch (error) {
     console.error(error);
@@ -67,7 +72,14 @@ router.put("/:divname", auth, async (req, res) => {
     if (!div) {
       return res.json({ msg: "Отдел не найден" });
     }
-    if(div.members.includes(req.user.id)){return res.json({err:'Вы уже находитесь в этом отделе'})}
+    if (div.members.includes(req.user.id)) {
+      return res.json({ err: "Вы уже находитесь в этом отделе" });
+    }
+    let a = await User.findOne({ _id: req.user.id }).populate("division");
+    await Division.findOneAndUpdate(
+      { divname: a.division.divname },
+      { $pull: { members: req.user.id } }
+    );
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: req.user.id } }
@@ -90,7 +102,9 @@ router.put("/:divname", auth, async (req, res) => {
 router.delete("/:divname", auth, async (req, res) => {
   try {
     let div = await Division.findOne({ divname: req.params.divname });
-    if(!div){return res.json({err:'Отдел не найден'})}
+    if (!div) {
+      return res.json({ err: "Отдел не найден" });
+    }
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $pull: { members: req.user } }
