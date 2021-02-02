@@ -655,7 +655,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
       );
     }
     console.log("srint status changed");
-    return res.json({ msg: `Статус спринта изменен ${req.params.id}` });
+    return res.json({ msg: `Статус спринта изменен` });
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });

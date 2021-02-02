@@ -50,149 +50,95 @@ const rcpwdsend = require("../middleware/rcpwdsend");
 const Division = require("../models/Division");
 
 //registration
-router.post(
-  "/",
-  async (req, res) => {
-    if(!req.body.email&&!req.body.rocketname){return res.json({err: "Заполните поля"})}
-    if(!req.body.email){return res.json({err:'Введите email'})}
-    if(!req.body.rocketname){return res.json({err:"Введите логин рокетчата"})}
-    let { email, rocketname } = req.body;
-    rocketname = encodeURI(rocketname);
+router.post("/", async (req, res) => {
+  if (!req.body.email && !req.body.rocketname) {
+    return res.json({ err: "Заполните поля" });
+  }
+  if (!req.body.email) {
+    return res.json({ err: "Введите email" });
+  }
+  if (!req.body.rocketname) {
+    return res.json({ err: "Введите логин рокетчата" });
+  }
+  let { email, rocketname } = req.body;
+  rocketname = encodeURI(rocketname);
 
-    //existing user check
-    try {
-      let rcheck = await User.findOne({ rocketname });
-      if (rcheck) {
-        return res.status(400).json({
-          err: "Пользователь с указанным именем rocket.chat уже существует",
+  //existing user check
+  try {
+    let rcheck = await User.findOne({ rocketname });
+    if (rcheck) {
+      return res.status(400).json({
+        err: "Пользователь с указанным именем rocket.chat уже существует",
+      });
+    }
+    let user = await User.findOne({ email });
+    if (user) {
+      return res
+        .status(400)
+        .json({ err: "Пользователь с указанным email уже существует" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
+  }
+
+  await rcusercheck(req, res);
+
+  if (typeof rocketId === "undefined") {
+    return res
+      .status(404)
+      .json({ msg: "Указанный пользователь rocket.chat не найден" });
+  }
+
+  function makeid(length) {
+    let result = "";
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
+  try {
+    let pwd = makeid(6);
+
+    user = new User({
+      email,
+      rocketname,
+      avatar: "avatars/spurdo.png",
+      rocketId,
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(pwd, salt);
+
+    await rcpwdsend(req, res, pwd);
+
+    await user.save();
+    console.log("new user registered");
+
+    //jsonwebtoken return
+    const payload = { user: { id: user.id } };
+
+    jwt.sign(
+      payload,
+      process.env.jwtSecret,
+      { expiresIn: 360000000 },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          token: token,
+          id: user.id,
+          msg: "Пароль был отправлен вам в rocket.chat",
         });
       }
-      let user = await User.findOne({ email });
-      if (user) {
-        return res
-          .status(400)
-          .json({ err: "Пользователь с указанным email уже существует" });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ msg: "server error" });
-    }
-
-    await rcusercheck(req,res)
-    // fetch(`${process.env.CHAT}/api/v1/login`, {
-    //   method: "post",
-    //   headers: {
-    //     Accept: "application/json, text/plain, */*",
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     user: process.env.R_U,
-    //     password: process.env.R_P,
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then((res) =>
-    //     fetch(`${process.env.CHAT}/api/v1/users.info?username=${rocketname}`, {
-    //       method: "get",
-    //       headers: {
-    //         Accept: "application/json, text/plain, */*",
-    //         "Content-Type": "application/json",
-    //         "X-Auth-Token": res.data.authToken,
-    //         "X-User-Id": res.data.userId,
-    //       },
-    //     })
-    //       .then((response) => response.json())
-    //       .then((response) => {
-    //         if (!response.success) {
-    //           rocketId = undefined;
-    //         } else {
-    //           rocketId = response.user._id;
-    //         }
-    //       })
-    //   );
-
-    if (typeof rocketId === "undefined") {
-      return res
-        .status(404)
-        .json({ msg: "Указанный пользователь rocket.chat не найден" });
-    }
-
-    function makeid(length) {
-      let result = "";
-      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let charactersLength = characters.length;
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(
-          Math.floor(Math.random() * charactersLength)
-        );
-      }
-      return result;
-    }
-
-    try {
-      let pwd = makeid(6);
-
-      user = new User({
-        email,
-        rocketname,
-        avatar: "avatars/spurdo.png",
-        rocketId,
-      });
-
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(pwd, salt);
-
-      await rcpwdsend(req,res,pwd)
-      // fetch(`${process.env.CHAT}/api/v1/login`, {
-      //   method: "post",
-      //   headers: {
-      //     Accept: "application/json, text/plain, */*",
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     user: process.env.R_U,
-      //     password: process.env.R_P,
-      //   }),
-      // })
-      //   .then((res) => res.json())
-      //   .then((res) =>
-      //     fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
-      //       method: "post",
-      //       headers: {
-      //         Accept: "application/json, text/plain, */*",
-      //         "Content-Type": "application/json",
-      //         "X-Auth-Token": res.data.authToken,
-      //         "X-User-Id": res.data.userId,
-      //       },
-      //       body: JSON.stringify({ channel: `@${rocketname}`, text: pwd }),
-      //     })
-      //   );
-
-      await user.save();
-      console.log("new user registered");
-
-      //jsonwebtoken return
-      const payload = { user: { id: user.id } };
-
-      jwt.sign(
-        payload,
-        process.env.jwtSecret,
-        { expiresIn: 360000000 },
-        (err, token) => {
-          if (err) throw err;
-          res.json({
-            token: token,
-            id: user.id,
-            msg: "Пароль был отправлен вам в rocket.chat",
-          });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("server error");
-    }
+    );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("server error");
   }
-);
+});
 
 //user edit
 router.put(
@@ -200,7 +146,7 @@ router.put(
   [
     check("name", "Введите имя").not().isEmpty(),
     check("lastname", "Введите фамилию").not().isEmpty(),
-    check("division", "Выберите отдел").not().isEmpty(),
+    // check("division", "Выберите отдел").not().isEmpty(),
     check("position", "Введите должность").not().isEmpty(),
   ],
   auth,
@@ -210,8 +156,10 @@ router.put(
       if (!user) {
         return res.status(404).json({ err: "Пользователь не найден" });
       }
-      let div = await Division.findOne({divname: req.body.division})
-      if(!div){return res.json({msg:'Отдел не найден'})}
+      let div = await Division.findOne({ divname: req.body.division });
+      if (!div) {
+        return res.json({ msg: "Отдел не найден" });
+      }
 
       await User.findOneAndUpdate(
         { _id: req.user.id },
@@ -219,13 +167,16 @@ router.put(
           $set: {
             name: req.body.name,
             lastname: req.body.lastname,
-            division: div,
+            // division: div,
             position: req.body.position,
           },
         }
       );
 
-      return res.json({ msg: "Данные пользователя обновлены", userid: user.id });
+      return res.json({
+        msg: "Данные пользователя обновлены",
+        userid: user.id,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ err: "server error" });
@@ -363,7 +314,9 @@ router.put("/permchange/:id", admauth, async (req, res) => {
       { $set: { permission: req.body.permission } }
     );
     if (!user) {
-      return res.status(404).json({ msg: "Не найден пользователь с указанным id" });
+      return res
+        .status(404)
+        .json({ msg: "Не найден пользователь с указанным id" });
     }
     console.log("users permission changed");
     return res.json({ msg: "Разрешения пользователя изменены" });
@@ -388,18 +341,24 @@ router.put("/me/rocket", auth, async (req, res) => {
         },
       }
     )
-      .then((res) => res.json())
-      .then((res) =>
-        User.findOneAndUpdate(
-          { _id: req.user.id },
-          {
-            $set: {
-              rocketname: req.body.rocketname,
-              rocketId: res.user._id,
-            },
-          }
-        )
-      );
+      .then((response) => response.json())
+      .then((response) => {
+        if (typeof response.user._id === "undefined") {
+          return res
+            .status(404)
+            .json({ msg: "Указанный пользователь rocket.chat не найден" });
+        } else {
+          User.findOneAndUpdate(
+            { _id: req.user.id },
+            {
+              $set: {
+                rocketname: req.body.rocketname,
+                rocketId: response.user._id,
+              },
+            }
+          );
+        }
+      });
     return res.json({ msg: "Юзернейм рокетчата изменен" });
   } catch (error) {
     console.error(error);
@@ -482,12 +441,14 @@ router.delete("/:id", admauth, async (req, res) => {
 });
 
 //recover password via RC
-router.post("/passRC", async(req,res)=>{
+router.post("/passRC", async (req, res) => {
   try {
-    let {email} = req.body
-    let check = await User.findOne({email})
-    if(!check){return res.json({err:'Пользователь с указанным email не найден'})}
-    await rcusercheck(req,res)
+    let { email } = req.body;
+    let check = await User.findOne({ email });
+    if (!check) {
+      return res.json({ err: "Пользователь с указанным email не найден" });
+    }
+    await rcusercheck(req, res);
     if (typeof rocketId === "undefined") {
       return res
         .status(404)
@@ -506,19 +467,19 @@ router.post("/passRC", async(req,res)=>{
       return result;
     }
 
-      let pwd = makeid(6);
-      const salt = await bcrypt.genSalt(10);
-      check.password = await bcrypt.hash(pwd, salt);
-      await check.save()
+    let pwd = makeid(6);
+    const salt = await bcrypt.genSalt(10);
+    check.password = await bcrypt.hash(pwd, salt);
+    await check.save();
 
-      await rcpwdsend(req,res,pwd)
+    await rcpwdsend(req, res, pwd);
 
-      return res.json({msg:'Новый пароль был отправлен вам в rocket.chat'})
+    return res.json({ msg: "Новый пароль был отправлен вам в rocket.chat" });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({err:'server error'})
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
 
 //find user by mail, generate recovery code, save it to model and send to user's email
 router.put("/passrec", async (req, res) => {
