@@ -156,10 +156,10 @@ router.put(
       if (!user) {
         return res.status(404).json({ err: "Пользователь не найден" });
       }
-      // let div = await Division.findOne({ divname: req.body.division });
-      // if (!div) {
-      //   return res.json({ msg: "Отдел не найден" });
-      // }
+      let div = await Division.findOne({ divname: req.body.division });
+      if (!div) {
+        return res.json({ msg: "Отдел не найден" });
+      }
 
       await User.findOneAndUpdate(
         { _id: req.user.id },
