@@ -39,7 +39,7 @@
 
 ### ПроектОчка :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand: :call_me_hand:
 
-- **POST /projects/add** - добавить новый проект, указав _title_, _dateStart_, _city_, _type_, _stage_, _par_(опционально - _dateFinish_, _customer_, _area_, _about_, создает канал в рокете
+- **POST /projects/add** - добавить новый проект, указав _title_, _dateStart_, _city_, _type_, _stage_, _par_, _rcheck_(опционально - _dateFinish_, _customer_, _area_, _about_, создает канал в рокете, если _rcheck_ true - создает канал в рокете
 - **GET /projects** - получить список всех проектов
 - **GET /projects/:auth** - найти проект по _auth_, где _auth_ это _crypt_ или _title_ проекта, указанные в хедере, в респонсе выдает инфу по конкретному проекту если указан crypt, или все проекты с указанным title, если искали через него
 - **DELETE /projects/:crypt** - удалить проект, указав его _crypt_ в хедере

@@ -42,6 +42,7 @@ router.post(
       about,
       status,
       par,
+      rcheck
     } = req.body;
 
     if(!dateStart){dateStart = Date.now()}
@@ -57,8 +58,9 @@ router.post(
       let crypter = `${dateStart.toString().slice(0,4)}-${pad(crypt)}${stage.slice(0,1)}-${par}`;
       let rocketchat;
 
-      rocketchat = await rcprojcreate(title, rocketchat, pepo)
-
+      if(rcheck){
+        rocketchat = await rcprojcreate(title, rocketchat, pepo)
+      }
       project = new Project({
         crypt,
         title,
@@ -72,7 +74,7 @@ router.post(
         crypter,
         about,
         status,
-        rocketchat,
+        rocketchat:rocketchat?rocketchat:null,
         par,
       });
 
