@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: { fileSize: 3 * 1024 * 1024 },
-  fileFilter: (req, file, cb, res) => {
+  fileFilter: (req, file, cb) => {
     if (
       file.mimetype == "image/png" ||
       file.mimetype == "image/jpg" ||
@@ -36,7 +36,6 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(null, false);
-      res.send({err:'Разрешенны только .jpg, .png, .jpeg'})
       return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
     }
   },
