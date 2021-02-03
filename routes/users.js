@@ -65,13 +65,13 @@ router.post("/", async (req, res) => {
 
   //existing user check
   try {
-    let rcheck = await User.findOne({ rocketname });
+    let rcheck = await User.findOne({ rocketname }).select("-password");
     if (rcheck) {
       return res.status(400).json({
         err: "Пользователь с указанным именем rocket.chat уже существует",
       });
     }
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).select("-password");
     if (user) {
       return res
         .status(400)
@@ -267,7 +267,7 @@ router.put("/me/pw", auth, async (req, res) => {
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
   try {
-    const a = await User.findOne({ _id: req.user.id });
+    const a = await User.findOne({ _id: req.user.id }).select("-password");
     if (!a) {
       return res.json({ msg: "Пользователь не найден" });
     }
@@ -430,7 +430,7 @@ router.get("/:id", auth, async (req, res) => {
 //delete user by id
 router.delete("/:id", admauth, async (req, res) => {
   try {
-    let user = await User.findOne({ _id: req.params.id });
+    let user = await User.findOne({ _id: req.params.id }).select("-password");
     if (!user) {
       return res.status(404).json("Не найден пользователь с указанным id");
     }
@@ -452,7 +452,7 @@ router.delete("/:id", admauth, async (req, res) => {
 router.post("/passRC", async (req, res) => {
   try {
     let { email } = req.body;
-    let check = await User.findOne({ email });
+    let check = await User.findOne({ email }).select("-password");
     if (!check) {
       return res.json({ err: "Пользователь с указанным email не найден" });
     }
@@ -563,7 +563,7 @@ router.put("/passrec", async (req, res) => {
 
 //check recovery code
 router.get("/passrec/2", async (req, res) => {
-  let user = await User.findOne({ recCode: rec.body.recCode });
+  let user = await User.findOne({ recCode: rec.body.recCode }).select("-password");
   if (!user || rec.body.recCode == "a") {
     return res.json({ err: "Введен неверный код" });
   }

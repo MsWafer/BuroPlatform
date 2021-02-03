@@ -75,8 +75,7 @@ router.put("/:divname", auth, async (req, res) => {
     if (div.members.includes(req.user.id)) {
       return res.json({ err: "Вы уже находитесь в этом отделе" });
     }
-    let a = await User.findOne({ _id: req.user.id }).populate("division");
-    console.log(a)
+    let a = await User.findOne({ _id: req.user.id }).select("-password").populate("division");
     if(a.division != null || a.division != undefined){
     await Division.findOneAndUpdate(
       { divname: a.division.divname },

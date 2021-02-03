@@ -20,7 +20,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ err: errors.array() });
     }
-    let user = await User.findOne({_id:req.user.id})
+    let user = await User.findOne({_id:req.user.id}).select("-password")
 
     try {
       let { text, title } = req.body;

@@ -409,8 +409,10 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
         { _id: req.user.id },
         { $pull: { projects: project.id } }
       );
-      await rckickprj(project,user)
-
+      if(project.rocketchat){
+        await rckickprj(project,user)
+      }
+      
       res.status(200).json({
         msg: `Вы вышли из команды проекта ${req.params.crypt}`,
         crypter: project.crypter,
@@ -452,8 +454,10 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
       { $push: { projects: project } }
     );
 
-    await rcinvprj(project,user)
-
+    if(project.rocketchat){
+      await rcinvprj(project,user)
+    }
+    
     res.status(200).json({
       msg: `Вы были добавлены в команду проекта ${req.params.crypt}`,
       crypter: project.crypter,
