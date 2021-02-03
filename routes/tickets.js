@@ -42,6 +42,7 @@ const manauth = require("../middleware/manauth");
 //create ticket
 router.post(
   "/",
+  upload.single("file"),
   [
     auth,
     [
@@ -54,12 +55,6 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ err: errors.array() });
-    }
-
-    try {
-      upload.single("file")
-    } catch (imer) {
-      return res.json({err:imer})
     }
 
     try {
