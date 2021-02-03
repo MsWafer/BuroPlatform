@@ -59,7 +59,7 @@ router.post(
     try {
       upload.single("file")
     } catch (error) {
-      return res.json({err:error})
+      return res.json({err:error.message})
     }
 
     try {
