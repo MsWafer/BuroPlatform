@@ -18,7 +18,22 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+    }
+  },
+});
 
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
@@ -79,7 +94,7 @@ router.post(
 //get all tickets
 router.get("/all", manauth, async (req, res) => {
   try {
-      let tickets = await Ticket.find()
+    let tickets = await Ticket.find()
       .sort({ date: -1 })
       .populate("user", "-tickets -projects -avatar");
     console.log("GET all tickets");
@@ -165,7 +180,7 @@ router.get("/all/emergency", manauth, async (req, res) => {
 });
 
 //deactivate ticket by id
-router.put("/:id", admauth,  async (req, res) => {
+router.put("/:id", admauth, async (req, res) => {
   try {
     let ticket = await Ticket.findOneAndUpdate(
       { id: req.params._id },
