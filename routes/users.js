@@ -36,7 +36,7 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(null, false);
-      res.json({err:'Разрешенны только .jpg, .png, .jpeg'})
+      res.send({err:'Разрешенны только .jpg, .png, .jpeg'})
       return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
     }
   },
