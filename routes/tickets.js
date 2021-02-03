@@ -58,8 +58,8 @@ router.post(
 
     try {
       upload.single("file")
-    } catch (error) {
-      return res.json({err:error.message})
+    } catch (imer) {
+      return res.json({err:imer})
     }
 
     try {
