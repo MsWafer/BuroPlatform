@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: "server error" });
+    return res.status(500).json({ err: "server error" });
   }
 
   await rcusercheck(req, res);
@@ -87,7 +87,7 @@ router.post("/", async (req, res) => {
   if (typeof rocketId === "undefined") {
     return res
       .status(404)
-      .json({ msg: "Указанный пользователь rocket.chat не найден" });
+      .json({ err: "Указанный пользователь rocket.chat не найден" });
   }
 
   function makeid(length) {

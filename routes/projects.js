@@ -840,7 +840,7 @@ router.delete("/tag/:crypt", auth, async (req, res) => {
 router.get("/tag/search", auth, async (req, res) => {
   try {
     let projects = await Project.find({ tags: { $all: req.body.tags } });
-    if(!projects){return res.status(404).json({err:'Проектов с казанными тэгами не найдено'})}
+    if(!projects){return res.status(404).json({err:'Проектов с указанными тэгами не найдено'})}
     return res.json(projects);
   } catch (error) {
     console.error(error);
