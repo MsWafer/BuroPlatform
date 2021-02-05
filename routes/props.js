@@ -62,6 +62,29 @@ router.get("/all/date", auth, async (req, res) => {
   }
 });
 
+//test query
+router.get("/search", async(req,res)=>{
+  try {
+    let result = await Prop.find().select("-__v -text")
+    let que = req.query.field ? req.query.field : `likes`;
+    let order = req.query.order ? req.query.order : -1;
+
+    if(order!=1||order!=1){order = -1}
+    if(!Object.keys(result[0].toJSON()).includes(que)){que = 'likes'}
+
+    Array.prototype.sortBy = (query) => {
+      return result.slice(0).sort(function(a,b) {
+        return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
+      });
+    }
+
+    return res.json(result.sortBy(que))
+  } catch (error) {
+    console.error(error)
+    return res.json({err:'server error'})
+  }
+})
+
 //dis/like proposition
 router.put("/like/:id", auth, async (req, res) => {
   try {
