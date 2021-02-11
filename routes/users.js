@@ -420,6 +420,7 @@ router.get("/:id", auth, async (req, res) => {
       permission: user.permission,
       rocketchat: user.rocketname,
       avatar: userAvatar,
+      rocketId:user.rocketId
     });
   } catch (err) {
     console.error(err.message);

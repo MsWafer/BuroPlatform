@@ -64,6 +64,7 @@
 - **GET /projects/sprints/:crypt** - показывает все спринты проекта, найденного по его шифру в юрл
 - **POST /projects/sprints/addtask/:id** - находит спринт по _id_ в юрл, добавляет массив _tasks_ с _taskTitle_(string), _workVolume_(number),_taskState_:false(boolean) из body
 - **PUT /projects/sprints/DAtask/:id** - находит спринт по _id_ в юрл, меняет статус таска, чей ид указан в _taskid_
+- **PUT /sprints/taskedit/:id** - находит спринт по _id_ в юрл, меняет _taskTitle_ таска, чей ид указан в _taskid_ на новый из бади
 - **DELETE /projects/sprints/deltask/:id** - находит спринт по ид в юрл, удаляет таск, чей ид указан в _taskid_
 - **PUT /projects/sprints/:id** - находит спринт по _id_ в юрл, меняет его статус. Также меняет фактическую дату окончания на текущую дату или _null_
 - **GET /projects/getsprint/:id** - находит спринт по _id_

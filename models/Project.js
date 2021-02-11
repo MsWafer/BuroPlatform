@@ -74,6 +74,12 @@ const ProjectSchema = new Schema({
   urn: {
     type: String,
   },
+  obj: {
+    type: String,
+  },
+  mtl: {
+    type: String,
+  },
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);

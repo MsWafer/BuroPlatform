@@ -780,6 +780,23 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
   }
 });
 
+//edit task
+router.put("/sprints/taskedit/:id",auth,async(req,res)=>{
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if(!sprint){return res.status(404).json({msg:'Спринт не найден'})}
+    await Sprint.findOneAndUpdate(
+      { _id: req.params.id, "tasks._id": req.body.taskid },
+      { $set: { "tasks.$.taskTitle": req.body.taskTitle } }
+    );
+    console.log("task de/activated");
+    return res.json({ msg: `Таск изменен`,sprint:sprint });
+  } catch (error) {
+    console.error(error)
+    return res.json({msg:'server error'})
+  }
+})
+
 //delete task
 router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
   try {
