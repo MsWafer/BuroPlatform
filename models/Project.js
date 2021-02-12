@@ -27,7 +27,7 @@ const ProjectSchema = new Schema({
     default: null,
   },
   par: {
-    type:String,
+    type: String,
     required: true,
   },
   team: [
@@ -80,6 +80,24 @@ const ProjectSchema = new Schema({
   mtl: {
     type: String,
   },
+  release: [
+    {
+      version: {
+        type: String,
+        required: true,
+      },
+      publicId: {
+        type: String,
+      },
+      urn: {
+        type: String,
+      },
+      approve: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);

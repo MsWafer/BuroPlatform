@@ -38,9 +38,9 @@ router.post(
 );
 
 //get division by name
-router.get("/find/:divname", auth, async (req, res) => {
+router.get("/find/:divname", async (req, res) => {
   try {
-    let div = await Division.findOne({ divname: req.params.divname });
+    let div = await Division.findOne({ divname: decodeURI(req.params.divname)}).populate("members", "-password -permission");
     if (!div) {
       return res.status(400).json({ msg: "Отдел не найден" });
     }
@@ -81,15 +81,18 @@ router.put("/:divname", auth, async (req, res) => {
       { divname: a.division.divname },
       { $pull: { members: req.user.id } }
     );      
+    console.log(a.division.divname)
     }
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: req.user.id } }
     );
+    console.log(div.divname)
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $set: { division: div } }
     );
+    console.log(req.user.id)
     return res.json({
       msg: `Вы вступили в отдел ${req.params.divname}`,
       division: div,
@@ -111,14 +114,28 @@ router.delete("/:divname", auth, async (req, res) => {
       { divname: div.divname },
       { $pull: { members: req.user } }
     );
+    console.log('user pulled from division')
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $set: { division: null } }
     );
+    console.log("user's div set to null")
     return res.json({ msg: `Вы покинули отдел ${req.params.divname}` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
   }
 });
+
+//get all div's projects
+router.get("/projects/:divid",async(req,res)=>{
+  try {
+    let prj = await User.find({division:req.params.divid}).select("projects").populate("projects")
+    return res.json(prj)
+  } catch (error) {
+    console.error(error)
+    return res.json({err:'server error'})
+  }
+  
+})
 module.exports = router;

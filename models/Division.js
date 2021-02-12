@@ -12,10 +12,9 @@ const PropSchema = new Schema({
   },
   members: [
     {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: [],
     },
   ],
 });
