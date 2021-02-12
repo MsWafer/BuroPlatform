@@ -212,6 +212,8 @@ router.get("/me", auth, async (req, res) => {
     } else {
       userAvatar = user.avatar;
     }
+    if(!user.division.members.includes(req.user.id)){
+      await Division.findOneAndUpdate({divname:user.division.divname},{$push:{members:req.user.id}})}
     console.log("user found");
     return res.json({
       id: user.id,

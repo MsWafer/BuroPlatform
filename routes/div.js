@@ -68,7 +68,7 @@ router.get("/all", auth, async (req, res) => {
 //join division
 router.put("/:divname", auth, async (req, res) => {
   try {
-    let div = await Division.findOne({ divname: req.params.divname });
+    let div = await Division.findOne({ divname: req.params.divname }).populate("members","-password -permission");
     if (!div) {
       return res.json({ msg: "Отдел не найден" });
     }
