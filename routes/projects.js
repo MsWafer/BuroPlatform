@@ -790,6 +790,7 @@ router.put("/sprints/taskedit/:id",auth,async(req,res)=>{
       { $set: { "tasks.$.taskTitle": req.body.taskTitle }, $inc:{__v:1} }
     );
     console.log("task de/activated");
+    let sprint = await Sprint.findOne({ _id: req.params.id });
     return res.json({ msg: `Таск изменен`,sprint:sprint });
   } catch (error) {
     console.error(error)
