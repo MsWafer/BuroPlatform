@@ -787,7 +787,7 @@ router.put("/sprints/taskedit/:id",auth,async(req,res)=>{
     if(!sprint){return res.status(404).json({msg:'Спринт не найден'})}
     await Sprint.findOneAndUpdate(
       { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $set: { "tasks.$.taskTitle": req.body.taskTitle } }
+      { $set: { "tasks.$.taskTitle": req.body.taskTitle }, $inc:{__v:1} }
     );
     console.log("task de/activated");
     return res.json({ msg: `Таск изменен`,sprint:sprint });
