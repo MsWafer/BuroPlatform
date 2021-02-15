@@ -41,7 +41,7 @@ router.post(
 router.get("/find/:divname", async (req, res) => {
   try {
     let govno = decodeURI(req.params.divname)
-    let div = await Division.findOne({ divname: govno}).populate("members", "-password -permission");
+    let div = await Division.findOne({ divname: govno}).populate({path:"members", populate:{path:"projects"}});
     if (!div) {
       return res.status(400).json({ msg: "Отдел не найден" });
     }
