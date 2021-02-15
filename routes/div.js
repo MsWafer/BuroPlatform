@@ -40,7 +40,8 @@ router.post(
 //get division by name
 router.get("/find/:divname", async (req, res) => {
   try {
-    let div = await Division.findOne({ divname: decodeURI(req.params.divname)}).populate("members", "-password -permission");
+    let govno = decodeURI(req.params.divname)
+    let div = await Division.findOne({ divname: govno}).populate("members", "-password -permission");
     if (!div) {
       return res.status(400).json({ msg: "Отдел не найден" });
     }
@@ -81,18 +82,15 @@ router.put("/:divname", auth, async (req, res) => {
       { divname: a.division.divname },
       { $pull: { members: req.user.id } }
     );      
-    console.log(a.division.divname)
     }
     await Division.findOneAndUpdate(
       { divname: div.divname },
       { $push: { members: req.user.id } }
     );
-    console.log(div.divname)
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $set: { division: div } }
     );
-    console.log(req.user.id)
     return res.json({
       msg: `Вы вступили в отдел ${req.params.divname}`,
       division: div,

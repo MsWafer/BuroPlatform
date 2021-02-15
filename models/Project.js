@@ -93,8 +93,8 @@ const ProjectSchema = new Schema({
         type: String,
       },
       approve: {
-        type: Boolean,
-        default: false,
+        type: String,
+        default: "unapproved",
       },
     },
   ],
