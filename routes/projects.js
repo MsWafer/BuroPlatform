@@ -784,7 +784,7 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
 router.put("/sprints/taskedit/:id",auth,async(req,res)=>{
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
-    if(!sprint){return res.status(404).json({msg:'Спринт не найден'})}
+    if(!sprint){return res.status(404).json({err:'Спринт не найден'})}
     let a = sprint.tasks.filter(task => task._id == req.body.taskid)
     a[0].taskTitle = req.body.taskTitle;
     await sprint.save()

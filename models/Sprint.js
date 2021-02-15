@@ -29,7 +29,7 @@ const SprintSchema = new Schema({
       },
       workVolume: {
         type: Number,
-        required: true,
+        required: false,
       },
       taskStatus: {
         type: Boolean,
