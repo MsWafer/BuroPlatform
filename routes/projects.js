@@ -785,12 +785,20 @@ router.put("/sprints/taskedit/:id",auth,async(req,res)=>{
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if(!sprint){return res.status(404).json({msg:'Спринт не найден'})}
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $set: { "tasks.$.taskTitle": req.body.taskTitle }, $inc:{__v:1} }
-    );
-    console.log("task de/activated");
-    sprint = await Sprint.findOne({ _id: req.params.id });
+    let a = sprint.tasks.filter(task => task._id == req.body.taskid)
+    console.log(a)
+    a[0].taskTitle = req.body.taskTitle;
+    console.log(a[0].taskTitle)
+    sprint.__v = sprint.__v+1;
+    console.log(sprint.__v)
+    await sprint.update()
+    console.log('save succ')
+    // await Sprint.findOneAndUpdate(
+    //   { _id: req.params.id, "tasks._id": req.body.taskid },
+    //   { $set: { "tasks.$.taskTitle": req.body.taskTitle }, $inc:{__v:1} }
+    // );
+    // console.log("task de/activated");
+    // sprint = await Sprint.findOne({ _id: req.params.id });
     return res.json({ msg: `Таск изменен`,sprint:sprint });
   } catch (error) {
     console.error(error)

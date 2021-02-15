@@ -110,7 +110,7 @@ router.delete("/:divname", auth, async (req, res) => {
     }
     await Division.findOneAndUpdate(
       { divname: div.divname },
-      { $pull: { members: req.user } }
+      { $pull: { members: req.user.id } }
     );
     console.log('user pulled from division')
     await User.findOneAndUpdate(
