@@ -44,19 +44,20 @@ const ProjectSchema = new Schema({
       default: [],
     },
   ],
-  customer: [
-    {
-      email: {
-        type: String,
-      },
-      phone: {
-        type: String,
-      },
-      name: {
-        type: String,
-      },
-    },
-  ],
+  customer: { type: String },
+  // [
+  //   {
+  //     email: {
+  //       type: String,
+  //     },
+  //     phone: {
+  //       type: String,
+  //     },
+  //     name: {
+  //       type: String,
+  //     },
+  //   },
+  // ],
   city: {
     type: String,
   },
@@ -111,7 +112,7 @@ const ProjectSchema = new Schema({
       },
       date: {
         type: Date,
-      }
+      },
     },
   ],
   infoRes: [

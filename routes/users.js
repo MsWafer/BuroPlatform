@@ -151,7 +151,7 @@ router.put(
   auth,
   async (req, res) => {
     try {
-      if (!req.body.position&&!req.body.name&&!req.body.lastname) {
+      if (!req.body.position && !req.body.name && !req.body.lastname) {
         return res.json({ err: "Заполните поля" });
       }
       if (!req.body.position) {
@@ -162,10 +162,10 @@ router.put(
       }
       if (!req.body.lastname) {
         return res.json({ err: "Введите логин фамилию" });
-      }      
+      }
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({err:'server error'})
+      console.error(error);
+      return res.status(500).json({ err: "server error" });
     }
 
     try {
@@ -176,7 +176,7 @@ router.put(
             name: req.body.name,
             lastname: req.body.lastname,
             position: req.body.position,
-            email:req.body.email,
+            email: req.body.email,
             fullname: req.body.lastname + " " + req.body.name,
           },
         }
@@ -198,7 +198,11 @@ router.get("/me", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id })
       .select("-password")
-      .populate({path:"projects",select:"-team",populate:{path:"sprints"}})
+      .populate({
+        path: "projects",
+        select: "-team",
+        populate: { path: "sprints" },
+      })
       .populate("tickets", "-user")
       .populate("division")
       .populate({
@@ -213,8 +217,12 @@ router.get("/me", auth, async (req, res) => {
     } else {
       userAvatar = user.avatar;
     }
-    if(user.division&&!user.division.members.includes(req.user.id)){
-      await Division.findOneAndUpdate({divname:user.division.divname},{$push:{members:req.user.id}})}
+    if (user.division && !user.division.members.includes(req.user.id)) {
+      await Division.findOneAndUpdate(
+        { divname: user.division.divname },
+        { $push: { members: req.user.id } }
+      );
+    }
     console.log("user found");
     return res.json({
       id: user.id,
@@ -398,7 +406,11 @@ router.get("/:id", auth, async (req, res) => {
   try {
     let user = await User.findById(req.params.id)
       .select("-password")
-      .populate({path:"projects",select:"-team",populate:{path:"sprints"}})
+      .populate({
+        path: "projects",
+        select: "-team",
+        populate: { path: "sprints" },
+      })
       .populate("division")
       .populate("tickets", "-user");
     if (!user) {
@@ -423,7 +435,7 @@ router.get("/:id", auth, async (req, res) => {
       permission: user.permission,
       rocketchat: user.rocketname,
       avatar: userAvatar,
-      rocketId:user.rocketId
+      rocketId: user.rocketId,
     });
   } catch (err) {
     console.error(err.message);
@@ -567,7 +579,9 @@ router.put("/passrec", async (req, res) => {
 
 //check recovery code
 router.get("/passrec/2", async (req, res) => {
-  let user = await User.findOne({ recCode: rec.body.recCode }).select("-password");
+  let user = await User.findOne({ recCode: rec.body.recCode }).select(
+    "-password"
+  );
   if (!user || rec.body.recCode == "a") {
     return res.json({ err: "Введен неверный код" });
   }
@@ -608,40 +622,55 @@ router.put(
   }
 );
 
-
 //get user by letters
-router.get("/usr/get",auth, async(req,res)=>{
+router.get("/usr/get", auth, async (req, res) => {
   try {
-    let usr = await User.find({fullname: {"$regex":req.query.name,"$options":"i"}}).select("-password -permission").populate("projects")
-    console.log(usr)
-    return res.json(usr)
+    let usr = await User.find({
+      fullname: { $regex: req.query.name, $options: "i" },
+    }).select("-password -permission");
+    return res.json(usr);
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({err:'server error'})
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
+
+//get users by position
+router.get("/usr/pos", auth, async (req, res) => {
+  try {
+    let usrs = await User.find({ position: req.query.position }).select(
+      "-password -permission"
+    );
+    return res.json(usrs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 
 //COSTIL
-router.get("/govno/govno",auth,async(req,res)=>{
+router.get("/govno/govno", auth, async (req, res) => {
   try {
-    let usrs = await User.find()
-    usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
+    let usrs = await User.find();
+    usrs.map((usr) => (usr.fullname = usr.lastname + " " + usr.name));
 
-    const userPromises = usrs.map(usr => {
+    const userPromises = usrs.map((usr) => {
       return new Promise((resolve, reject) => {
         usr.save((error, result) => {
           if (error) {
-            reject(error)
+            reject(error);
           }
           resolve(result);
-        })
-      })
+        });
+      });
     });
-    
-    Promise.all(userPromises).then((response)=>{return res.json(response)})
+
+    Promise.all(userPromises).then((response) => {
+      return res.json(response);
+    });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({err:"server error"})
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
 module.exports = router;

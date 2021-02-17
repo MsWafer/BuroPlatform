@@ -93,15 +93,17 @@ router.post(
         });
       }
 
-      let newProject = await Project.findOneAndUpdate(
+      project = await Project.findOneAndUpdate(
         { crypt: crypt },
         { $addToSet: { team: { $each: userid } } }
       );
-      await User.updateMany(
-        { _id: { $in: userid } },
-        { $push: { projects: newProject._id } },
-        { multi: true }
-      );
+      // await User.updateMany(
+      //   { _id: { $in: userid } },
+      //   { $push: { projects: newProject._id } },
+      //   { multi: true }
+      // );
+      let usrs = await User.find({ _id: { $in: userid } })
+      usrs.map(user=>rcinvprj(project,user),usr.projects.push(project._id))
       console.log(`Проект ${crypt} добавлен`);
       return res
         .status(200)
