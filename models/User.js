@@ -61,7 +61,10 @@ const UserSchema = new mongoose.Schema({
   },
   fullname: {
     type: String,
-  }
+  },
+  report: {
+    type: String,
+  },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

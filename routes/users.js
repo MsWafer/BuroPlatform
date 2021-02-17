@@ -436,6 +436,7 @@ router.get("/:id", auth, async (req, res) => {
       rocketchat: user.rocketname,
       avatar: userAvatar,
       rocketId: user.rocketId,
+      report: user.report,
     });
   } catch (err) {
     console.error(err.message);
