@@ -103,7 +103,7 @@ router.post(
       //   { multi: true }
       // );
       let usrs = await User.find({ _id: { $in: userid } })
-      usrs.map(user=>rcinvprj(project,user),usr.projects.push(project._id))
+      usrs.map(user=>rcinvprj(project,user),user.projects.push(project._id))
       console.log(`Проект ${crypt} добавлен`);
       return res
         .status(200)
