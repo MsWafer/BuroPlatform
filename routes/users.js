@@ -625,7 +625,7 @@ router.get("/govno/govno",auth,async(req,res)=>{
   try {
     let usrs = await User.find()
     usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
-    await usrs.save()
+    await usrs.updateMany()
     return res.json(usrs)
   } catch (error) {
     console.error(error)
