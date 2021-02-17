@@ -178,6 +178,7 @@ router.put(
             position: req.body.position,
             email: req.body.email,
             fullname: req.body.lastname + " " + req.body.name,
+            report: req.body.report,
           },
         }
       );

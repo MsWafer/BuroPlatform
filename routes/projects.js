@@ -97,14 +97,11 @@ router.post(
         { crypt: crypt },
         { $addToSet: { team: { $each: userid } } }
       );
-      // await User.updateMany(
-      //   { _id: { $in: userid } },
-      //   { $push: { projects: newProject._id } },
-      //   { multi: true }
-      // );
-      let govno = async(project,user)=>{rcinvprj(project,user), user.projects.push(project._id)}
-      let usrs = await User.find({ _id: { $in: userid } })
-      usrs.map(user=>govno(project,user))
+      let govno = async (project, user) => {
+        rcinvprj(project, user), user.projects.push(project._id);
+      };
+      let usrs = await User.find({ _id: { $in: userid } });
+      usrs.map((user) => govno(project, user));
       console.log(`Проект ${crypt} добавлен`);
       return res
         .status(200)
