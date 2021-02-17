@@ -102,8 +102,9 @@ router.post(
       //   { $push: { projects: newProject._id } },
       //   { multi: true }
       // );
+      let govno = async(project,user)=>{rcinvprj(project,user), user.projects.push(project._id)}
       let usrs = await User.find({ _id: { $in: userid } })
-      usrs.map(user=>rcinvprj(project,user),user.projects.push(project._id))
+      usrs.map(user=>govno(project,user))
       console.log(`Проект ${crypt} добавлен`);
       return res
         .status(200)
