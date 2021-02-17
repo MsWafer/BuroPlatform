@@ -197,7 +197,7 @@ router.get("/me", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id })
       .select("-password")
-      .populate("projects", -"team")
+      .populate({path:"projects",select:"-team",populate:{path:"sprints"}})
       .populate("tickets", "-user")
       .populate("division")
       .populate({
@@ -397,7 +397,7 @@ router.get("/:id", auth, async (req, res) => {
   try {
     let user = await User.findById(req.params.id)
       .select("-password")
-      .populate("projects", "-team")
+      .populate({path:"projects",select:"-team",populate:{path:"sprints"}})
       .populate("division")
       .populate("tickets", "-user");
     if (!user) {
@@ -607,4 +607,29 @@ router.put(
   }
 );
 
+
+//get user by letters
+router.get("/usr/get", async(req,res)=>{
+  try {
+    let usr = await User.find({fullname: {"$regex":req.query.name,"$options":"i"}})
+    console.log(usr)
+    return res.json(usr)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({err:'server error'})
+  }
+})
+
+//COSTIL
+router.get("/govno",async(req,res)=>{
+  try {
+    let usrs = await User.find()
+    usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
+    await usrs.save()
+    return res.json(usrs)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({err:"server error"})
+  }
+})
 module.exports = router;
