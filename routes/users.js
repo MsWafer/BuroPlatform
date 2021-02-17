@@ -177,6 +177,7 @@ router.put(
             lastname: req.body.lastname,
             position: req.body.position,
             email:req.body.email,
+            fullname: req.body.lastname + " " + req.body.name,
           },
         }
       );
@@ -611,7 +612,7 @@ router.put(
 //get user by letters
 router.get("/usr/get",auth, async(req,res)=>{
   try {
-    let usr = await User.find({fullname: {"$regex":req.query.name,"$options":"i"}})
+    let usr = await User.find({fullname: {"$regex":req.query.name,"$options":"i"}}).select("-password -permission").populate("projects")
     console.log(usr)
     return res.json(usr)
   } catch (error) {
