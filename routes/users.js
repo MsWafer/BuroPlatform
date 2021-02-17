@@ -625,8 +625,19 @@ router.get("/govno/govno",auth,async(req,res)=>{
   try {
     let usrs = await User.find()
     usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
-    await usrs.updateMany()
-    return res.json(usrs)
+
+    const userPromises = usrs.map(usr => {
+      return new Promise((resolve, reject) => {
+        usr.save((error, result) => {
+          if (error) {
+            reject(error)
+          }
+          resolve(result);
+        })
+      })
+    });
+    
+    Promise.all(userPromises).then((response)=>{return res.json(response)})
   } catch (error) {
     console.error(error)
     return res.status(500).json({err:"server error"})
