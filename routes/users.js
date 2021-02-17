@@ -621,7 +621,7 @@ router.get("/usr/get",auth, async(req,res)=>{
 })
 
 //COSTIL
-router.get("/govno",auth,async(req,res)=>{
+router.get("/govno/govno",auth,async(req,res)=>{
   try {
     let usrs = await User.find()
     usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
