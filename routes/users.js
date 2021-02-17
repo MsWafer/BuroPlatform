@@ -609,7 +609,7 @@ router.put(
 
 
 //get user by letters
-router.get("/usr/get", async(req,res)=>{
+router.get("/usr/get",auth, async(req,res)=>{
   try {
     let usr = await User.find({fullname: {"$regex":req.query.name,"$options":"i"}})
     console.log(usr)
@@ -621,7 +621,7 @@ router.get("/usr/get", async(req,res)=>{
 })
 
 //COSTIL
-router.get("/govno",async(req,res)=>{
+router.get("/govno",auth,async(req,res)=>{
   try {
     let usrs = await User.find()
     usrs.map(usr=>usr.fullname=usr.lastname + " " + usr.name)
