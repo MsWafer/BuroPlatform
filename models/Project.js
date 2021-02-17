@@ -44,9 +44,19 @@ const ProjectSchema = new Schema({
       default: [],
     },
   ],
-  customer: {
-    type: String,
-  },
+  customer: [
+    {
+      email: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
+      name: {
+        type: String,
+      },
+    },
+  ],
   city: {
     type: String,
   },
@@ -83,8 +93,8 @@ const ProjectSchema = new Schema({
   release: [
     {
       version: {
-        type: String,
-        required: true,
+        type: Number,
+        default: 1,
       },
       publicId: {
         type: String,
@@ -95,6 +105,28 @@ const ProjectSchema = new Schema({
       approve: {
         type: String,
         default: "unapproved",
+      },
+      edits: {
+        type: String,
+      },
+      date: {
+        type: Date,
+      }
+    },
+  ],
+  infoRes: [
+    {
+      description: {
+        type: String,
+      },
+      name: {
+        type: String,
+      },
+      content: {
+        type: String,
+      },
+      type: {
+        type: String,
       },
     },
   ],

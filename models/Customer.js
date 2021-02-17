@@ -4,11 +4,12 @@ const Schema = mongoose.Schema;
 const CustomerSchema = new Schema({
   email: {
     type: String,
-    required: true,
   },
   password: {
     type: String,
-    required: true,
+  },
+  companyName: {
+    type: String,
   },
   name: {
     type: String,
@@ -28,6 +29,13 @@ const CustomerSchema = new Schema({
   phone: {
     type: String,
     default: null,
+  },
+  regId: {
+    type: String,
+  },
+  active: {
+    type: Boolean,
+    default: false,
   },
 });
 

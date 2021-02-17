@@ -6,6 +6,7 @@ require("dotenv").config();
 const { check, validationResult } = require("express-validator");
 const cusauth = require("../middleware/cusauth");
 const auth = require("../middleware/auth");
+const manauth = require("../middleware/manauth");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -72,7 +73,6 @@ router.post("/", async (req, res) => {
   try {
     customer = new Customer({
       email,
-      // avatar: "avatars/spurdo.png",
     });
 
     const salt = await bcrypt.genSalt(12);
@@ -99,6 +99,65 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
+  }
+});
+
+//reg by link 1
+router.post("/link", manauth, async (req, res) => {
+  try {
+    let regId = Buffer.from(Date.now()).toString("base64");
+    let cust = new Customer({
+      companyName: req.body.companyName,
+      regId: regId,
+      projects: req.body.projects,
+    });
+    await cust.save();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//reg by link 2
+router.put("/link/:regId", async (req, res) => {
+  try {
+    let customer = await Customer.findOne({ regId: req.params.regId });
+    if (!customer) {
+      return res.status(404).json({ err: "Неверный ссылка регистрации" });
+    }
+    if (customer.active) {
+      return res
+        .status(400)
+        .json({ err: "Указанная ссылка регистрации уже была использована" });
+    }
+    const salt = await bcrypt.genSalt(12);
+
+    customer.email = req.body.email;
+    customer.password = await bcrypt.hash(req.body.password, salt);
+    customer.active = true;
+    customer.url = req.body.url;
+    customer.phone = req.body.phone;
+    customer.desciption = req.body.desciption;
+    await customer.save();
+
+    //jsonwebtoken return
+    const payload = { customer: { id: customer.id } };
+
+    jwt.sign(
+      payload,
+      process.env.jwtSecret,
+      { expiresIn: 3600 * 24 * 30 },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          token: token,
+          id: customer.id,
+        });
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -180,7 +239,7 @@ router.get("/me", cusauth, async (req, res) => {
   try {
     let customer = await Customer.findOne({ _id: req.customer.id })
       .select("-password")
-      .populate("projects");
+      .populate("projects", "-sprints -team -obj -mtl -rocketname");
     if (!customer) {
       return res.status(404).json({ err: "Пользователь не найден" });
     }
@@ -210,9 +269,10 @@ router.get("/:id", auth, async (req, res) => {
 //get all customer's projects for customer
 router.get("/projects", cusauth, async (req, res) => {
   try {
-    let projects = await Project.find({ customer: req.customer.id })
-      .populate("team", "-password -permission")
-      .populate("sprints");
+    let projects = await Customer.find({ _id: req.customer.id }).select("projects").populate(
+      "projects",
+      "-sprints -team -customer -rocketchat -release -obj -mtl"
+    );
     return res.json(projects);
   } catch (error) {
     console.error(error);
@@ -220,18 +280,14 @@ router.get("/projects", cusauth, async (req, res) => {
   }
 });
 
-//get spint
-router.get("/sprint/:id", cusauth, async (req, res) => {
+router.get("/pubproj/:id",async(req,res)=>{
   try {
-    let spr = await Sprint.findOne({ _id: req.params.id });
-    if (!spr) {
-      return res.status(404).json({ err: "Указанный спринт не найден" });
-    }
-    return res.json(spr);
+    let prj = await Project.findOne({"release.publicId":req.params.id}).select("-team -sprints")
+    if(!prj){return res.status(404).json({err:'Указанный проект не найден'})}
+    return res.json(prj)
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
+    console.error(error)
+    return res.status(500).json({err:'server error'})
   }
-});
-
+})
 module.exports = router;
