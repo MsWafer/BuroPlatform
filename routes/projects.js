@@ -119,10 +119,10 @@ router.get("/",auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
-        "dateStart dateFinish crypt title crypter _id status par"
+        "dateStart dateFinish team sprints crypt title crypter _id status par"
       )
-      // .populate("team", "-projects -password -permission -avatar -tickets -__v")
-      // .populate("sprints");
+      .populate("team", "-projects -password -permission -avatar -tickets -__v")
+      .populate("sprints");
     console.log(req.query)
     let que = req.query.field;
     let order = req.query.order;
