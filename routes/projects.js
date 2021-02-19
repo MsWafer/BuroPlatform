@@ -53,8 +53,8 @@ router.post(
     try {
       let count = await Project.find().sort("crypt");
       console.log(count[0].crypt)
-      console.log(count[count.length].crypt)
-      let crypt = Number(count[-1].crypt) + 1;
+      console.log(count[count.length -1].crypt)
+      let crypt = Number(count[count.length -1].crypt) + 1;
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
