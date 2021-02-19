@@ -391,7 +391,7 @@ router.put("/me/rocket", auth, async (req, res) => {
 router.get("/all", auth, async (req, res) => {
   try {
     let users = await User.find()
-      .select("projects")
+      .select("-password -permission")
       .populate("projects", "-team")
       .populate("division")
       .populate("tickets", "-user");
