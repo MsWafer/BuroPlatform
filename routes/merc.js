@@ -139,7 +139,7 @@ router.get("/find", async (req, res) => {
     if (req.query.name == "all") {
       merc = await Merc.find();
     } else {
-      merc = await Merc.find({ fullname: req.query.name });
+      merc = await Merc.findOne({ fullname: req.query.name });
     }
     if (!merc) {
       return res.status(404).json({ err: "Смежник не найден" });

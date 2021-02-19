@@ -391,7 +391,7 @@ router.put("/me/rocket", auth, async (req, res) => {
 router.get("/all", auth, async (req, res) => {
   try {
     let users = await User.find()
-      .select("-password")
+      .select("projects")
       .populate("projects", "-team")
       .populate("division")
       .populate("tickets", "-user");
@@ -661,7 +661,7 @@ router.get("/usr/pos", auth, async (req, res) => {
 });
 
 //COSTIL
-router.get("/govno/govno", auth, async (req, res) => {
+router.get("/govno/govno", async (req, res) => {
   try {
     let usrs = await User.find();
     usrs.map((usr) => (usr.fullname = usr.lastname + " " + usr.name));
