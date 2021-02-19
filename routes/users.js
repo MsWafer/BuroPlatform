@@ -239,6 +239,7 @@ router.get("/me", auth, async (req, res) => {
       avatar: userAvatar,
       sprints: user.sprints,
       rocketchat: user.rocketname,
+      report: user.report,
     });
   } catch (error) {
     console.error(error);
