@@ -71,7 +71,7 @@ router.post(
         emergency: req.body.emergency,
         name: user.name,
         pcpass: req.body.pcpass,
-        screenshot: req.file ? "ticketSS/" + req.file.filename : {},
+        screenshot: req.file ? "ticketSS/" + req.file.filename : "",
       });
       try {
         await newTicket.save();
