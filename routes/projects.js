@@ -52,12 +52,8 @@ router.post(
 
     try {
       let count = await Project.find().select("crypt");
-      // console.log(count)
-      let govno2 = count.map(mocha=>mocha.crypt=Number(mocha.crypt)).sort((a,b)=>{return a.crypt - b.crypt})
-      console.log(govno2)
-      let govno3 = Number(govno2)
-      let govno4 = govno3.sort((a,b)=>{return a.crypt - b.crypt})
-      let crypt = Number(govno4[govno4.length -1]) + 1;
+      let govno2 = count.map(mocha=>mocha.crypt=Number(mocha.crypt)).sort((a,b)=>{return a - b})
+      let crypt = Number(govno2[govno2.length -1]) + 1; 
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
