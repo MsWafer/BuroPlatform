@@ -74,7 +74,7 @@ router.post("/", async (req, res) => {
     });
 
     await merc.save();
-    return res.json({ msg: `Сметчик ${fullname} добавлен`, merc: merc });
+    return res.json({ msg: `Смежник ${fullname} добавлен`, merc: merc });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
