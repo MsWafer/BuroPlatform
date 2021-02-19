@@ -51,8 +51,8 @@ router.post(
     }
 
     try {
-      let count = await Project.find().sort({crypt:-1});
-      let crypt = Number(count[0].crypt) + 1;
+      let count = await Project.find().sort("crypt");
+      let crypt = Number(count[-1].crypt) + 1;
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
