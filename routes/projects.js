@@ -124,7 +124,8 @@ router.get("/",auth, async (req, res) => {
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
       .populate("sprints");
     console.log(req.query)
-    let que = req.query.field;
+    let que;
+    if(req.query.order){que=1}else{que=-1}
     let order = req.query.order;
       Array.prototype.sortBy = (query) => {
         return projects.slice(0).sort(function(a,b) {
