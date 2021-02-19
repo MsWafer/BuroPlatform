@@ -395,8 +395,17 @@ router.get("/all", auth, async (req, res) => {
       .populate("projects", "-team")
       .populate("division")
       .populate("tickets", "-user");
+
+      let que = req.query.field;
+      let order;
+      if(req.query.order=="true"){order=1}else{order=-1}
+        Array.prototype.sortBy = (query) => {
+          return users.slice(0).sort(function(a,b) {
+            return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
+          });
+        }
     console.log("GET all users");
-    return res.json(users);
+    return res.json((users.sortBy(que)));
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
