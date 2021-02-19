@@ -15,10 +15,10 @@ const MercSchema = new Schema({
     required: true,
   },
   job: {
-    type: Date,
+    type: String,
   },
   contacts:{ 
-    type:Array
+    type:Object
   },
 });
 

@@ -22,6 +22,7 @@ app.use("/news", require("./routes/news"));
 app.use("/props", require("./routes/props"));
 app.use("/divisions", require("./routes/div"));
 app.use("/customer", require("./routes/customer"));
+app.use("/merc", require("./routes/merc"));
 
 const PORT = process.env.PORT || 7070;
 

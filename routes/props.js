@@ -63,7 +63,7 @@ router.get("/all/date", auth, async (req, res) => {
 });
 
 //test query
-router.get("/search", async(req,res)=>{
+router.get("/search", auth, async(req,res)=>{
   try {
     let result = await Prop.find().select("-__v -text")
     let que = req.query.field ? req.query.field : `likes`;

@@ -115,16 +115,25 @@ router.post(
 );
 
 //find all projects
-router.get("/", auth, async (req, res) => {
+router.get("/",auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
-        "dateStart dateFinish team sprints crypt title crypter _id status par"
+        "dateStart dateFinish crypt title crypter _id status par"
       )
-      .populate("team", "-projects -password -permission -avatar -tickets -__v")
-      .populate("sprints");
+      // .populate("team", "-projects -password -permission -avatar -tickets -__v")
+      // .populate("sprints");
+    console.log(req.query)
+    let que = req.query.field;
+    let order = req.query.order;
+      Array.prototype.sortBy = (query) => {
+        return projects.slice(0).sort(function(a,b) {
+          return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
+        });
+      }
+
     console.log("GET all projects");
-    return res.json(projects);
+    return res.json(projects.sortBy(que));
   } catch (err) {
     console.error(err.message);
     return res.status(500).json({ err: "server error" });

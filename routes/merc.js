@@ -49,7 +49,7 @@ router.post("/", async (req, res) => {
   if (!req.body.name || !req.body.lastname) {
     return res.json({ err: "Заполните все поля" });
   }
-  let { name, lastname } = req.body;
+  let { name, lastname, contacts, job } = req.body;
   let fullname = req.body.lastname + " " + req.body.name;
 
   try {
@@ -65,18 +65,70 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    merc = new Customer({
+    merc = new Merc({
       name,
       lastname,
       fullname,
       contacts,
+      job,
     });
 
     await merc.save();
-    return res.json({ msg: `Сметчик ${fullname} добавлен` });
+    return res.json({ msg: `Сметчик ${fullname} добавлен`, merc: merc });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
+  }
+});
+
+//delete merc
+router.delete("/", manauth, async (req, res) => {
+  try {
+    let merc = await Merc.findOne({ fullname: req.body.fullname });
+    if (!merc) {
+      return res.status(404).json({ err: "Смежник не найден" });
+    }
+    await merc.remove();
+    return res.json({ msg: "Смежник удален" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit merc
+router.put("/edit/:id", manauth, async (req, res) => {
+  try {
+    let merc = await Merc.findOne({ _id: req.params.id });
+    if (!merc) {
+      return res.status(404).json({ err: "Смежник не найден" });
+    }
+    merc.name = req.body.name;
+    merc.lastname = req.body.lastname;
+    merc.fullname = req.body.lastname + " " + req.body.name;
+    merc.contacts.phone = req.body.phone;
+    merc.contacts.email = req.body.email;
+    await merc.save();
+    return res.json(merc);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add contact
+router.put("/contact/:id", manauth, async (req, res) => {
+  try {
+    let merc = await Merc.findOne({ _id: req.params.id });
+    if (!merc) {
+      return res.status(404).json({ err: "Смежник не найден" });
+    }
+    merc.contacts[req.body.property] = req.body.value;
+    await merc.save();
+    return res.json(merc);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
