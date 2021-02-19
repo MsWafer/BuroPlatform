@@ -126,7 +126,7 @@ router.get("/",auth, async (req, res) => {
     console.log(req.query)
     let que = req.query.field;
     let order;
-    if(req.query.order){order=1}else{order=-1}
+    if(req.query.order=="true"){order=1}else{order=-1}
       Array.prototype.sortBy = (query) => {
         return projects.slice(0).sort(function(a,b) {
           return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
