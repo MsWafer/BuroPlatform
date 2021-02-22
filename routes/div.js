@@ -40,8 +40,16 @@ router.post(
 //get division by name
 router.get("/find/:divname", async (req, res) => {
   try {
-    let govno = decodeURI(req.params.divname)
-    let div = await Division.findOne({ divname: govno}).populate({path:"members",select:"-password -permission", populate:{path:"projects",select:"-team",populate:{path:"sprints"}}});
+    let govno = decodeURI(req.params.divname);
+    let div = await Division.findOne({ divname: govno }).populate({
+      path: "members",
+      select: "-password -permission",
+      populate: {
+        path: "projects",
+        select: "-team",
+        populate: { path: "sprints" },
+      },
+    });
     if (!div) {
       return res.status(400).json({ msg: "Отдел не найден" });
     }
@@ -55,10 +63,15 @@ router.get("/find/:divname", async (req, res) => {
 //get all divisions
 router.get("/all", auth, async (req, res) => {
   try {
-    let divs = await Division.find().populate(
-      "members",
-      "-password -permission"
-    );
+    let divs = await Division.find().populate({
+      path: "members",
+      select: "-password -permission",
+      populate: {
+        path: "projects",
+        select: "-team",
+        populate: { path: "sprints" },
+      },
+    });
     return res.json(divs);
   } catch (error) {
     console.error(error);
@@ -69,19 +82,24 @@ router.get("/all", auth, async (req, res) => {
 //join division
 router.put("/:divname", auth, async (req, res) => {
   try {
-    let div = await Division.findOne({ divname: req.params.divname }).populate("members","-password -permission");
+    let div = await Division.findOne({ divname: req.params.divname }).populate(
+      "members",
+      "-password -permission"
+    );
     if (!div) {
       return res.json({ msg: "Отдел не найден" });
     }
     if (div.members.includes(req.user.id)) {
       return res.json({ err: "Вы уже находитесь в этом отделе" });
     }
-    let a = await User.findOne({ _id: req.user.id }).select("-password").populate("division");
-    if(a.division != null || a.division != undefined){
-    await Division.findOneAndUpdate(
-      { divname: a.division.divname },
-      { $pull: { members: req.user.id } }
-    );      
+    let a = await User.findOne({ _id: req.user.id })
+      .select("-password")
+      .populate("division");
+    if (a.division != null || a.division != undefined) {
+      await Division.findOneAndUpdate(
+        { divname: a.division.divname },
+        { $pull: { members: req.user.id } }
+      );
     }
     await Division.findOneAndUpdate(
       { divname: div.divname },
@@ -112,12 +130,12 @@ router.delete("/:divname", auth, async (req, res) => {
       { divname: div.divname },
       { $pull: { members: req.user.id } }
     );
-    console.log('user pulled from division')
+    console.log("user pulled from division");
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $set: { division: null } }
     );
-    console.log("user's div set to null")
+    console.log("user's div set to null");
     return res.json({ msg: `Вы покинули отдел ${req.params.divname}` });
   } catch (error) {
     console.error(error);
@@ -126,14 +144,15 @@ router.delete("/:divname", auth, async (req, res) => {
 });
 
 //get all div's projects
-router.get("/projects/:divid",async(req,res)=>{
+router.get("/projects/:divid", async (req, res) => {
   try {
-    let prj = await User.find({division:req.params.divid}).select("projects").populate("projects")
-    return res.json(prj)
+    let prj = await User.find({ division: req.params.divid })
+      .select("projects")
+      .populate("projects");
+    return res.json(prj);
   } catch (error) {
-    console.error(error)
-    return res.json({err:'server error'})
+    console.error(error);
+    return res.json({ err: "server error" });
   }
-  
-})
+});
 module.exports = router;
