@@ -46,7 +46,7 @@ router.get("/find/:divname", async (req, res) => {
       select: "-password -permission",
       populate: {
         path: "projects",
-        select: "-team",
+        select: "-team -team2",
         populate: { path: "sprints" },
       },
     });
@@ -68,7 +68,7 @@ router.get("/all", auth, async (req, res) => {
       select: "-password -permission",
       populate: {
         path: "projects",
-        select: "-team",
+        select: "-team -team2",
         populate: { path: "sprints" },
       },
     });

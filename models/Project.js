@@ -6,6 +6,9 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
+  offTitle: {
+    type: String,
+  },
   type: {
     type: String,
     required: true,
@@ -30,11 +33,34 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
+  cusStorage: {
+    type: String,
+  },
+  schedule: {
+    type: String,
+  },
+  budget: {
+    type: String,
+  },
   team: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       default: [],
+    },
+  ],
+  team2: [
+    {
+      position: {
+        type: String,
+      },
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      task: {
+        type: String,
+      },
     },
   ],
   sprints: [

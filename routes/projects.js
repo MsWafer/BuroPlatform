@@ -44,6 +44,11 @@ router.post(
       par,
       rcheck,
       userid,
+      offTitle,
+      budget,
+      cusStorage,
+      schedule,
+      userid2,
     } = req.body;
 
     if (!dateStart) {
@@ -52,8 +57,12 @@ router.post(
 
     try {
       let count = await Project.find().select("crypt");
-      let govno2 = count.map(mocha=>mocha.crypt=Number(mocha.crypt)).sort((a,b)=>{return a - b})
-      let crypt = Number(govno2[govno2.length -1]) + 1; 
+      let govno2 = count
+        .map((mocha) => (mocha.crypt = Number(mocha.crypt)))
+        .sort((a, b) => {
+          return a - b;
+        });
+      let crypt = Number(govno2[govno2.length - 1]) + 1;
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
@@ -82,31 +91,61 @@ router.post(
         status,
         rocketchat: rocketchat ? rocketchat : null,
         par,
+        offTitle,
+        budget,
+        cusStorage,
+        schedule,
       });
 
       await project.save();
 
-      if (!userid || userid == null || userid == undefined) {
+      if (
+        !userid ||
+        userid == null ||
+        userid == undefined ||
+        !userid2 ||
+        userid2 == null ||
+        userid2 == undefined
+      ) {
         console.log(`Проект ${crypt} добавлен`);
         return res.status(200).json({
           project: project,
           msg: `Проект ${title} добавлен`,
         });
       }
-
-      project = await Project.findOneAndUpdate(
-        { crypt: crypt },
-        { $addToSet: { team: { $each: userid } } }
-      );
-      let govno = async (project, user) => {
-        rcinvprj(project, user), user.projects.push(project._id);
-      };
-      let usrs = await User.find({ _id: { $in: userid } });
-      usrs.map((user) => govno(project, user));
-      console.log(`Проект ${crypt} добавлен`);
-      return res
-        .status(200)
-        .json({ project: project, msg: `Проект ${title} добавлен` });
+      if (!userid2 || userid2 == null || userid2 == undefined) {
+        project = await Project.findOneAndUpdate(
+          { crypt: crypt },
+          { $addToSet: { team: { $each: userid } } }
+        );
+        let govno = async (project, user) => {
+          rcinvprj(project, user), user.projects.push(project._id);
+        };
+        let usrs = await User.find({ _id: { $in: userid } });
+        usrs.map((user) => govno(project, user));
+        console.log(`Проект ${crypt} добавлен`);
+        return res
+          .status(200)
+          .json({ project: project, msg: `Проект ${title} добавлен` });
+      } else {
+        project = await Project.findOneAndUpdate(
+          { crypt: crypt },
+          { $addToSet: { team2: { $each: userid2 } } }
+        );
+        let govno = async (project, user) => {
+          rcinvprj(project, user), user.projects.push(project._id);
+        };
+        userid = [];
+        await userid2.map((user) => {
+          userid.push(user.user);
+        });
+        let usrs = await User.find({ _id: { $in: userid } });
+        usrs.map((user) => govno(project, user));
+        console.log(`Проект ${crypt} добавлен`);
+        return res
+          .status(200)
+          .json({ project: project, msg: `Проект ${title} добавлен` });
+      }
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("server error");
@@ -115,23 +154,25 @@ router.post(
 );
 
 //find all projects
-router.get("/",auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
-      .select(
-        "dateStart dateFinish team sprints crypt title crypter _id status par"
-      )
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
+      .populate("team2", "-projects -password -permission -avatar -tickets -__v")
       .populate("sprints");
-    console.log(req.query)
+    console.log(req.query);
     let que = req.query.field;
     let order;
-    if(req.query.order=="true"){order=1}else{order=-1}
-      Array.prototype.sortBy = (query) => {
-        return projects.slice(0).sort(function(a,b) {
-          return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
-        });
-      }
+    if (req.query.order == "true") {
+      order = 1;
+    } else {
+      order = -1;
+    }
+    Array.prototype.sortBy = (query) => {
+      return projects.slice(0).sort(function (a, b) {
+        return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
+      });
+    };
 
     console.log("GET all projects");
     return res.json(projects.sortBy(que));
@@ -146,33 +187,27 @@ router.get("/:auth", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
       .populate("team", "-projects -password -permission -tickets -__v")
+      .populate("team2.user", "-projects -password -permission -tickets -__v")
       .populate("sprints");
     let projectTitle = await Project.find({ title: req.params.auth })
-      .select("dateStart team sprints crypt title crypter status _id")
       .populate("team", "-projects -password -permission -tickets -__v")
+      .populate("team2.user", "-projects -password -permission -tickets -__v")
       .populate("sprints");
     if (!project && !projectTitle) {
       return res.status(404).json({ err: "Проект не найден" });
     } else if (project) {
+      if (project.team2.length == 0) {
+        let mocha = [];
+        let govno = {};
+        await project.team.map((user) => {
+          (govno = { position: "Работяга", task: "Работать", user: user._id }),
+            mocha.push(govno);
+        });
+        project.team2 = mocha;
+        await project.save();
+      }
       console.log("found project by crypt");
-      return res.json({
-        title: project.title,
-        crypt: project.crypt,
-        dateStart: project.dateStart,
-        dateFinish: project.dateFinish,
-        city: project.city,
-        type: project.type,
-        stage: project.stage,
-        area: project.area,
-        team: project.team ? project.team : [],
-        sprints: project.sprints ? project.sprints : [],
-        about: project.about,
-        status: project.status,
-        crypter: project.crypter,
-        customer: project.customer,
-        urn: project.urn,
-        par: project.par,
-      });
+      return res.json(project);
     } else if (projectTitle) {
       console.log("found projects by title");
       return res.json(projectTitle);
@@ -189,6 +224,7 @@ router.get("/user/:id", auth, async (req, res) => {
     let projects = await Project.find({ team: req.params.id })
       .sort({ date: -1 })
       .populate("team", "-projects -password -avatar -permission -tickets -__v")
+      .populate("team2", "-projects -password -avatar -permission -tickets -__v")
       .populate("sprints");
 
     console.log(`found projects of user ${req.params.id}`);
@@ -205,6 +241,7 @@ router.get("/city/:city", async (req, res) => {
     let projects = await Project.find({ city: req.params.city })
       .select("dateStart team sprints crypt title crypter status _id")
       .populate("team", "-projects -password -avatar -permission -tickets -__v")
+      .populate("team2", "-projects -password -avatar -permission -tickets -__v")
       .populate("sprints");
     console.log("found projects by city");
     return res.json(projects);
@@ -260,12 +297,17 @@ router.put("/:crypt", manauth, async (req, res) => {
           status: req.body.status,
           about: req.body.about,
           par: req.body.par,
+          offTitle: req.body.offTitle,
+          schedule: req.body.schedule,
+          budget: req.body.budget,
+          cusStorage: req.body.cusStorage,
         },
       }
     );
 
     let editedProject = await Project.findOne({ crypt: req.params.crypt })
       .populate("team", "-password -permission -avatar")
+      .populate("team2", "-password -permission -avatar")
       .populate("sprints");
     console.log(`project ${req.params.crypt} edited`);
     return res.json({
@@ -487,6 +529,84 @@ router.put("/jointeam/:crypt", auth, async (req, res) => {
   } catch (error) {
     res.status(500).json({ msg: "server error" });
     return console.log("произошла якась хуйня");
+  }
+});
+
+//join v2.0
+router.put("/join2/:crypt", auth, async (req, res) => {
+  try {
+    //checks
+    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
+      "team2.user",
+      "-password -permission"
+    );
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    let user = await User.findOne({ _id: req.user.id });
+    let msg;
+    let member_object;
+    let team_check = await project.team2.filter((user_object) => {
+      user_object.user == user._id;
+    });
+    if (team_check.length == 0) {
+      //join team
+      member_object = {
+        position: req.body.position,
+        task: req.body.task,
+        user: req.user.id,
+      };
+      project.team2.push(member_object);
+      user.projects.push(project._id);
+      await project.save();
+      await user.save();
+      if (project.rocketchat) {
+        await rcinvprj(project, user);
+      }
+      msg = "Вы вступили в команду проекта";
+    } else {
+      //leave team
+      await Project.findOneAndUpdate(
+        { crypt: req.params.crypt },
+        { $pull: { team2: team_check[0] } }
+      );
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $pull: { projects: project._id } }
+      );
+      if (project.rocketchat) {
+        await rckickprj(project, user);
+      }
+      msg = "Вы вышли из команды проекта";
+    }
+    return res.json({ project: project, msg: msg });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit user's role and task in team
+router.put("/roleedit/:crypt", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
+      "team2.user",
+      "-password -permission"
+    );
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    let users = await project.team2.filter((user) => {
+      user.user == req.body.id;
+    });
+    let ind = project.team2.indexOf(users[0]);
+    project.team2[ind].position = req.body.position;
+    project.team2[ind].task = req.body.task;
+    await project.save();
+    return res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
