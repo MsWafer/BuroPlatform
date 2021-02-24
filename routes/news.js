@@ -65,8 +65,7 @@ router.post(
                - Автор: ${user.fullname};
                - Тема: ${req.body.title}`,
                attachments:[{
-                 author_name: user.fullname,
-                 author_link:`https://space.buro82.ru/users/${user._id}`,
+                 thumb_url:"https://bd.buro82.ru/avatars/spurdo.jpg",
                  title: "Ссылка на новости",
                  title_link: "https://space.buro82.ru/news"
                }]
