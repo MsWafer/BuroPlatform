@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const { check, validationResult } = require("express-validator");
+const fetch = require("node-fetch");
 
 const User = require("../models/User");
 const News = require("../models/News");
