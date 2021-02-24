@@ -60,8 +60,10 @@ router.post(
             },
             body: JSON.stringify({
               channel: `#general`,
-              text: `@all Добавлена новость на space.buro82.ru от ${user.fullname} — ${req.body.title} 
-            https://space.buro82.ru/news читать полностью`,
+              text: `@all Добавлена новость на space.buro82.ru
+               - Автор: ${user.fullname};
+               - Заголовок: ${req.body.title};
+               - Прямая ссылка: https://space.buro82.ru/news`,
             }),
           })
         );
