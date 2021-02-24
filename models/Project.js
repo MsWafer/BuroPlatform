@@ -61,6 +61,9 @@ const ProjectSchema = new Schema({
       task: {
         type: String,
       },
+      fullname: {
+        type: String,
+      },
     },
   ],
   sprints: [
