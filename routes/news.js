@@ -22,6 +22,7 @@ router.post(
       return res.status(400).json({ err: errors.array() });
     }
     try {
+      let user = await User.findOne({ _id: req.user.id });
       const newNews = new News({
         author: req.user.id,
         title: req.body.title,
@@ -34,7 +35,37 @@ router.post(
       } catch (error) {
         console.log(error);
       }
-      res.json({news:newNews,msg:`Новость добавлена ${newNews.title}`});
+
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) =>
+          fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": res.data.authToken,
+              "X-User-Id": res.data.userId,
+            },
+            body: JSON.stringify({
+              channel: `#general`,
+              text: `@all Добавлена новость на space.buro82.ru от ${user.fullname} — ${req.body.title} 
+            https://space.buro82.ru/news читать полностью`,
+            }),
+          })
+        );
+
+      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}` });
       console.log("Новая новость добавлена");
     } catch (error) {
       console.error(error);
@@ -64,9 +95,11 @@ router.get("/:id", auth, async (req, res) => {
       "author",
       "-password -permission -projects -tickets"
     );
-    if(!news){return res.status(404).json({err:'Новость не найдена'})}
+    if (!news) {
+      return res.status(404).json({ err: "Новость не найдена" });
+    }
     console.log("get news by id");
-    return res.json({news:news,msg:''});
+    return res.json({ news: news, msg: "" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "Server error" });
@@ -100,7 +133,7 @@ router.put("/:id", manauth, async (req, res) => {
       }
     );
     console.log("news changed");
-    return res.json({news:news,msg:'НОВОСТЬ ИЗМЕНЕНА'});
+    return res.json({ news: news, msg: "НОВОСТЬ ИЗМЕНЕНА" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "Server error" });
