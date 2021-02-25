@@ -20,7 +20,10 @@ const MercSchema = new Schema({
   contacts: {
     type: Object,
   },
-  partitions: [String]
+  partitions: {
+    type: Array,
+    default: []
+  },
 });
 
 module.exports = Merc = mongoose.model("merc", MercSchema);
