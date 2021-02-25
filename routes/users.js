@@ -225,22 +225,7 @@ router.get("/me", auth, async (req, res) => {
       );
     }
     console.log("user found");
-    return res.json({
-      id: user.id,
-      name: user.name,
-      lastname: user.lastname,
-      division: user.division,
-      email: user.email,
-      position: user.position,
-      permission: user.permission,
-      projects: user.projects,
-      tickets: user.tickets,
-      token: req.header("auth-token"),
-      avatar: userAvatar,
-      sprints: user.sprints,
-      rocketchat: user.rocketname,
-      report: user.report,
-    });
+    return res.json(user);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "Server error" });
