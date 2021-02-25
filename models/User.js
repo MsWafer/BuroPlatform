@@ -65,7 +65,7 @@ const UserSchema = new mongoose.Schema({
   report: {
     type: String,
   },
-  partitions: {
+  partition: {
     type: Array,
     default: []
   },

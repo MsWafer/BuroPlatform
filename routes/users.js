@@ -651,6 +651,11 @@ router.put("/part",auth,async(req,res)=>{
     if(!usr){return res.status(404).json({err:"Huynya yakas"})}
     usr.partition=req.body.partition;
     await usr.save()
+    // console.log(usr.partition)
+    // await User.findOneAndUpdate({_id:req.user.id},{$set:{partition:req.body.partition}})
+    // usr = await User.findOne({_id:req.user.id})
+    // console.log(usr.partition)
+    // console.log("par change")
     return res.json(usr)
   }catch(error){
     console.error(error);

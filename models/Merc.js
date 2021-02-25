@@ -20,7 +20,7 @@ const MercSchema = new Schema({
   contacts: {
     type: Object,
   },
-  partitions: {
+  partition: {
     type: Array,
     default: []
   },
