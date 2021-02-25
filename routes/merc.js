@@ -49,7 +49,7 @@ router.post("/", async (req, res) => {
   if (!req.body.name || !req.body.lastname) {
     return res.json({ err: "Заполните все поля" });
   }
-  let { name, lastname, contacts, job } = req.body;
+  let { name, lastname, contacts, job, partitions } = req.body;
   let fullname = req.body.lastname + " " + req.body.name;
 
   try {
@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
     if (merc) {
       return res
         .status(400)
-        .json({ err: "Смежник с указанным именем уже существует" });
+        .json({ err: "Субподрядчик с указанным именем уже существует" });
     }
   } catch (error) {
     console.error(error);
@@ -71,10 +71,11 @@ router.post("/", async (req, res) => {
       fullname,
       contacts,
       job,
+      partitions,
     });
 
     await merc.save();
-    return res.json({ msg: `Смежник ${fullname} добавлен`, merc: merc });
+    return res.json({ msg: `Субподрядчик ${fullname} добавлен`, merc: merc });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
@@ -86,10 +87,10 @@ router.delete("/", manauth, async (req, res) => {
   try {
     let merc = await Merc.findOne({ fullname: req.body.fullname });
     if (!merc) {
-      return res.status(404).json({ err: "Смежник не найден" });
+      return res.status(404).json({ err: "Субподрядчик не найден" });
     }
     await merc.remove();
-    return res.json({ msg: "Смежник удален" });
+    return res.json({ msg: "Субподрядчик удален" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -101,13 +102,14 @@ router.put("/edit/:id", manauth, async (req, res) => {
   try {
     let merc = await Merc.findOne({ _id: req.params.id });
     if (!merc) {
-      return res.status(404).json({ err: "Смежник не найден" });
+      return res.status(404).json({ err: "Субподрядчик не найден" });
     }
     merc.name = req.body.name;
     merc.lastname = req.body.lastname;
     merc.fullname = req.body.lastname + " " + req.body.name;
     merc.contacts.phone = req.body.phone;
     merc.contacts.email = req.body.email;
+    merc.partitions = req.body.partitions;
     await merc.save();
     return res.json(merc);
   } catch (error) {
@@ -121,7 +123,7 @@ router.put("/contact/:id", manauth, async (req, res) => {
   try {
     let merc = await Merc.findOne({ _id: req.params.id });
     if (!merc) {
-      return res.status(404).json({ err: "Смежник не найден" });
+      return res.status(404).json({ err: "Субподрядчик не найден" });
     }
     merc.contacts[req.body.property] = req.body.value;
     await merc.save();
@@ -142,7 +144,7 @@ router.get("/find", async (req, res) => {
       merc = await Merc.findOne({ fullname: req.query.name });
     }
     if (!merc) {
-      return res.status(404).json({ err: "Смежник не найден" });
+      return res.status(404).json({ err: "Субподрядчик не найден" });
     }
     return res.json(merc);
   } catch (error) {

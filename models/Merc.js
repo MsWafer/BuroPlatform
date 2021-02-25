@@ -17,9 +17,10 @@ const MercSchema = new Schema({
   job: {
     type: String,
   },
-  contacts:{ 
-    type:Object
+  contacts: {
+    type: Object,
   },
+  partitions: [String]
 });
 
 module.exports = Merc = mongoose.model("merc", MercSchema);

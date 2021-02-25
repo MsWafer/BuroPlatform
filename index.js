@@ -1,7 +1,6 @@
 const express = require("express");
 const connectDB = require("./middleware/db");
 const cors = require("cors");
-const fetch = require("node-fetch");
 require("dotenv").config();
 
 const app = express();

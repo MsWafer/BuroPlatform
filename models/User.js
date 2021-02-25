@@ -65,6 +65,7 @@ const UserSchema = new mongoose.Schema({
   report: {
     type: String,
   },
+  partition: [String],
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

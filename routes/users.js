@@ -396,19 +396,43 @@ router.get("/all", auth, async (req, res) => {
       .populate("division")
       .populate("tickets", "-user");
 
-      let que = req.query.field;
-      let order;
-      if(req.query.order=="true"){order=1}else{order=-1}
-        Array.prototype.sortBy = (query) => {
-          return users.slice(0).sort(function(a,b) {
-            return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
-          });
-        }
+    let que = req.query.field;
+    let order;
+    if (req.query.order == "true") {
+      order = 1;
+    } else {
+      order = -1;
+    }
+    Array.prototype.sortBy = (query) => {
+      return users.slice(0).sort(function (a, b) {
+        return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
+      });
+    };
     console.log("GET all users");
-    return res.json((users.sortBy(que)));
+    return res.json(users.sortBy(que));
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
+  }
+});
+
+//specific query
+router.get("/q/search", auth, async (req, res) => {
+  try {
+    if (!req.query.field || !req.query.value) {
+      let prj = await User.find().sort({ fullname: 1 });
+      return res.json(prj);
+    }
+    let qObj = {};
+    qObj[req.query.field] = req.query.value;
+    let prj = await User.find(qObj).sort({ fullname: 1 });
+    if (!prj) {
+      return res.status(404).json({ err: "Проекты не найдены" });
+    }
+    return res.json(prj);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -634,12 +658,28 @@ router.put(
   }
 );
 
+//change user's partition
+router.put("/part",auth,async(req,res)=>{
+  try{
+    let usr = await User.findOne({_id:req.user.id})
+    if(!usr){return res.status(404).json({err:"Huynya yakas"})}
+    usr.partition=req.body.partition;
+    await usr.save()
+    return res.json(usr)
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({err:"server error"});
+  }
+})
+
 //get user by letters
 router.get("/usr/get", auth, async (req, res) => {
   try {
-    let usr = await User.find({
-      fullname: { $regex: req.query.name, $options: "i" },
-    }).select("-password -permission");
+    let query = {};
+    if(req.query.name){query.fullname={ $regex: req.query.name, $options: "i" }}
+    if(req.query.division){query.division=req.query.division}
+    if(req.query.partition){query.partition=req.query.partition}
+    let usr = await User.find(query).select("-password -permission");
     return res.json(usr);
   } catch (error) {
     console.error(error);

@@ -98,54 +98,34 @@ router.post(
       });
 
       await project.save();
-
-      if (
-        !userid ||
-        userid == null ||
-        userid == undefined ||
-        !userid2 ||
-        userid2 == null ||
-        userid2 == undefined
-      ) {
+      console.log(userid2);
+      if (userid2.length == 0) {
         console.log(`Проект ${crypt} добавлен`);
         return res.status(200).json({
           project: project,
           msg: `Проект ${title} добавлен`,
         });
       }
-      if (!userid2 || userid2 == null || userid2 == undefined) {
-        project = await Project.findOneAndUpdate(
-          { crypt: crypt },
-          { $addToSet: { team: { $each: userid } } }
-        );
-        let govno = async (project, user) => {
-          rcinvprj(project, user), user.projects.push(project._id);
-        };
-        let usrs = await User.find({ _id: { $in: userid } });
-        usrs.map((user) => govno(project, user));
-        console.log(`Проект ${crypt} добавлен`);
-        return res
-          .status(200)
-          .json({ project: project, msg: `Проект ${title} добавлен` });
-      } else {
-        project = await Project.findOneAndUpdate(
-          { crypt: crypt },
-          { $addToSet: { team2: { $each: userid2 } } }
-        );
-        let govno = async (project, user) => {
-          rcinvprj(project, user), user.projects.push(project._id);
-        };
-        userid = [];
-        await userid2.map((user) => {
-          userid.push(user.user);
-        });
-        let usrs = await User.find({ _id: { $in: userid } });
-        usrs.map((user) => govno(project, user));
-        console.log(`Проект ${crypt} добавлен`);
-        return res
-          .status(200)
-          .json({ project: project, msg: `Проект ${title} добавлен` });
-      }
+      await Project.findOneAndUpdate(
+        { crypt: crypt },
+        { $addToSet: { team2: { $each: userid2 } } }
+      );
+      project = await Project.findOne({ crypt: crypt });
+      console.log(userid2);
+      let govno = async (project, user) => {
+        rcinvprj(project, user), user.projects.push(project._id);
+      };
+      userid = [];
+      await userid2.map((user) => {
+        userid.push(user.user);
+      });
+      console.log("huy2");
+      let usrs = await User.find({ _id: { $in: userid } });
+      usrs.map((user) => govno(project, user));
+      console.log(`Проект ${crypt} добавлен`);
+      return res
+        .status(200)
+        .json({ project: project, msg: `Проект ${title} добавлен` });
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("server error");
@@ -158,9 +138,11 @@ router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .populate("team", "-projects -password -permission -avatar -tickets -__v")
-      .populate("team2", "-projects -password -permission -avatar -tickets -__v")
+      .populate(
+        "team2",
+        "-projects -password -permission -avatar -tickets -__v"
+      )
       .populate("sprints");
-    console.log(req.query);
     let que = req.query.field;
     let order;
     if (req.query.order == "true") {
@@ -178,6 +160,26 @@ router.get("/", auth, async (req, res) => {
     return res.json(projects.sortBy(que));
   } catch (err) {
     console.error(err.message);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//specific query
+router.get("/q/search", auth, async (req, res) => {
+  try {
+    if (!req.query.field || !req.query.value) {
+      let prj = await Project.find().sort({ title: 1 });
+      return res.json(prj);
+    }
+    let qObj = {};
+    qObj[req.query.field] = req.query.value;
+    let prj = await Project.find(qObj).sort({ title: 1 });
+    if (!prj) {
+      return res.status(404).json({ err: "Проекты не найдены" });
+    }
+    return res.json(prj);
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ err: "server error" });
   }
 });
@@ -224,7 +226,10 @@ router.get("/user/:id", auth, async (req, res) => {
     let projects = await Project.find({ team: req.params.id })
       .sort({ date: -1 })
       .populate("team", "-projects -password -avatar -permission -tickets -__v")
-      .populate("team2", "-projects -password -avatar -permission -tickets -__v")
+      .populate(
+        "team2",
+        "-projects -password -avatar -permission -tickets -__v"
+      )
       .populate("sprints");
 
     console.log(`found projects of user ${req.params.id}`);
@@ -241,7 +246,10 @@ router.get("/city/:city", async (req, res) => {
     let projects = await Project.find({ city: req.params.city })
       .select("dateStart team sprints crypt title crypter status _id")
       .populate("team", "-projects -password -avatar -permission -tickets -__v")
-      .populate("team2", "-projects -password -avatar -permission -tickets -__v")
+      .populate(
+        "team2",
+        "-projects -password -avatar -permission -tickets -__v"
+      )
       .populate("sprints");
     console.log("found projects by city");
     return res.json(projects);
@@ -1038,4 +1046,5 @@ router.get("/tag/search", auth, async (req, res) => {
     return res.status(500).json({ msg: "server error" });
   }
 });
+
 module.exports = router;
