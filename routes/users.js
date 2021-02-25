@@ -224,6 +224,7 @@ router.get("/me", auth, async (req, res) => {
         { $push: { members: req.user.id } }
       );
     }
+    if(!user.partition){user.partition=[];await user.save()}
     console.log("user found");
     return res.json(user);
   } catch (error) {
