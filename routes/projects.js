@@ -185,7 +185,7 @@ router.get("/q/search", auth, async (req, res) => {
 });
 
 //find project by crypt/title
-router.get("/:auth", auth, async (req, res) => {
+router.get("/:auth", async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
       .populate("team", "-projects -password -permission -tickets -__v")
@@ -554,9 +554,11 @@ router.put("/join2/:crypt", auth, async (req, res) => {
     let user = await User.findOne({ _id: req.user.id });
     let msg;
     let member_object;
-    let team_check = await project.team2.filter((user_object) => {
-      user_object.user == user._id;
-    });
+
+    let team_check =  project.team2.filter(userObj => userObj.user._id.toString()===user._id.toString());
+
+    
+    console.log(team_check.length);
     if (team_check.length == 0) {
       //join team
       member_object = {
@@ -587,6 +589,7 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       }
       msg = "Вы вышли из команды проекта";
     }
+    project = await Project.findOne({crypt:req.params.crypt}).populate("team2.user","-password -permission")
     return res.json({ project: project, msg: msg });
   } catch (error) {
     console.error(error);
