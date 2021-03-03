@@ -106,11 +106,10 @@ const ProjectSchema = new Schema({
   rocketchat: {
     type: String,
   },
-  tags: [
-    {
-      type: String,
-    },
-  ],
+  tags: {
+    type: Array,
+    default: [],
+  },
   urn: {
     type: String,
   },
@@ -160,6 +159,10 @@ const ProjectSchema = new Schema({
       },
     },
   ],
+  cover: {
+    type: String,
+    default: "avatars/spurdo.png",
+  },
 });
 
 module.exports = Project = mongoose.model("project", ProjectSchema);

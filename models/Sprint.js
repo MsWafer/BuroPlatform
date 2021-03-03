@@ -14,12 +14,16 @@ const SprintSchema = new Schema({
     default: null,
   },
   dateCloseFact: {
-    type:Date,
-    default: null
+    type: Date,
+    default: null,
   },
   description: {
     type: String,
-    default: ""
+    default: "",
+  },
+  tags: {
+    type: Array,
+    default: [],
   },
   tasks: [
     {
@@ -35,10 +39,18 @@ const SprintSchema = new Schema({
         type: Boolean,
         default: false,
       },
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
     },
   ],
   urn: {
     type: String,
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
   },
 });
 

@@ -20,7 +20,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ err: errors.array() });
     }
-    let user = await User.findOne({_id:req.user.id}).select("-password")
+    let user = await User.findOne({ _id: req.user.id }).select("-password");
 
     try {
       let { text, title } = req.body;
@@ -28,7 +28,7 @@ router.post(
         text,
         title,
         date: Date.now(),
-        user: user
+        user: user,
       });
       await prop.save();
       console.log("+prop");
@@ -43,7 +43,10 @@ router.post(
 //get all propositions sorted by likes
 router.get("/all/likes", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ likeCount: -1 }).populate("user","-password -permission");
+    let props = await Prop.find()
+      .sort({ likeCount: -1 })
+      .populate("user", "-password -permission")
+      .populate("executor", "avatar fullname _id");
     res.json(props);
   } catch (error) {
     console.error(error);
@@ -54,8 +57,11 @@ router.get("/all/likes", auth, async (req, res) => {
 //get all propositions sorted by date
 router.get("/all/date", auth, async (req, res) => {
   try {
-    let props = await Prop.find().sort({ date: 1 }).populate("user","-password -permission");
-    res.json(props);
+    let props = await Prop.find()
+      .sort({ date: 1 })
+      .populate("user", "-password -permission")
+      .populate("executor", "avatar fullname _id");
+    return res.json(props);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -63,27 +69,34 @@ router.get("/all/date", auth, async (req, res) => {
 });
 
 //test query
-router.get("/search", auth, async(req,res)=>{
+router.get("/search", auth, async (req, res) => {
   try {
-    let result = await Prop.find().select("-__v -text")
+    let result = await Prop.find()
+      .select("-__v")
+      .populate("executor", "avatar fullname _id")
+      .populate("user", "-password -permission");
     let que = req.query.field ? req.query.field : `likes`;
     let order = req.query.order ? req.query.order : -1;
 
-    if(order!=1||order!=1){order = -1}
-    if(!Object.keys(result[0].toJSON()).includes(que)){que = 'likes'}
-
-    Array.prototype.sortBy = (query) => {
-      return result.slice(0).sort(function(a,b) {
-        return (a[query] > b[query]) ? order : (a[query] < b[query]) ? -order : 0;
-      });
+    if (order != 1 && order != -1) {
+      order = -1;
+    }
+    if (!Object.keys(result[0].toJSON()).includes(que)) {
+      que = "likes";
     }
 
-    return res.json(result.sortBy(que))
+    Array.prototype.sortBy = (query) => {
+      return result.slice(0).sort(function (a, b) {
+        return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
+      });
+    };
+    let sortedArray = result.sortBy(que);
+    return res.json(sortedArray);
   } catch (error) {
-    console.error(error)
-    return res.json({err:'server error'})
+    console.error(error);
+    return res.json({ err: "server error" });
   }
-})
+});
 
 //dis/like proposition
 router.put("/like/:id", auth, async (req, res) => {
@@ -119,6 +132,24 @@ router.put("/like/:id", auth, async (req, res) => {
   }
 });
 
+//add exec
+router.put("/exec/:id", auth, async (req, res) => {
+  try {
+    let prop = await Prop.findOne({ _id: req.params.id })
+      .populate("user", "-password -permission")
+      .populate("executor", "-password -permission");
+    if (!prop) {
+      return res.status(404).json({ err: "Предложение не найдено" });
+    }
+    prop.executor = req.body.user;
+    await prop.save();
+    return res.json(prop);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 //remove proposition
 router.delete("/:id", manauth, async (req, res) => {
   try {
@@ -132,26 +163,44 @@ router.delete("/:id", manauth, async (req, res) => {
 });
 
 //change prop status
-router.put('/sts/:id',manauth,async(req,res)=>{
+router.put("/sts/:id", manauth, async (req, res) => {
   try {
     let prop = await Prop.findOne({ _id: req.params.id });
-    if (prop.status == false) {
+    console.log(req.body);
+    if (prop.status == 0) {
       await Prop.findOneAndUpdate(
         { _id: req.params.id },
-        { $set: { status: true} }
+        { $set: { status: 1, executor: req.body.executor } }
       );
-    } else if (prop.status == true) {
+    } else if (prop.status == 1) {
       await Prop.findOneAndUpdate(
         { _id: req.params.id },
-        { $set: { status: false} }
+        { $set: { status: 0, executor: null } }
       );
     }
+    let props = await Prop.find().populate("executor", "-password -permission");
     console.log("prop status changed");
-    return res.json({ msg: `Статус изменен ${req.params.id}` });
+    return res.json({ msg: `Статус изменен ${req.params.id}`, props: props });
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({err:'server error'})
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
+
+//finish prop
+router.put("/sts/f/:id", manauth, async (req, res) => {
+  try {
+    let prop = await Prop.findOne({ _id: req.params.id });
+    if (!prop) {
+      return res.status(404).json({ err: "Предложение не найдено" });
+    }
+    prop.status = 2;
+    await prop.save();
+    return res.json(prop);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 
 module.exports = router;

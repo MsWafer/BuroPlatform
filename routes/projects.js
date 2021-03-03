@@ -5,12 +5,43 @@ const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const fetch = require("node-fetch");
 
+const CryptoJS = require("crypto-js");
+
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
 const User = require("../models/User");
 const rcprojcreate = require("../middleware/rcprojcreate");
 const rckickprj = require("../middleware/rckickprj");
 const rcinvprj = require("../middleware/rcinvprj");
+const { response } = require("express");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/usr/src/app/public/covers");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + "-" + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+    }
+  },
+});
 
 //add new project
 router.post(
@@ -45,7 +76,6 @@ router.post(
       rcheck,
       userid,
       offTitle,
-      budget,
       cusStorage,
       schedule,
       userid2,
@@ -92,13 +122,12 @@ router.post(
         rocketchat: rocketchat ? rocketchat : null,
         par,
         offTitle,
-        budget,
         cusStorage,
         schedule,
+        tags: [type],
       });
 
       await project.save();
-      console.log(userid2);
       if (userid2.length == 0) {
         console.log(`Проект ${crypt} добавлен`);
         return res.status(200).json({
@@ -106,6 +135,7 @@ router.post(
           msg: `Проект ${title} добавлен`,
         });
       }
+
       await Project.findOneAndUpdate(
         { crypt: crypt },
         { $addToSet: { team2: { $each: userid2 } } }
@@ -190,33 +220,29 @@ router.get("/:auth", async (req, res) => {
     let project = await Project.findOne({ crypt: req.params.auth })
       .populate("team", "-projects -password -permission -tickets -__v")
       .populate("team2.user", "-projects -password -permission -tickets -__v")
-      .populate("sprints");
-    let projectTitle = await Project.find({ title: req.params.auth })
-      .populate("team", "-projects -password -permission -tickets -__v")
-      .populate("team2.user", "-projects -password -permission -tickets -__v")
-      .populate("sprints");
-    if (!project && !projectTitle) {
+      .populate({
+        path: "sprints",
+        populate: { path: "creator" },
+        populate: { path: "tasks.user" },
+      });
+    if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
-    } else if (project) {
-      if (project.team2.length == 0) {
-        let mocha = [];
-        let govno = {};
-        await project.team.map((user) => {
-          (govno = { position: "Работяга", task: "Работать", user: user._id }),
-            mocha.push(govno);
-        });
-        project.team2 = mocha;
-        await project.save();
-      }
-      console.log("found project by crypt");
-      return res.json(project);
-    } else if (projectTitle) {
-      console.log("found projects by title");
-      return res.json(projectTitle);
     }
-  } catch (err) {
-    console.error(err.message);
-    return res.status(500).json({ msg: "server error" });
+    if (project.team2.length == 0) {
+      let mocha = [];
+      let govno = {};
+      await project.team.map((user) => {
+        (govno = { position: "Работяга", task: "Работать", user: user._id }),
+          mocha.push(govno);
+      });
+      project.team2 = mocha;
+      await project.save();
+    }
+    console.log("found project by crypt");
+    return res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -236,25 +262,6 @@ router.get("/user/:id", auth, async (req, res) => {
     return res.json(projects);
   } catch (err) {
     console.error(err.messsage);
-    return res.status(500).json({ msg: "server error" });
-  }
-});
-
-//find projects by city
-router.get("/city/:city", async (req, res) => {
-  try {
-    let projects = await Project.find({ city: req.params.city })
-      .select("dateStart team sprints crypt title crypter status _id")
-      .populate("team", "-projects -password -avatar -permission -tickets -__v")
-      .populate(
-        "team2",
-        "-projects -password -avatar -permission -tickets -__v"
-      )
-      .populate("sprints");
-    console.log("found projects by city");
-    return res.json(projects);
-  } catch (err) {
-    console.error(err.message);
     return res.status(500).json({ msg: "server error" });
   }
 });
@@ -285,58 +292,44 @@ router.delete("/:crypt", manauth, async (req, res) => {
 //edit project
 router.put("/:crypt", manauth, async (req, res) => {
   try {
-    let check = await Project.findOne({ crypt: req.params.crypt });
-    if (!check) {
+    let project = await Project.findOne({ crypt: req.params.crypt });
+    if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    await Project.findOneAndUpdate(
-      { crypt: req.params.crypt },
-      {
-        $set: {
-          title: req.body.title,
-          dateStart: req.body.dateStart,
-          dateFinish: req.body.dateFinish,
-          city: req.body.city,
-          type: req.body.type,
-          stage: req.body.stage,
-          area: req.body.area,
-          customer: req.body.customer,
-          about: req.body.about,
-          status: req.body.status,
-          about: req.body.about,
-          par: req.body.par,
-          offTitle: req.body.offTitle,
-          schedule: req.body.schedule,
-          budget: req.body.budget,
-          cusStorage: req.body.cusStorage,
-        },
-      }
-    );
+    let {
+      title,
+      dateStart,
+      dateFinish,
+      city,
+      type,
+      stage,
+      area,
+      customer,
+      about,
+      status,
+      par,
+      offTitle,
+      schedule,
+      cusStorage,
+    } = req.body;
+    project.title = title;
+    project.dateStart = dateStart;
+    project.dateFinish = dateFinish;
+    project.status = status;
+    project.city = city;
+    project.type = type;
+    project.stage = stage;
+    project.area = area;
+    project.customer = customer;
+    project.about = about;
+    project.par = par;
+    project.offTitle = offTitle;
+    project.schedule = schedule;
+    project.cusStorage = cusStorage;
+    await project.save();
 
-    let editedProject = await Project.findOne({ crypt: req.params.crypt })
-      .populate("team", "-password -permission -avatar")
-      .populate("team2", "-password -permission -avatar")
-      .populate("sprints");
     console.log(`project ${req.params.crypt} edited`);
-    return res.json({
-      id: editedProject.id,
-      title: editedProject.title,
-      crypt: editedProject.crypt,
-      dateStart: editedProject.dateStart,
-      dateFinish: editedProject.dateFinish,
-      city: editedProject.city,
-      type: editedProject.type,
-      stage: editedProject.stage,
-      area: editedProject.area,
-      customer: editedProject.customer,
-      crypter: editedProject.crypter,
-      about: editedProject.about,
-      status: editedProject.status,
-      about: editedProject.about,
-      projects: editedProject.projects,
-      sprints: editedProject.sprints,
-      msg: `Проект изменен`,
-    });
+    return res.json(project);
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ msg: "server error" });
@@ -350,17 +343,8 @@ router.put("/finish/:crypt", manauth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    if (project.status == false) {
-      await Project.findOneAndUpdate(
-        { crypt: req.params.crypt },
-        { $set: { status: true } }
-      );
-    } else if (project.status == true) {
-      await Project.findOneAndUpdate(
-        { crypt: req.params.crypt },
-        { $set: { status: false } }
-      );
-    }
+    project.status = !project.status;
+    await project.save();
     console.log("project status changed");
     return res.json({ msg: `Статус проекта изменен` });
   } catch (error) {
@@ -369,174 +353,37 @@ router.put("/finish/:crypt", manauth, async (req, res) => {
   }
 });
 
-//add user to project's team
+//add/remove user to/from project's team
 router.put("/updteam/:crypt", manauth, async (req, res) => {
   try {
-    let usercheck = await User.findOne({ _id: req.body.userid }).select(
-      "-password -permission -avatar"
-    );
-    if (!usercheck) {
-      return res
-        .status(400)
-        .json({ msg: `Не найден пользователь с указанным _id` });
-    }
-  } catch (err) {
-    if (err.kind == "ObjectId") {
-      return res
-        .status(400)
-        .json({ msg: "Не найден пользователь с указанным _id" });
-    }
-    res.status(500).json({ msg: "server error" });
-  }
-  let huy = await Project.findOne({ crypt: req.params.crypt }).select(
-    "-_id team"
-  );
-  let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g, "");
-  let huy3 = huy2.split(",");
-  if (huy3.includes(req.body.userid)) {
-    return res
-      .status(400)
-      .json({ msg: `Данный пользователь уже находится в команде проекта` });
-  }
-
-  try {
-    let user = await User.findById(req.body.userid).select(
-      "-password -permission -avatar"
-    );
-    await Project.findOneAndUpdate(
-      { crypt: req.params.crypt },
-      { $push: { team: user } }
-    );
     let project = await Project.findOne({ crypt: req.params.crypt });
-    await User.findOneAndUpdate(
-      { _id: req.body.userid },
-      { $push: { projects: project } }
-    );
-
-    await rcinvprj(req, res, project, user);
-
-    res.status(200).json({
-      msg: `Пользователь добавлены в команду проекта ${req.params.crypt}`,
-      crypter: project.crypter,
-      title: project.title,
-      crypt: project.crypt,
-      dateStart: project.dateStart,
-      dateFinish: project.dateFinish,
-      city: project.city,
-      type: project.type,
-      stage: project.stage,
-      area: project.area,
-      about: project.about,
-      status: project.status,
-      team: project.team,
-    });
-    return console.log(
-      `Пользователи добавлены в команду проекта ${req.params.crypt}`
-    );
-  } catch (error) {
-    res.status(400).send(`server error`);
-    return console.log("произошла якась хуйня");
-  }
-});
-
-//join project's team
-router.put("/jointeam/:crypt", auth, async (req, res) => {
-  try {
-    let check = await Project.findOne({ crypt: req.params.crypt });
-    if (!check) {
+    if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    let huy = await Project.findOne({ crypt: req.params.crypt }).select(
-      "-_id team"
-    );
-    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|team:/g, "");
-    let huy3 = huy2.split(",");
-    if (huy3.includes(req.user.id)) {
-      let user = await User.findOne({ _id: req.user.id }).select(
-        "-password -permission -avatar"
-      );
-      await Project.findOneAndUpdate(
-        { crypt: req.params.crypt },
-        { $pull: { team: user.id } }
-      );
-      let project = await Project.findOne({ crypt: req.params.crypt }).populate(
-        "team",
-        "-password -permission -tickets -projects"
-      );
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
-        { $pull: { projects: project.id } }
-      );
-      if (project.rocketchat) {
-        await rckickprj(project, user);
-      }
-
-      res.status(200).json({
-        msg: `Вы вышли из команды проекта ${req.params.crypt}`,
-        crypter: project.crypter,
-        title: project.title,
-        crypt: project.crypt,
-        dateStart: project.dateStart,
-        dateFinish: project.dateFinish,
-        city: project.city,
-        type: project.type,
-        stage: project.stage,
-        area: project.area,
-        about: project.about,
-        status: project.status,
-        team: project.team,
-      });
-      return console.log(
-        `${user.name} удален из команды проекта ${req.params.crypt}`
-      );
+    let user = await User.findOne({ _id: req.body.user });
+    if (!user) {
+      return res.status(404).json({ err: "Пользователь не найден" });
     }
+    let check = project.team2.filter((mate) => mate.user == req.body.user);
+    if (check.length > 0) {
+      project.team2 = project2.filter((user) => user.user != check[0].user);
+      user.projects.filter((user_project) => user_project != project._id);
+    } else {
+      userObj = {
+        user: req.body.user,
+        position: req.body.position,
+        task: req.body.task,
+        fullname: user.fullname,
+      };
+      project.team2.push(userObj);
+      user.projects.push(project._id);
+    }
+    await user.save();
+    await project.save();
+    return res.json(project);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ msg: "server error" });
-  }
-
-  try {
-    let user = await User.findOne({ _id: req.user.id }).select(
-      "-password -permission"
-    );
-    await Project.findOneAndUpdate(
-      { crypt: req.params.crypt },
-      { $push: { team: user } }
-    );
-    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
-      "team",
-      "-password -permission -tickets -projects"
-    );
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      { $push: { projects: project } }
-    );
-
-    if (project.rocketchat) {
-      await rcinvprj(project, user);
-    }
-
-    res.status(200).json({
-      msg: `Вы были добавлены в команду проекта ${req.params.crypt}`,
-      crypter: project.crypter,
-      title: project.title,
-      crypt: project.crypt,
-      dateStart: project.dateStart,
-      dateFinish: project.dateFinish,
-      city: project.city,
-      type: project.type,
-      stage: project.stage,
-      area: project.area,
-      about: project.about,
-      status: project.status,
-      team: project.team,
-    });
-    return console.log(
-      `Пользователь добавлен в команду проекта ${req.params.crypt}`
-    );
-  } catch (error) {
-    res.status(500).json({ msg: "server error" });
-    return console.log("произошла якась хуйня");
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -555,9 +402,10 @@ router.put("/join2/:crypt", auth, async (req, res) => {
     let msg;
     let member_object;
 
-    let team_check =  project.team2.filter(userObj => userObj.user._id.toString()===user._id.toString());
+    let team_check = project.team2.filter(
+      (userObj) => userObj.user._id.toString() === user._id.toString()
+    );
 
-    
     console.log(team_check.length);
     if (team_check.length == 0) {
       //join team
@@ -589,7 +437,10 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       }
       msg = "Вы вышли из команды проекта";
     }
-    project = await Project.findOne({crypt:req.params.crypt}).populate("team2.user","-password -permission")
+    project = await Project.findOne({ crypt: req.params.crypt }).populate(
+      "team2.user",
+      "-password -permission"
+    );
     return res.json({ project: project, msg: msg });
   } catch (error) {
     console.error(error);
@@ -711,6 +562,61 @@ router.put("/cus/:crypt", manauth, async (req, res) => {
   }
 });
 
+//add cover
+router.put("/cover/:crypt", auth, upload.single("file"), async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt })
+      .populate("sprints")
+      .populate("team", "-password -permission");
+    if (!project) {
+      return response.status(404).json({ err: "Проект не найден" });
+    }
+    project.cover = req.file ? "covers/" + req.file.filename : project.cover;
+    await project.save();
+    return res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add/edit budget
+router.put("/budget/:crypt", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt });
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    let budget = CryptoJS.AES.encrypt(
+      req.body.budget,
+      process.env.encKey
+    ).toString(CryptoJS.enc.Utf8);
+    project.budget = budget;
+    await project.save();
+    return res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get budget
+router.get("/budget/:crypt", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt }).select(
+      "budget"
+    );
+    let budget = CryptoJS.AES.decrypt(
+      project.budget,
+      process.env.encKey
+    ).toString(CryptoJS.enc.Utf8);
+    return res.json(budget);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 ///////////////////
 ///////////////////
 ///////////////////
@@ -733,20 +639,18 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       description: req.body.description,
       dateClosePlan: req.body.date,
       tasks: req.body.tasks ? req.body.tasks : [],
+      creator: req.user.id,
+      tags: req.body.tags,
     });
     await sprint.save();
     await Project.findOneAndUpdate(
       { crypt: req.params.crypt },
-      { $push: { sprints: sprint, $position: 0 } }
+      {
+        $push: { sprints: sprint._id, $position: 0, tags: req.body.tags },
+      }
     );
     console.log("sprint added to project");
-    return res.json({
-      msg: `Новый спринт добавлен в проект`,
-      id: sprint.id,
-      tasks: sprint.tasks,
-      state: sprint.state,
-      dateOpen: sprint.dateOpen,
-    });
+    return res.json(sprint);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -776,12 +680,27 @@ router.put("/sprints/dd/:id", auth, async (req, res) => {
   }
 });
 
+//add description
+router.put("/sprints/description/:id", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id })
+      .populate("tasks.user", "-password -permission")
+      .populate("creator", "-password -permission");
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    sprint.description = req.body.description;
+    await sprint.save();
+    return res.json(sprint);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 //find all project's sprints
 router.get("/sprints/:crypt", auth, async (req, res) => {
   try {
-    if (/[a-zA-Z]/.test(req.params.crypt)) {
-      return res.json({ msg: "Неверно введен шифр" });
-    }
     let project = await Project.findOne({ crypt: req.params.crypt })
       .select("sprints")
       .populate("sprints");
@@ -805,17 +724,8 @@ router.get("/sprints/:crypt", auth, async (req, res) => {
 router.put("/sprints/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
-    if (sprint.status == false) {
-      await Sprint.findOneAndUpdate(
-        { _id: req.params.id },
-        { $set: { status: true, dateCloseFact: Date.now() } }
-      );
-    } else if (sprint.status == true) {
-      await Sprint.findOneAndUpdate(
-        { _id: req.params.id },
-        { $set: { status: false, dateCloseFact: null } }
-      );
-    }
+    sprint.status = !sprint.status;
+    await sprint.save();
     console.log("srint status changed");
     return res.json({ msg: `Статус спринта изменен` });
   } catch (error) {
@@ -827,7 +737,9 @@ router.put("/sprints/:id", manauth, async (req, res) => {
 //get sprint by id
 router.get("/getsprint/:id", auth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({ _id: req.params.id })
+      .populate("tasks.user", "-password -permission")
+      .populate("creator", "-password -permission");
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
@@ -842,49 +754,30 @@ router.get("/getsprint/:id", auth, async (req, res) => {
 //un/favorite sprint by id
 router.put("/favsprint/:id", auth, async (req, res) => {
   try {
-    let huy = await User.findOne({ _id: req.user.id }).select("sprints");
-    let huy2 = huy.toString().replace(/{|}|_id:|\n|]| |\[|sprints:/g, "");
-    let huy3 = huy2.split(",");
+    let user = await User.findOne({ _id: req.user.id }).select("sprints");
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
-
-    if (huy3.includes(req.params.id)) {
+    let msg;
+    if (user.sprints.includes(req.params.id)) {
       //unfavorite
-      try {
-        await User.findOneAndUpdate(
-          { _id: req.user.id },
-          { $pull: { sprints: sprint.id } }
-        );
-
-        console.log(`user unfavorited sprint`);
-        return res.status(200).json({
-          msg: `Вы убрали спринт из избранных`,
-          user: req.user,
-        });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ err: "server error" });
-      }
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $pull: { sprints: req.params.id } }
+      );
+      console.log(`user unfavorited sprint`);
+      msg = "Вы убрали спринт из избранных";
     } else {
       //favorite
-      try {
-        await User.findOneAndUpdate(
-          { _id: req.user.id },
-          { $push: { sprints: sprint } }
-        );
-
-        console.log(`user favorited sprint`);
-        return res.status(200).json({
-          msg: `Вы добавили спринт в избранные`,
-          user: req.user,
-        });
-      } catch (error) {
-        res.status(500).json({ err: "server error" });
-        return console.error(error);
-      }
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        { $push: { sprints: req.params.id } }
+      );
+      console.log(`user favorited sprint`);
+      msg = "Вы добавили спринт в избранные";
     }
+    return res.json({ msg: msg });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -907,7 +800,95 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
   }
 });
 
+//add tags to sprint
+router.put("/sprints/addtag/:id", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id })
+      .populate("tasks.user", "-password -permission")
+      .populate("creator", "-password -permission");
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    sprint.tags = req.body.tags;
+    await sprint.save();
+    return res.json(sprint);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get sprints by tags
+router.get("/sprint/tags", auth, async (req, res) => {
+  try {
+    let sprints = await Sprint.find({ tags: { $all: req.body.tags } })
+      .populate("creator", "-password -permission")
+      .populate("tasks.user", "-password -permission");
+    return res.json(sprints);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 /////////TASKS//////////
+
+//get tasks
+router.get("/sprints/gettasks/:id", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id }).select("tasks");
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    return res.json(sprint);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add single task to sprint
+router.post("/sprints/task/:id", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    if (req.body.taskTitle === "") {
+      return res.status(400).json({ err: "Введите задачу" });
+    }
+    sprint.tasks.push({
+      taskState: req.body.taskState,
+      taskTitle: req.body.taskTitle,
+      workVolume: req.body.workVolume,
+    });
+    await sprint.save();
+    await Sprint.populate(sprint, "tasks.user");
+    return res.json(sprint);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add user to task
+router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    let task = sprint.tasks.filter((task) => task._id == req.body.taskid);
+    let ind = sprint.tasks.indexOf(task[0]);
+    sprint.tasks[ind].user = req.body.userid;
+    await sprint.save();
+    await Sprint.populate(sprint, "tasks.user");
+    return res.json(sprint);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 
 //add new task to sprint
 router.post("/sprints/addtask/:id", auth, async (req, res) => {
@@ -925,11 +906,20 @@ router.post("/sprints/addtask/:id", auth, async (req, res) => {
   }
 
   try {
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id },
-      { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
-      { multi: true }
-    );
+    if (typeof req.body.tasks == Array) {
+      await Sprint.findOneAndUpdate(
+        { _id: req.params.id },
+        { $push: { tasks: { $each: req.body.tasks, $position: 0 } } },
+        { multi: true }
+      );
+    }
+    if (typeof req.body.tasks == Object) {
+      await Sprint.findOneAndUpdate(
+        { _id: req.params.id },
+        { $push: { tasks: req.body.tasks } }
+      );
+    }
+
     console.log("new tasks added to sprint");
     res.json({ msg: "Задача добавлена" });
   } catch (error) {
@@ -969,6 +959,7 @@ router.put("/sprints/taskedit/:id", auth, async (req, res) => {
     let a = sprint.tasks.filter((task) => task._id == req.body.taskid);
     a[0].taskTitle = req.body.taskTitle;
     await sprint.save();
+    await Sprint.populate(sprint, "tasks.user");
     return res.json({ msg: `Таск изменен`, sprint: sprint });
   } catch (error) {
     console.error(error);
@@ -977,19 +968,17 @@ router.put("/sprints/taskedit/:id", auth, async (req, res) => {
 });
 
 //delete task
-router.delete("/sprints/deltask/:id", manauth, async (req, res) => {
+router.put("/sprints/deltask/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
-    let deltask = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $pull: { tasks: deltask } }
-    );
+    sprint.tasks = sprint.tasks.filter((task) => task._id != req.body.taskid);
+    await sprint.save();
+    await Sprint.populate(sprint, "tasks.user");
     console.log("task deleted");
-    return res.json({ msg: "Задача удалена" });
+    return res.json({ msg: "Задача удалена", sprint: sprint });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });
@@ -1047,6 +1036,26 @@ router.get("/tag/search", auth, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
+  }
+});
+
+//find tags
+router.get("/tag/find", auth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.query.crypt });
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+
+    let regex = new RegExp(regexEscape(req.query.tag), "g");
+    let tags = project.tags.filter((tag) => tag.match(regex));
+    return res.json(tags);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 

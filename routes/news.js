@@ -31,12 +31,7 @@ router.post(
         postDate: Date.now(),
         subtitle: req.body.subtitle,
       });
-      try {
-        await newNews.save();
-      } catch (error) {
-        console.log(error);
-      }
-
+      await newNews.save();
       await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
         headers: {
@@ -64,11 +59,13 @@ router.post(
               Добавлена новость
                - Автор: ${user.fullname};
                - Тема: ${req.body.title}`,
-               attachments:[{
-                 thumb_url:"https://bd.buro82.ru/avatars/spurdo.png",
-                 title: "Ссылка на новости",
-                 title_link: "https://space.buro82.ru/news"
-               }]
+              attachments: [
+                {
+                  thumb_url: "https://bd.buro82.ru/avatars/spurdo.png",
+                  title: "Ссылка на новости",
+                  title_link: "https://space.buro82.ru/news",
+                },
+              ],
             }),
           })
         );
@@ -129,7 +126,6 @@ router.delete("/:id", manauth, async (req, res) => {
 //edit news by id
 router.put("/:id", manauth, async (req, res) => {
   try {
-    // let news1 = await news.findOne({ _id: req.params.id });
     let news = await News.findOneAndUpdate(
       { _id: req.params.id },
       {

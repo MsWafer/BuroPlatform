@@ -8,6 +8,35 @@ const Division = require("../models/Division");
 const User = require("../models/User");
 const { findOneAndUpdate } = require("../models/User");
 
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/usr/src/app/public/covers");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + "-" + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+    }
+  },
+});
+
 //create new division
 router.post(
   "/",
@@ -20,7 +49,7 @@ router.post(
     try {
       let div = await Division.findOne({ divname: req.body.divname });
       if (div) {
-        return res.json({ msg: "Отдел с указанным названием уже существует" });
+        return res.json({ err: "Отдел с указанным названием уже существует" });
       }
 
       div = new Division({
@@ -51,9 +80,9 @@ router.get("/find/:divname", async (req, res) => {
       },
     });
     if (!div) {
-      return res.status(400).json({ msg: "Отдел не найден" });
+      return res.status(404).json({ err: "Отдел не найден" });
     }
-    return res.json(div);
+    return res.json({ division: div });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -82,10 +111,7 @@ router.get("/all", auth, async (req, res) => {
 //join division
 router.put("/:divname", auth, async (req, res) => {
   try {
-    let div = await Division.findOne({ divname: req.params.divname }).populate(
-      "members",
-      "-password -permission"
-    );
+    let div = await Division.findOne({ divname: req.params.divname });
     if (!div) {
       return res.json({ msg: "Отдел не найден" });
     }
@@ -101,14 +127,19 @@ router.put("/:divname", auth, async (req, res) => {
         { $pull: { members: req.user.id } }
       );
     }
-    await Division.findOneAndUpdate(
-      { divname: div.divname },
-      { $push: { members: req.user.id } }
-    );
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      { $set: { division: div } }
-    );
+    div.members.push(req.user.id);
+    a.division = div._id;
+    await div.save();
+    await a.save();
+    await Division.populate(div, {
+      path: "members",
+      select: "-password -permission",
+      populate: {
+        path: "projects",
+        select: "-team -team2",
+        populate: { path: "sprints" },
+      },
+    });
     return res.json({
       msg: `Вы вступили в отдел ${req.params.divname}`,
       division: div,
@@ -126,17 +157,25 @@ router.delete("/:divname", auth, async (req, res) => {
     if (!div) {
       return res.json({ err: "Отдел не найден" });
     }
-    await Division.findOneAndUpdate(
-      { divname: div.divname },
-      { $pull: { members: req.user.id } }
-    );
-    console.log("user pulled from division");
+    div.members = div.members.filter((member) => member._id != req.user.id);
+    await div.save();
     await User.findOneAndUpdate(
       { _id: req.user.id },
       { $set: { division: null } }
     );
-    console.log("user's div set to null");
-    return res.json({ msg: `Вы покинули отдел ${req.params.divname}` });
+    await Division.populate(div, {
+      path: "members",
+      select: "-password -permission",
+      populate: {
+        path: "projects",
+        select: "-team -team2",
+        populate: { path: "sprints" },
+      },
+    });
+    return res.json({
+      msg: `Вы покинули отдел ${req.params.divname}`,
+      division: div,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -155,4 +194,27 @@ router.get("/projects/:divid", async (req, res) => {
     return res.json({ err: "server error" });
   }
 });
+
+//add cover
+router.put(
+  "/addcover/:divname",
+  manauth,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      let div = await Division.findOne({
+        divname: req.params.divname,
+      }).populate("members", "-password -permission");
+      if (!div) {
+        return res.status(404).json({ err: "Отдел не найден" });
+      }
+      div.cover = req.file ? "covers/" + req.file.filename : div.cover;
+      await div.save();
+      return res.json({ division: div });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ err: "server error" });
+    }
+  }
+);
 module.exports = router;

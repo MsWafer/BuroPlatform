@@ -17,6 +17,10 @@ const PropSchema = new Schema({
       default: [],
     },
   ],
+  cover: {
+    type: String,
+    default: "avatars/spurdo.png"
+  }
 });
 
 module.exports = Prop = mongoose.model("div", PropSchema);

@@ -117,17 +117,7 @@ router.get("/:id", manauth, async (req, res) => {
       return res.status(404).json({ msg: "ticket not found" });
     }
     console.log("ticket found by id");
-    res.json({
-      id: ticket.id,
-      date: ticket.date,
-      user: ticket.user.name,
-      problemname: ticket.problemname,
-      text: ticket.text,
-      pcpass: ticket.pcpass,
-      emergency: ticket.emergency,
-      status: ticket.status,
-      screenshot: ticket.screenshot,
-    });
+    res.json(ticket);
   } catch (err) {
     console.log(err);
     if (err.kind === "ObjectId") {

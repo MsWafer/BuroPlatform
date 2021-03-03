@@ -161,7 +161,7 @@ router.put(
         return res.json({ err: "Введите имя" });
       }
       if (!req.body.lastname) {
-        return res.json({ err: "Введите логин фамилию" });
+        return res.json({ err: "Введите фамилию" });
       }
     } catch (error) {
       console.error(error);
@@ -178,7 +178,8 @@ router.put(
             position: req.body.position,
             email: req.body.email,
             fullname: req.body.lastname + " " + req.body.name,
-            report: req.body.report,
+            phone: req.body.phone,
+            bday: req.body.bday,
           },
         }
       );
@@ -213,18 +214,16 @@ router.get("/me", auth, async (req, res) => {
     if (!user) {
       return res.status(500).json({ msg: "Server error" });
     }
-    if (user.avatar == null || user.avatar == undefined) {
-      userAvatar = "avatars/spurdo.png";
-    } else {
-      userAvatar = user.avatar;
-    }
     if (user.division && !user.division.members.includes(req.user.id)) {
       await Division.findOneAndUpdate(
         { divname: user.division.divname },
         { $push: { members: req.user.id } }
       );
     }
-    if(!user.partition){user.partition=[];await user.save()}
+    if (!user.partition) {
+      user.partition = [];
+      await user.save();
+    }
     console.log("user found");
     return res.json(user);
   } catch (error) {
@@ -376,7 +375,7 @@ router.put("/me/rocket", auth, async (req, res) => {
 //find all users
 router.get("/all", auth, async (req, res) => {
   try {
-    let users = await User.find()
+    let users = await User.find({merc:!true})
       .select("-password -permission")
       .populate("projects", "-team")
       .populate("division")
@@ -426,7 +425,7 @@ router.get("/q/search", auth, async (req, res) => {
 router.get("/:id", auth, async (req, res) => {
   try {
     let user = await User.findById(req.params.id)
-      .select("-password")
+      .select("-password -report -permission")
       .populate({
         path: "projects",
         select: "-team",
@@ -438,27 +437,8 @@ router.get("/:id", auth, async (req, res) => {
       console.log("user not found");
       return res.status(404).json({ msg: "Пользователь не найден" });
     }
-    if (user.avatar == undefined || user.avatar == null) {
-      userAvatar = "avatars/spurdo.png";
-    } else {
-      userAvatar = user.avatar;
-    }
     console.log("user found");
-    return res.json({
-      id: user.id,
-      name: user.name,
-      lastname: user.lastname,
-      division: user.division,
-      email: user.email,
-      position: user.position,
-      projects: user.projects,
-      tickets: user.tickets,
-      permission: user.permission,
-      rocketchat: user.rocketname,
-      avatar: userAvatar,
-      rocketId: user.rocketId,
-      report: user.report,
-    });
+    return res.json(user);
   } catch (err) {
     console.error(err.message);
     return res.status(500).send("server error");
@@ -521,6 +501,137 @@ router.post("/passRC", async (req, res) => {
     await rcpwdsend(req, res, pwd);
 
     return res.json({ msg: "Новый пароль был отправлен вам в rocket.chat" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change user's partition
+router.put("/part", auth, async (req, res) => {
+  try {
+    let usr = await User.findOne({ _id: req.user.id });
+    if (!usr) {
+      return res.status(404).json({ err: "Huynya yakas" });
+    }
+    usr.partition = req.body.partition;
+    await usr.save();
+    // console.log(usr.partition)
+    // await User.findOneAndUpdate({_id:req.user.id},{$set:{partition:req.body.partition}})
+    // usr = await User.findOne({_id:req.user.id})
+    // console.log(usr.partition)
+    // console.log("par change")
+    return res.json(usr);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get user by letters
+router.get("/usr/get", auth, async (req, res) => {
+  try {
+    let query = {};
+    if (req.query.name) {
+      query.fullname = { $regex: req.query.name, $options: "i" };
+    }
+    if (req.query.division) {
+      query.division = req.query.division;
+    }
+    if (req.query.partition) {
+      query.partition = req.query.partition;
+    }
+    let usr = await User.find(query).select("-password -permission");
+    return res.json(usr);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get users by position
+router.get("/usr/pos", auth, async (req, res) => {
+  try {
+    let usrs = await User.find({ position: req.query.position }).select(
+      "-password -permission"
+    );
+    return res.json(usrs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add/change own report
+router.put("/report", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    user.report = CryptoJS.AES.encrypt(
+      req.body.report,
+      process.env.encKey
+    ).toString(CryptoJS.enc.Utf8);
+    await user.save();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get own report
+router.get("/me/report", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let report = CryptoJS.AES.decrypt(user.report, process.env.encKey).toString(
+      CryptoJS.enc.Utf8
+    );
+    return res.json(report);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get user's report
+router.get("/report/:id", manauth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.params.id });
+    if (!user) {
+      return res.status(400).json({ err: "Not found" });
+    }
+    let report = CryptoJS.AES.decrypt(user.report, process.env.encKey).toString(
+      CryptoJS.enc.Utf8
+    );
+    return res.json(report);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+////////////////////
+///УГОЛ ОПУЩЕНЦЕВ///
+////////////////////
+
+//COSTIL
+router.get("/govno/govno", async (req, res) => {
+  try {
+    let usrs = await User.find();
+    usrs.map((usr) => (usr.fullname = usr.lastname + " " + usr.name));
+
+    const userPromises = usrs.map((usr) => {
+      return new Promise((resolve, reject) => {
+        usr.save((error, result) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(result);
+        });
+      });
+    });
+
+    Promise.all(userPromises).then((response) => {
+      return res.json(response);
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -643,77 +754,4 @@ router.put(
     }
   }
 );
-
-//change user's partition
-router.put("/part",auth,async(req,res)=>{
-  try{
-    let usr = await User.findOne({_id:req.user.id})
-    if(!usr){return res.status(404).json({err:"Huynya yakas"})}
-    usr.partition=req.body.partition;
-    await usr.save()
-    // console.log(usr.partition)
-    // await User.findOneAndUpdate({_id:req.user.id},{$set:{partition:req.body.partition}})
-    // usr = await User.findOne({_id:req.user.id})
-    // console.log(usr.partition)
-    // console.log("par change")
-    return res.json(usr)
-  }catch(error){
-    console.error(error);
-    return res.status(500).json({err:"server error"});
-  }
-})
-
-//get user by letters
-router.get("/usr/get", auth, async (req, res) => {
-  try {
-    let query = {};
-    if(req.query.name){query.fullname={ $regex: req.query.name, $options: "i" }}
-    if(req.query.division){query.division=req.query.division}
-    if(req.query.partition){query.partition=req.query.partition}
-    let usr = await User.find(query).select("-password -permission");
-    return res.json(usr);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//get users by position
-router.get("/usr/pos", auth, async (req, res) => {
-  try {
-    let usrs = await User.find({ position: req.query.position }).select(
-      "-password -permission"
-    );
-    return res.json(usrs);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//COSTIL
-router.get("/govno/govno", async (req, res) => {
-  try {
-    let usrs = await User.find();
-    usrs.map((usr) => (usr.fullname = usr.lastname + " " + usr.name));
-
-    const userPromises = usrs.map((usr) => {
-      return new Promise((resolve, reject) => {
-        usr.save((error, result) => {
-          if (error) {
-            reject(error);
-          }
-          resolve(result);
-        });
-      });
-    });
-
-    Promise.all(userPromises).then((response) => {
-      return res.json(response);
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
 module.exports = router;

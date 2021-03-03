@@ -14,7 +14,6 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
   },
   tickets: [
     {
@@ -67,7 +66,17 @@ const UserSchema = new mongoose.Schema({
   },
   partition: {
     type: Array,
-    default: []
+    default: [],
+  },
+  bday: {
+    type: Date,
+  },
+  phone: {
+    type: String,
+  },
+  merc: {
+    type: Boolean,
+    default: false,
   },
 });
 
