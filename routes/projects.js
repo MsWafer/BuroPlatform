@@ -49,7 +49,7 @@ router.post(
   auth,
   [
     check("title", "Введите название проекта").not().isEmpty(),
-    check("city", "Введите город").not().isEmpty(),
+    // check("city", "Введите город").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
     check("stage", "Выберите этап строительства").not().isEmpty(),
     check("par", "Выберите раздел").not().isEmpty(),
@@ -237,7 +237,7 @@ router.get("/:auth", async (req, res) => {
       let team2 = [];
       let user_obj = {};
       await project.team.map((user) => {
-        (user_obj = { position: "Работяга", task: "Работать", user: user._id }),
+        (user_obj = { position: "Проектировщик", task: "А", user: user._id }),
           team2.push(user_obj);
       });
       project.team2 = team2;
@@ -317,7 +317,7 @@ router.put("/:crypt", manauth, async (req, res) => {
     });
     //for changing old project front needs to send old obj or it's index
     if (req.body.customerNew != null) {
-        project.customerNew[0] = req.body.customerNew;
+      project.customerNew[0] = req.body.customerNew;
     }
     await project.save();
 
@@ -353,6 +353,9 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
+    if (!req.body.user || req.body.user == "") {
+      return res.status(400).json({ err: "Неверно выбран юзер" });
+    }
     let user = await User.findOne({ _id: req.body.user });
     if (!user) {
       return res.status(404).json({ err: "Пользователь не найден" });
@@ -364,6 +367,9 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
       );
       user.projects.filter((user_project) => user_project != project._id);
     } else {
+      if (!req.body.user || !req.body.position || !req.body.task) {
+        return res.status(400).json({ err: "Заполните все необходимые поля" });
+      }
       userObj = {
         user: req.body.user,
         position: req.body.position,
@@ -907,7 +913,7 @@ router.get("/sprints/gettasks/:id", auth, async (req, res) => {
 });
 
 //add single task to sprint
-router.post("/sprints/task/:id",auth, async (req, res) => {
+router.post("/sprints/task/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {

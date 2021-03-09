@@ -152,39 +152,15 @@ router.put(
   auth,
   async (req, res) => {
     try {
-      if (!req.body.position && !req.body.name && !req.body.lastname) {
+      if (!req.body.position || !req.body.name || !req.body.lastname) {
         return res.json({ err: "Заполните поля" });
       }
-      if (!req.body.position) {
-        return res.json({ err: "Введите должность" });
-      }
-      if (!req.body.name) {
-        return res.json({ err: "Введите имя" });
-      }
-      if (!req.body.lastname) {
-        return res.json({ err: "Введите фамилию" });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ err: "server error" });
-    }
 
-    try {
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
-        {
-          $set: {
-            name: req.body.name,
-            lastname: req.body.lastname,
-            position: req.body.position,
-            email: req.body.email,
-            fullname: req.body.lastname + " " + req.body.name,
-            phone: req.body.phone,
-            bday: req.body.bday,
-          },
-        }
-      );
-
+      let user = await User.findOne({ _id: req.user.id });
+      let keys = Object.keys(req.body);
+      keys.forEach((key) => (user[key] = req.body[key]));
+      user.fullname = user.lastname + " " + user.name;
+      await user.save();
       return res.json({
         msg: "Данные пользователя обновлены",
         userid: req.user.id,
@@ -193,6 +169,28 @@ router.put(
       console.error(error);
       return res.status(500).json({ err: "server error" });
     }
+
+    // try {
+    //   // await User.findOneAndUpdate(
+    //   //   { _id: req.user.id },
+    //   //   {
+    //   //     $set: {
+    //   //       name: req.body.name,
+    //   //       lastname: req.body.lastname,
+    //   //       position: req.body.position,
+    //   //       email: req.body.email,
+    //   //       fullname: req.body.lastname + " " + req.body.name,
+    //   //       phone: req.body.phone,
+    //   //       bday: req.body.bday,
+    //   //     },
+    //   //   }
+    //   // );
+
+
+    // } catch (error) {
+    //   console.error(error);
+    //   return res.status(500).json({ err: "server error" });
+    // }
   }
 );
 
@@ -393,12 +391,12 @@ router.put("/me/rocket", auth, async (req, res) => {
 //find all users
 router.get("/all", auth, async (req, res) => {
   try {
-    let users = await User.find({ })
+    let users = await User.find({})
       .select("-password -permission")
       .populate("projects", "-team")
       .populate("division")
       .populate("tickets", "-user");
-    users = users.filter((user)=>user.merc!==true)
+    users = users.filter((user) => user.merc !== true);
     let que = req.query.field;
     let order;
     if (req.query.order == "true") {
@@ -452,7 +450,7 @@ router.get("/:id", auth, async (req, res) => {
       .populate("division")
       .populate("tickets", "-user");
 
-      let tasks = [];
+    let tasks = [];
     let sprints = await Sprint.find({
       "tasks.user": req.params.id,
       status: false,
@@ -511,11 +509,6 @@ router.put("/part", auth, async (req, res) => {
     }
     usr.partition = req.body.partition;
     await usr.save();
-    // console.log(usr.partition)
-    // await User.findOneAndUpdate({_id:req.user.id},{$set:{partition:req.body.partition}})
-    // usr = await User.findOne({_id:req.user.id})
-    // console.log(usr.partition)
-    // console.log("par change")
     return res.json(usr);
   } catch (error) {
     console.error(error);
@@ -527,16 +520,23 @@ router.put("/part", auth, async (req, res) => {
 router.get("/usr/get", auth, async (req, res) => {
   try {
     let query = {};
-    if (req.query.name) {
+    if (req.query.name && req.query.name != "") {
       query.fullname = { $regex: req.query.name, $options: "i" };
     }
-    if (req.query.division) {
-      query.division = req.query.division;
-    }
-    if (req.query.partition) {
+    if (req.query.partition && req.query.partition != "") {
       query.partition = req.query.partition;
     }
-    let usr = await User.find(query).select("-password -permission");
+    let usr = await User.find(query)
+      .select("-password -permission")
+      .populate("division");
+    if (req.query.division && req.query.division != "") {
+      usr = usr.filter(
+        (user) =>
+          user.division != undefined &&
+          user.division.divname == req.query.division
+      );
+    }
+
     return res.json(usr);
   } catch (error) {
     console.error(error);

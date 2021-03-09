@@ -7,10 +7,13 @@
 ## [Проекты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-1)
 ## [Отделы](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8B-1)
 ## [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8-1)
-## Клиентский
 
+<br/><br/>
 # [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B)
-## Работа с текущим пользователем
+
+<details>
+<summary style="font-size:150%;">Работа с текущим пользователем</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /users/|Регистрация|[жсон]()|[жсон]()|
@@ -25,8 +28,11 @@
 |GET /users/me/report|Открыть отчет||[жсон]()|
 |POST /users/passRC|Изменение пароля по рокетчату|[жсон]()|[жсон]()|
 |PUT /users/part|Изменение разделов|[жсон]()|[жсон]()|
+</details>
 
-## Поиск пользователей
+<details>
+<summary style="font-size:150%;">Поиск пользователей</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |GET /users/all|Все пользователи||[жсон]()|
@@ -34,17 +40,26 @@
 |GET /users/:id|Получить профиль пользователя по _id||[жсон]()|
 |GET /users/usr/get?fullname=&division=&partition=|Поиск по имени и/или разделу и/или отделу||[жсон]()|
 |/users/usr/pos?position=|Поиск по должности||[жсон]()|
+</details>
 
-## Работа с другими пользователями(манагерство)
+<details>
+<summary style="font-size:150%;">Работа с другими пользователями(манагерство)</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |PUT /users/poschange/:id|Изменить должность юзера|[жсон]()|[жсон]()|
 |PUT /users/permchange/:id|Изменить пермишен юзера|[жсон]()|[жсон]()|
 |DELETE /users/:id|Удалить пользователя||[жсон]()|
 |GET /users/report/:id|Просмотреть отчет другого пользователя||[жсон]()|
-|/users/usr/pos?position=|Поиск по должности|[жсон]()|[жсон]()|
+</details>
+
+<br/><br/>
 
 # [Новости](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8)
+
+<details>
+<summary style="font-size:150%;">Expand</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /news/|Новая новость|[жсон]()|[жсон]()|
@@ -52,8 +67,15 @@
 |GET /news/:id|Просмотреть новость по _id||[жсон]()|
 |PUT /news/:id|Редактировать новость по _id|[жсон]()|[жсон]()|
 |DELETE /news/:id|Удалить новость по _id||[жсон]()|
+</details>
+
+<br/><br/>
 
 # [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82%D1%8B)
+
+<details>
+<summary style="font-size:150%;">Expand</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /tickets|Добавить тикет|[жсон]()|[жсон]()|
@@ -65,7 +87,15 @@
 |PUT /tickets/:id|Деактивировать тикет по _id||[жсон]()|
 |DELETE /tickets/:id|Удалить тикет по _id||[жсон]()|
 
+</details>
+
+<br/><br/>
+
 # [Офис](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%84%D0%B8%D1%81)
+
+<details>
+<summary style="font-size:150%;">Expand</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /props|Добавить предложение|[жсон]()|[жсон]()|
@@ -77,7 +107,15 @@
 |PUT /props/sts/:id|Запустить предложение в работу/отложить|[жсон]()|[жсон]()|
 |PUT /props/sts/f/:id|Завершить предложение||[жсон]()|
 
+</details>
+
+<br/><br/>
+
 # [Отделы](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8B)
+
+<details>
+<summary style="font-size:150%;">Expand</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /divisions|Создать новый отдел|[жсон]()|[жсон]()|
@@ -88,7 +126,15 @@
 |GET /divisions/projects/:divid|Все проекты пользователей отдела|[жсон]()|[жсон]()|
 |PUT /divisions/addcover/:divname|Добавить/изменить обложку отдела|[жсон]()|[жсон]()|
 
+</details>
+
+<br/><br/>
+
 # [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8)
+
+<details>
+<summary style="font-size:150%;">Expand</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /merc/new|Добавить субподрядчика|[жсон]()|[жсон]()|
@@ -96,9 +142,16 @@
 |PUT /merc/new/edit/:id|Редактирование по _id|[жсон]()|[жсон]()|
 |DELETE /merc/:id|Удалить субподрядчика по _id||[жсон]()|
 
+</details>
+
+<br/><br/>
+
 
 # [Проекты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B)
-## Добавление/изменение
+
+<details>
+<summary style="font-size:150%;">Добавление/изменение</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /projects/add|Добавить проект|[жсон]()|[жсон]()|
@@ -109,7 +162,11 @@
 |PUT /projects/cover/:crypt|Добавить обложку|[жсон]()|[жсон]()|
 |PUT /projects/budget/:crypt|Добавить/изменить бюджет|[жсон]()|[жсон]()|
 
-## Поиск
+</details>
+
+<details>
+<summary style="font-size:150%;">Поиск</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |GET /projects|Все проекты + сорт.|[квери]()|[жсон]()|
@@ -117,14 +174,22 @@
 |GET /projects/:crypt|Найти проект по шифру||[жсон]()|
 |GET /projects/user/:id|Найти все проекты юзера, чей _id в юрл||[жсон]()|
 
-## Работа с юзерами
+</details>
+
+<details>
+<summary style="font-size:150%;">Работа с юзерами</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |PUT /projects/join2/:crypt|Вступить/выйти в/из команды проекта|[жсон]()|[жсон]()|
 |PUT /projects/updteam/:crypt|Добавить/убрать юзера в/из команды проекта|[жсон]()|[жсон]()|
 |PUT /projects/roleedit/:crypt|Редактирование роли/задачи юзера в отделе|[жсон]()|[жсон]()|
 
-## Тэги проекта
+</details>
+
+<details>
+<summary style="font-size:150%;">Тэги проекта</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |PUT /projects/tag/:crypt|Добавить тэг в проект|[жсон]()|[жсон]()|
@@ -132,8 +197,14 @@
 |GET /project/tag/search|Найти проекты с указанными тэгами|[жсон]()|[жсон]()|
 |GET /projects/tag/find?crypt=&tag=|Поиск тэгов проекта|[квери]()|[жсон]()|
 
-## Спринты
-### Общая хуйня
+</details>
+
+<details>
+<summary style="font-size:150%;">Спринты</summary>
+
+<details>
+<summary style="font-size:120%;">Общая хуйня</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /projects/sprint/new/:crypt|Добавить спринт|[жсон]()|[жсон]()|
@@ -145,14 +216,22 @@
 |GET /projects/sprints/:crypt|Все спринты проекта(устарело нахуй?)||[жсон]()|
 |GET /projects/getsprint/:id|Инфа по 1 спринту||[жсон]()|
 
-### Тэги спринтов
+</details>
+
+<details>
+<summary style="font-size:120%;">Тэги спринтов</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |PUT /projects/sprints/addtag/:id|Добавить тэг в спринт|[жсон]()|[жсон]()|
 |DELETE /projects/sprints/:id/tag?tag=|Удалить тэг из спринта|[квери]()|[жсон]()|
 |GET /projects/sprint/tags|Найти все спринты подходящие по тегам|[жсон]()|[жсон]()|
 
-### Таски
+</details>
+
+<details>
+<summary style="font-size:120%;">Таски</summary>
+
 |route|description|request|response|
 |---|---|:---:|:---:|
 |GET /projects/sprints/gettasks/:id|Все таски спринта|[жсон]()|[жсон]()|
@@ -162,3 +241,7 @@
 |PUT /projects/sprints/DAtask/test|Де/активировать таск|[жсон]()|[жсон]()|
 |DELETE /projects/sprints/deltask/:id|Удалить таск|[жсон]()|[жсон]()|
 |PUT /projects/sprints/task/adduser/:id|Добавить исполнителя в таск|[жсон]()|[жсон]()|
+
+</details>
+
+</details>

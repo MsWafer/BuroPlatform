@@ -61,7 +61,8 @@ router.post("/new", manauth, async (req, res) => {
       merc,
     });
     await newMerc.save();
-    return res.json({ msg: "Новый субподрядчик добавлен", merc: newMerc });
+    let mercs = await User.find({merc:true})
+    return res.json({ msg: "Новый субподрядчик добавлен", mercs: mercs });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -90,16 +91,14 @@ router.get("/search", auth, async (req, res) => {
 //edit merc new
 router.put("/new/edit/:id", manauth, async (req, res) => {
   try {
+    let check = await User.findOne({email:req.body.email,_id:{$ne:req.params.id}})
+    if(check){return res.status(400).json({err:"email занято"})}
     let merc = await User.findOne({ _id: req.params.id });
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });
     }
-    merc.name = req.body.name;
-    merc.lastname = req.body.lastname;
-    merc.fullname = req.body.lastname + " " + req.body.name;
-    merc.email = req.body.email;
-    merc.phone = req.body.phone;
-    merc.partition = req.body.partition;
+    let keys = Object.keys(req.body)
+    keys.forEach(key => merc[key]=req.body[key]);
     await merc.save();
     return res.json(merc);
   } catch (error) {
