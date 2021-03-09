@@ -1,15 +1,15 @@
 # Роуты-хуеуты
 
-## [Юзеры](#L13)
-## [Новости]()
-## [Офис]()
-## [Тикеты]()
-## [Проекты]()
-## [Отделы]()
-## [Субподрядчики]()
+## [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B-1)
+## [Новости](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8-1)
+## [Офис](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%84%D0%B8%D1%81-1)
+## [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82%D1%8B-1)
+## [Проекты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-1)
+## [Отделы](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8B-1)
+## [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8-1)
 ## Клиентский
 
-# Юзеры
+# [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B)
 ## Работа с текущим пользователем
 |route|description|request|response|
 |---|---|:---:|:---:|
@@ -44,7 +44,7 @@
 |GET /users/report/:id|Просмотреть отчет другого пользователя||[жсон]()|
 |/users/usr/pos?position=|Поиск по должности|[жсон]()|[жсон]()|
 
-# Новости
+# [Новости](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8)
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /news/|Новая новость|[жсон]()|[жсон]()|
@@ -53,7 +53,7 @@
 |PUT /news/:id|Редактировать новость по _id|[жсон]()|[жсон]()|
 |DELETE /news/:id|Удалить новость по _id||[жсон]()|
 
-# Тикеты
+# [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82%D1%8B)
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /tickets|Добавить тикет|[жсон]()|[жсон]()|
@@ -65,7 +65,7 @@
 |PUT /tickets/:id|Деактивировать тикет по _id||[жсон]()|
 |DELETE /tickets/:id|Удалить тикет по _id||[жсон]()|
 
-# Офис
+# [Офис](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%84%D0%B8%D1%81)
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /props|Добавить предложение|[жсон]()|[жсон]()|
@@ -77,7 +77,7 @@
 |PUT /props/sts/:id|Запустить предложение в работу/отложить|[жсон]()|[жсон]()|
 |PUT /props/sts/f/:id|Завершить предложение||[жсон]()|
 
-# Отделы
+# [Отделы](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8B)
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /divisions|Создать новый отдел|[жсон]()|[жсон]()|
@@ -88,7 +88,7 @@
 |GET /divisions/projects/:divid|Все проекты пользователей отдела|[жсон]()|[жсон]()|
 |PUT /divisions/addcover/:divname|Добавить/изменить обложку отдела|[жсон]()|[жсон]()|
 
-# Субподрядчики
+# [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8)
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /merc/new|Добавить субподрядчика|[жсон]()|[жсон]()|
@@ -97,7 +97,7 @@
 |DELETE /merc/:id|Удалить субподрядчика по _id||[жсон]()|
 
 
-# Проекты
+# [Проекты](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B)
 ## Добавление/изменение
 |route|description|request|response|
 |---|---|:---:|:---:|
