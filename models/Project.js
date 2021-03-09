@@ -17,10 +17,9 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
-
   about: {
     type: String,
-    default: "a",
+    default: "",
   },
   dateStart: {
     type: Date,

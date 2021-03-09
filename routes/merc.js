@@ -48,17 +48,18 @@ router.post("/new", manauth, async (req, res) => {
   try {
     let { name, lastname, partition, email, phone } = req.body;
     let fullname = lastname + " " + name;
-    merc = new User({
+    let merc = true;
+    let newMerc = new User({
       name,
       lastname,
       fullname,
       email,
       phone,
       partition,
-      merc: true,
+      merc,
     });
-    await merc.save();
-    return res.json({ msg: "Новый субподрядчик добавлен", merc: merc });
+    await newMerc.save();
+    return res.json({ msg: "Новый субподрядчик добавлен", merc: newMerc });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -96,6 +97,7 @@ router.put("/new/edit/:id", manauth, async (req, res) => {
     merc.fullname = req.body.lastname + " " + req.body.name;
     merc.email = req.body.email;
     merc.phone = req.body.phone;
+    merc.partition = req.body.partition;
     await merc.save();
     return res.json(merc);
   } catch (error) {
