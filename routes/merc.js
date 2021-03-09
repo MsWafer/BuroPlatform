@@ -47,6 +47,8 @@ const Merc = require("../models/Merc");
 router.post("/new", manauth, async (req, res) => {
   try {
     let { name, lastname, partition, email, phone } = req.body;
+    let check = await  User.findOne({email:email})
+    if(check){return res.status(400).json({err:"Пользователь с указанным email уже существует"})}
     let fullname = lastname + " " + name;
     let merc = true;
     let newMerc = new User({
@@ -73,7 +75,7 @@ router.get("/search", auth, async (req, res) => {
     if (req.query.name == "all") {
       merc = await User.find({ merc: true });
     } else {
-      merc = await User.findOne({ fullname: req.query.name });
+      merc = await User.findOne({ _id: req.query.name });
     }
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });
