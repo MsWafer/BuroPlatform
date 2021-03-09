@@ -1,6 +1,6 @@
 # Роуты-хуеуты
 
-## [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L13)
+## [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B-1)
 ## [Новости](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L48)
 ## [Офис](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L69)
 ## [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L59)
