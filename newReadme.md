@@ -1,12 +1,12 @@
 # Роуты-хуеуты
 
 ## [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B-1)
-## [Новости](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L48)
-## [Офис](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L69)
-## [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L59)
-## [Проекты](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L101)
-## [Отделы](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L81)
-## [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#L92)
+## [Новости](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8-1)
+## [Офис](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D0%BE%D1%84%D0%B8%D1%81-1)
+## [Тикеты](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82%D1%8B-1)
+## [Проекты](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-1)
+## [Отделы](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8B-1)
+## [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/52e3765eba05466d59c56b2ee6067539fd941907/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8-1)
 ## Клиентский
 
 # Юзеры
