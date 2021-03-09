@@ -31,7 +31,6 @@ const ProjectSchema = new Schema({
   },
   par: {
     type: String,
-    required: true,
   },
   cusStorage: {
     type: String,
@@ -74,6 +73,14 @@ const ProjectSchema = new Schema({
     },
   ],
   customer: { type: String },
+  customerNew: [
+    {
+      name: { type: String },
+      phone: { type: String },
+      email: { type: String },
+      other: { type: Array, default: [] },
+    },
+  ],
   // [
   //   {
   //     email: {
@@ -112,6 +119,9 @@ const ProjectSchema = new Schema({
   },
   urn: {
     type: String,
+  },
+  urnDate: {
+    type: Date,
   },
   obj: {
     type: String,

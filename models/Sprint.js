@@ -6,6 +6,9 @@ const SprintSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  title: {
+    type: String,
+  },
   dateOpen: {
     type: Date,
   },

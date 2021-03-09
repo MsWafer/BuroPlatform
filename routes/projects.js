@@ -79,6 +79,7 @@ router.post(
       cusStorage,
       schedule,
       userid2,
+      customerNew,
     } = req.body;
 
     if (!dateStart) {
@@ -93,6 +94,9 @@ router.post(
           return a - b;
         });
       let crypt = Number(govno2[govno2.length - 1]) + 1;
+      if (crypt == NaN) {
+        crypt = 1;
+      }
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
@@ -126,6 +130,7 @@ router.post(
         schedule,
         tags: [type],
       });
+      project.customerNew = req.body.customerNew ? [].push(customerNew) : [];
 
       await project.save();
       if (userid2.length == 0) {
@@ -197,7 +202,7 @@ router.get("/", auth, async (req, res) => {
 //specific query
 router.get("/q/search", auth, async (req, res) => {
   try {
-    if (!req.query.field || !req.query.value) {
+    if (!req.query.field || req.query.value == "Все") {
       let prj = await Project.find().sort({ title: 1 });
       return res.json(prj);
     }
@@ -214,7 +219,7 @@ router.get("/q/search", auth, async (req, res) => {
   }
 });
 
-//find project by crypt/title
+//find project by crypt
 router.get("/:auth", async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
@@ -222,20 +227,28 @@ router.get("/:auth", async (req, res) => {
       .populate("team2.user", "-projects -password -permission -tickets -__v")
       .populate({
         path: "sprints",
-        populate: { path: "creator" },
-        populate: { path: "tasks.user" },
+        populate: { path: "creator", select: "-password -permission" },
+        populate: { path: "tasks.user", select: "-password -permission" },
       });
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    if (project.team2.length == 0) {
-      let mocha = [];
-      let govno = {};
+    if (project.team2.length == 0 && project.team.length != 0) {
+      let team2 = [];
+      let user_obj = {};
       await project.team.map((user) => {
-        (govno = { position: "Работяга", task: "Работать", user: user._id }),
-          mocha.push(govno);
+        (user_obj = { position: "Работяга", task: "Работать", user: user._id }),
+          team2.push(user_obj);
       });
-      project.team2 = mocha;
+      project.team2 = team2;
+      await project.save();
+    }
+    if (!Array.isArray(project.tags) || project.tags.length < 1) {
+      project.tags = [project.type];
+      await project.save();
+    }
+    if (!project.tags.includes(project.type)) {
+      await project.tags.unshift(project.type);
       await project.save();
     }
     console.log("found project by crypt");
@@ -296,36 +309,16 @@ router.put("/:crypt", manauth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    let {
-      title,
-      dateStart,
-      dateFinish,
-      city,
-      type,
-      stage,
-      area,
-      customer,
-      about,
-      status,
-      par,
-      offTitle,
-      schedule,
-      cusStorage,
-    } = req.body;
-    project.title = title;
-    project.dateStart = dateStart;
-    project.dateFinish = dateFinish;
-    project.status = status;
-    project.city = city;
-    project.type = type;
-    project.stage = stage;
-    project.area = area;
-    project.customer = customer;
-    project.about = about;
-    project.par = par;
-    project.offTitle = offTitle;
-    project.schedule = schedule;
-    project.cusStorage = cusStorage;
+    let body_arr = Object.keys(req.body);
+    body_arr.forEach((field) => {
+      if (field != "customerNew") {
+        project[field] = req.body[field];
+      }
+    });
+    //for changing old project front needs to send old obj or it's index
+    if (req.body.customerNew != null) {
+        project.customerNew[0] = req.body.customerNew;
+    }
     await project.save();
 
     console.log(`project ${req.params.crypt} edited`);
@@ -366,7 +359,9 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     }
     let check = project.team2.filter((mate) => mate.user == req.body.user);
     if (check.length > 0) {
-      project.team2 = project2.filter((user) => user.user != check[0].user);
+      project.team2 = project.team2.filter(
+        (user) => user.user != check[0].user
+      );
       user.projects.filter((user_project) => user_project != project._id);
     } else {
       userObj = {
@@ -380,6 +375,7 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     }
     await user.save();
     await project.save();
+    await Project.populate(project, "team2.user");
     return res.json(project);
   } catch (error) {
     console.error(error);
@@ -406,7 +402,6 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       (userObj) => userObj.user._id.toString() === user._id.toString()
     );
 
-    console.log(team_check.length);
     if (team_check.length == 0) {
       //join team
       member_object = {
@@ -437,10 +432,11 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       }
       msg = "Вы вышли из команды проекта";
     }
-    project = await Project.findOne({ crypt: req.params.crypt }).populate(
-      "team2.user",
-      "-password -permission"
-    );
+    // project = await Project.findOne({ crypt: req.params.crypt }).populate(
+    //   "team2.user",
+    //   "-password -permission"
+    // );
+    await Project.populate(project, "team2.user");
     return res.json({ project: project, msg: msg });
   } catch (error) {
     console.error(error);
@@ -617,6 +613,27 @@ router.get("/budget/:crypt", manauth, async (req, res) => {
   }
 });
 
+//edit team2 position/job
+router.put("/team2/:crypt/:userid", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt });
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    let user2 = project.team2.filter(
+      (user) => user.user == req.params.userid
+    )[0];
+    user2[position] = req.body.position;
+    user2[task] = req.body.task;
+    await project.save();
+    await Project.populate(project, "team2.user");
+    return res.json({ msg: "Данные пользователя обновлены", project: project });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 ///////////////////
 ///////////////////
 ///////////////////
@@ -634,21 +651,34 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
         .status(404)
         .json({ msg: "Не найдено проекта с указанным шифром" });
     }
+    let tags;
+    if (req.body.tasks) {
+      tags = req.body.tags.filter((tag) => tag != null);
+    } else {
+      tags = [];
+    }
+
     sprint = new Sprint({
+      title: req.body.title,
       dateOpen: Date.now(),
       description: req.body.description,
       dateClosePlan: req.body.date,
       tasks: req.body.tasks ? req.body.tasks : [],
       creator: req.user.id,
-      tags: req.body.tags,
+      tags: tags,
     });
+
+    await project.sprints.unshift(sprint);
+
+    if (!Array.isArray(project.tags)) {
+      project.tags = [];
+    }
+    //check if project.tags includes tags from sprint
+    let dupe_array = project.tags.concat(tags);
+    project.tags = [...new Set(dupe_array)];
+
     await sprint.save();
-    await Project.findOneAndUpdate(
-      { crypt: req.params.crypt },
-      {
-        $push: { sprints: sprint._id, $position: 0, tags: req.body.tags },
-      }
-    );
+    await project.save();
     console.log("sprint added to project");
     return res.json(sprint);
   } catch (error) {
@@ -809,8 +839,15 @@ router.put("/sprints/addtag/:id", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
-    sprint.tags = req.body.tags;
+    let project = await Project.findOne({ sprints: req.params.id });
+    if (!project.tags.includes(req.body.tag)) {
+      await project.tags.push(req.body.tag);
+      await project.save();
+    }
+
+    sprint.tags.push(req.body.tag);
     await sprint.save();
+
     return res.json(sprint);
   } catch (error) {
     console.error(error);
@@ -825,6 +862,28 @@ router.get("/sprint/tags", auth, async (req, res) => {
       .populate("creator", "-password -permission")
       .populate("tasks.user", "-password -permission");
     return res.json(sprints);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//remove tag from sprint
+router.delete("/sprints/:id/tag", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id })
+      .populate("tasks.user")
+      .populate("creator");
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    let ind = sprint.tags.indexOf(req.query.tag);
+    if (ind == -1) {
+      return res.status(404).json({ err: "Указанный тэг не найден" });
+    }
+    sprint.tags.splice(ind, 1);
+    await sprint.save();
+    return res.json({ sprint: sprint, msg: `Тэг ${req.query.tag} удален` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -848,7 +907,7 @@ router.get("/sprints/gettasks/:id", auth, async (req, res) => {
 });
 
 //add single task to sprint
-router.post("/sprints/task/:id", auth, async (req, res) => {
+router.post("/sprints/task/:id",auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     if (!sprint) {
@@ -864,6 +923,7 @@ router.post("/sprints/task/:id", auth, async (req, res) => {
     });
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
+    await Sprint.populate(sprint, "creator");
     return res.json(sprint);
   } catch (error) {
     console.error(error);
@@ -874,7 +934,9 @@ router.post("/sprints/task/:id", auth, async (req, res) => {
 //add user to task
 router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
+      "creator"
+    );
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
@@ -883,14 +945,49 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
     sprint.tasks[ind].user = req.body.userid;
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
-    return res.json(sprint);
+
+    res.json(sprint);
+
+    if (req.body.rocket == true) {
+      let user = await User.findOne({ _id: req.body.userid });
+      let rc = () =>
+        fetch(`${process.env.CHAT}/api/v1/login`, {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: process.env.R_U,
+            password: process.env.R_P,
+          }),
+        })
+          .then((res) => res.json())
+          .then((res) =>
+            fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+              method: "post",
+              headers: {
+                Accept: "application/json, text/plain, */*",
+                "Content-Type": "application/json",
+                "X-Auth-Token": res.data.authToken,
+                "X-User-Id": res.data.userId,
+              },
+              body: JSON.stringify({
+                channel: `@${user.rocketname}`,
+                text: `Вам назначили новую задачу: ${task[0].taskTitle}`,
+              }),
+            })
+          );
+
+      rc();
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
   }
 });
 
-//add new task to sprint
+//add tasks to sprint
 router.post("/sprints/addtask/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
@@ -929,20 +1026,26 @@ router.post("/sprints/addtask/:id", auth, async (req, res) => {
 });
 
 //deactivate task
-router.put("/sprints/DAtask/:id", auth, async (req, res) => {
+router.put("/sprints/DAtask/test", auth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({
+      "tasks._id": req.body.taskid,
+    }).populate("creator");
     if (!sprint) {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
-    let status = sprint.tasks.filter((task) => task._id == req.body.taskid)[0]
-      .taskStatus;
-    await Sprint.findOneAndUpdate(
-      { _id: req.params.id, "tasks._id": req.body.taskid },
-      { $set: { "tasks.$.taskStatus": !status } }
-    );
+    sprint.tasks.forEach((task) => {
+      if (task._id == req.body.taskid) {
+        task.taskStatus = !task.taskStatus;
+      }
+    });
+    await sprint.save();
+    await Sprint.populate(sprint, "tasks.user");
     console.log("task de/activated");
-    return res.json({ msg: `Изменен статус задачи ${req.body.taskid}` });
+    return res.json({
+      msg: `Изменен статус задачи`,
+      sprint: sprint,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });
@@ -952,7 +1055,9 @@ router.put("/sprints/DAtask/:id", auth, async (req, res) => {
 //edit task
 router.put("/sprints/taskedit/:id", auth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
+      "creator"
+    );
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
@@ -970,7 +1075,9 @@ router.put("/sprints/taskedit/:id", auth, async (req, res) => {
 //delete task
 router.put("/sprints/deltask/:id", manauth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id });
+    let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
+      "creator"
+    );
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
@@ -1046,12 +1153,23 @@ router.get("/tag/find", auth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
+    // console.log(project.tags);
+    if (
+      project.tags === [] ||
+      project.tags == null ||
+      project.tags == undefined ||
+      project.tags.includes(null) ||
+      project.tags.length == 0 ||
+      project.tags.includes([])
+    ) {
+      return res.json([]);
+    }
     function regexEscape(str) {
       return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     }
 
     let regex = new RegExp(regexEscape(req.query.tag), "g");
-    let tags = project.tags.filter((tag) => tag.match(regex));
+    let tags = project.tags.filter((tag) => tag != null && tag.match(regex));
     return res.json(tags);
   } catch (error) {
     console.error(error);

@@ -15,7 +15,7 @@ const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/usr/src/app/public/avatars");
+    cb(null, __dirname + "/../public/avatars");
   },
   filename: (req, file, cb) => {
     cb(
@@ -48,6 +48,7 @@ const { response } = require("express");
 const rcusercheck = require("../middleware/rcusercheck");
 const rcpwdsend = require("../middleware/rcpwdsend");
 const Division = require("../models/Division");
+const Sprint = require("../models/Sprint");
 
 //registration
 router.post("/", async (req, res) => {
@@ -224,6 +225,23 @@ router.get("/me", auth, async (req, res) => {
       user.partition = [];
       await user.save();
     }
+    let tasks = [];
+    let sprints = await Sprint.find({
+      "tasks.user": req.user.id,
+      status: false,
+    }).select("tasks");
+    if (!sprints) {
+      tasks = [];
+    } else {
+      sprints.forEach((sprint) => {
+        sprint.tasks.forEach((task) => {
+          if (task.user == req.user.id) {
+            tasks.push(task);
+          }
+        });
+      });
+    }
+    user.tasks = tasks;
     console.log("user found");
     return res.json(user);
   } catch (error) {
@@ -279,7 +297,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
       }
     );
     if (oldavatar != "avatars/spurdo.png") {
-      fs.unlink(`/usr/src/app/public/${oldavatar}`, (err) => {
+      fs.unlink(__dirname + `/../public/${oldavatar}`, (err) => {
         if (err) {
           throw err;
         }
@@ -375,12 +393,12 @@ router.put("/me/rocket", auth, async (req, res) => {
 //find all users
 router.get("/all", auth, async (req, res) => {
   try {
-    let users = await User.find({merc:!true})
+    let users = await User.find({ })
       .select("-password -permission")
       .populate("projects", "-team")
       .populate("division")
       .populate("tickets", "-user");
-
+    users = users.filter((user)=>user.merc!==true)
     let que = req.query.field;
     let order;
     if (req.query.order == "true") {
@@ -433,6 +451,24 @@ router.get("/:id", auth, async (req, res) => {
       })
       .populate("division")
       .populate("tickets", "-user");
+
+      let tasks = [];
+    let sprints = await Sprint.find({
+      "tasks.user": req.params.id,
+      status: false,
+    }).select("tasks");
+    if (!sprints) {
+      tasks = [];
+    } else {
+      sprints.forEach((sprint) => {
+        sprint.tasks.forEach((task) => {
+          if (task.user == req.params.id) {
+            tasks.push(task);
+          }
+        });
+      });
+    }
+    user.tasks = tasks;
     if (!user) {
       console.log("user not found");
       return res.status(404).json({ msg: "Пользователь не найден" });
@@ -463,47 +499,6 @@ router.delete("/:id", admauth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     return res.status(500).send("server error");
-  }
-});
-
-//recover password via RC
-router.post("/passRC", async (req, res) => {
-  try {
-    let { email } = req.body;
-    let check = await User.findOne({ email }).select("-password");
-    if (!check) {
-      return res.json({ err: "Пользователь с указанным email не найден" });
-    }
-    await rcusercheck(req, res);
-    if (typeof rocketId === "undefined") {
-      return res
-        .status(404)
-        .json({ msg: "Указанный пользователь rocket.chat не найден" });
-    }
-
-    function makeid(length) {
-      let result = "";
-      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let charactersLength = characters.length;
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(
-          Math.floor(Math.random() * charactersLength)
-        );
-      }
-      return result;
-    }
-
-    let pwd = makeid(6);
-    const salt = await bcrypt.genSalt(10);
-    check.password = await bcrypt.hash(pwd, salt);
-    await check.save();
-
-    await rcpwdsend(req, res, pwd);
-
-    return res.json({ msg: "Новый пароль был отправлен вам в rocket.chat" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -563,7 +558,7 @@ router.get("/usr/pos", auth, async (req, res) => {
 });
 
 //add/change own report
-router.put("/report", auth, async (req, res) => {
+router.put("/me/report", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id });
     user.report = CryptoJS.AES.encrypt(
@@ -602,6 +597,47 @@ router.get("/report/:id", manauth, async (req, res) => {
       CryptoJS.enc.Utf8
     );
     return res.json(report);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//recover password via RC
+router.post("/passRC", async (req, res) => {
+  try {
+    let { email } = req.body;
+    let check = await User.findOne({ email }).select("-password");
+    if (!check) {
+      return res.json({ err: "Пользователь с указанным email не найден" });
+    }
+    await rcusercheck(req, res);
+    if (typeof rocketId === "undefined") {
+      return res
+        .status(404)
+        .json({ msg: "Указанный пользователь rocket.chat не найден" });
+    }
+
+    function makeid(length) {
+      let result = "";
+      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let charactersLength = characters.length;
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    }
+
+    let pwd = makeid(6);
+    const salt = await bcrypt.genSalt(10);
+    check.password = await bcrypt.hash(pwd, salt);
+    await check.save();
+
+    await rcpwdsend(req, res, pwd);
+
+    return res.json({ msg: "Новый пароль был отправлен вам в rocket.chat" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

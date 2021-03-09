@@ -4,13 +4,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { check, validationResult } = require("express-validator");
-const cusauth = require("../middleware/cusauth");
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const nodemailer = require("nodemailer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/usr/src/app/public/avatars");
@@ -43,6 +41,85 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
 const Merc = require("../models/Merc");
+
+
+//new user-merc
+router.post("/new", manauth, async (req, res) => {
+  try {
+    let { name, lastname, partition, email, phone } = req.body;
+    let fullname = lastname + " " + name;
+    merc = new User({
+      name,
+      lastname,
+      fullname,
+      email,
+      phone,
+      partition,
+      merc: true,
+    });
+    await merc.save();
+    return res.json({ msg: "Новый субподрядчик добавлен", merc: merc });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get all merc new
+router.get("/search", auth, async (req, res) => {
+  try {
+    let merc;
+    if (req.query.name == "all") {
+      merc = await User.find({ merc: true });
+    } else {
+      merc = await User.findOne({ fullname: req.query.name });
+    }
+    if (!merc) {
+      return res.status(404).json({ err: "Субподрядчик не найден" });
+    }
+    return res.json(merc);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit merc new
+router.put("/new/edit/:id", manauth, async (req, res) => {
+  try {
+    let merc = await User.findOne({ _id: req.params.id });
+    if (!merc) {
+      return res.status(404).json({ err: "Субподрядчик не найден" });
+    }
+    merc.name = req.body.name;
+    merc.lastname = req.body.lastname;
+    merc.fullname = req.body.lastname + " " + req.body.name;
+    merc.email = req.body.email;
+    merc.phone = req.body.phone;
+    await merc.save();
+    return res.json(merc);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delete merc new
+router.delete("/:id", manauth, async (req, res) => {
+  try {
+    await User.findOneAndRemove({ _id: req.params.id });
+    await Project.updateMany(
+      { projects: req.params.id },
+      { $pull: req.params.id }
+    );
+    return res.json({ msg: "Субподрядчик удален" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//////////OLD/////////////////
 
 //new merc
 router.post("/", async (req, res) => {
@@ -79,67 +156,6 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
-  }
-});
-
-//new user-merc
-router.post("/new", manauth, async (req, res) => {
-  try {
-    let { name, lastname, partition, email, phone } = req.body;
-    let fullname = lastname + " " + name;
-    merc = new User({
-      name,
-      lastname,
-      fullname,
-      email,
-      phone,
-      partition,
-      merc: true,
-    });
-    await merc.save();
-    return res.json({ msg: "Новый субподрядчик добавлен", merc: merc });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//get all merc new
-router.get("/search", async (req, res) => {
-  try {
-    let merc;
-    if (req.query.name == "all") {
-      merc = await User.find({merc:true});
-    } else {
-      merc = await User.findOne({ fullname: req.query.name });
-    }
-    if (!merc) {
-      return res.status(404).json({ err: "Субподрядчик не найден" });
-    }
-    return res.json(merc);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//edit merc new
-router.put("/new/edit/:id", manauth, async (req, res) => {
-  try {
-    let merc = await User.findOne({ _id: req.params.id });
-    if (!merc) {
-      return res.status(404).json({ err: "Субподрядчик не найден" });
-    }
-    merc.name = req.body.name;
-    merc.lastname = req.body.lastname;
-    merc.fullname = req.body.lastname + " " + req.body.name;
-    merc.email = req.body.email;
-    merc.phone = req.body.phone;
-    await merc.save();
-    return res.json(merc);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
   }
 });
 

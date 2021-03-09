@@ -2,9 +2,11 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const { check, validationResult } = require("express-validator");
+const fetch = require("node-fetch");
 
 const Prop = require("../models/Prop");
 const manauth = require("../middleware/manauth");
+const { response } = require("express");
 
 //add proposition
 router.post(
@@ -143,7 +145,37 @@ router.put("/exec/:id", auth, async (req, res) => {
     }
     prop.executor = req.body.user;
     await prop.save();
-    return res.json(prop);
+    let user = await User.findOne({ _id: req.body.user });
+    let rc = () =>
+      fetch(`${process.env.CHAT}/api/v1/login`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) =>
+          fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": response.data.authToken,
+              "X-User-Id": response.data.userId,
+            },
+            body: JSON.stringify({
+              channel: `@${user.rocketname}`,
+              text: `Вам назначили новую задачу: *insert link here*`,
+            }),
+          })
+        );
+    rc();
+    res.json(prop);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -166,21 +198,58 @@ router.delete("/:id", manauth, async (req, res) => {
 router.put("/sts/:id", manauth, async (req, res) => {
   try {
     let prop = await Prop.findOne({ _id: req.params.id });
-    console.log(req.body);
+    // console.log(req.body);
     if (prop.status == 0) {
       await Prop.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: 1, executor: req.body.executor } }
       );
+
+      let props = await Prop.find().populate(
+        "executor",
+        "-password -permission"
+      );
+      console.log("prop status changed");
+      res.json({ msg: `Статус изменен`, props: props });
+
+      if (req.body.rocket == true) {
+        let user = await User.findOne({ _id: req.body.executor });
+        let rc = () =>
+          fetch(`${process.env.CHAT}/api/v1/login`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              user: process.env.R_U,
+              password: process.env.R_P,
+            }),
+          })
+            .then((response) => response.json())
+            .then((response) =>
+              fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+                method: "post",
+                headers: {
+                  Accept: "application/json, text/plain, */*",
+                  "Content-Type": "application/json",
+                  "X-Auth-Token": response.data.authToken,
+                  "X-User-Id": response.data.userId,
+                },
+                body: JSON.stringify({
+                  channel: `@${user.rocketname}`,
+                  text: `Вам назначили новую задачу: ${prop.title}`,
+                }),
+              })
+            );
+        rc();
+      }
     } else if (prop.status == 1) {
       await Prop.findOneAndUpdate(
         { _id: req.params.id },
         { $set: { status: 0, executor: null } }
       );
     }
-    let props = await Prop.find().populate("executor", "-password -permission");
-    console.log("prop status changed");
-    return res.json({ msg: `Статус изменен ${req.params.id}`, props: props });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

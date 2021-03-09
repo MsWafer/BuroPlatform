@@ -78,6 +78,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  tasks: {
+    type: Array,
+    default: [],
+  },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);
