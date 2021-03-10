@@ -42,13 +42,16 @@ const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
 const Merc = require("../models/Merc");
 
-
 //new user-merc
 router.post("/new", manauth, async (req, res) => {
   try {
     let { name, lastname, partition, email, phone } = req.body;
-    let check = await  User.findOne({email:email})
-    if(check){return res.status(400).json({err:"Пользователь с указанным email уже существует"})}
+    let check = await User.findOne({ email: email });
+    if (check) {
+      return res
+        .status(400)
+        .json({ err: "Пользователь с указанным email уже существует" });
+    }
     let fullname = lastname + " " + name;
     let merc = true;
     let newMerc = new User({
@@ -61,7 +64,7 @@ router.post("/new", manauth, async (req, res) => {
       merc,
     });
     await newMerc.save();
-    let mercs = await User.find({merc:true})
+    let mercs = await User.find({ merc: true });
     return res.json({ msg: "Новый субподрядчик добавлен", mercs: mercs });
   } catch (error) {
     console.error(error);
@@ -91,14 +94,19 @@ router.get("/search", auth, async (req, res) => {
 //edit merc new
 router.put("/new/edit/:id", manauth, async (req, res) => {
   try {
-    let check = await User.findOne({email:req.body.email,_id:{$ne:req.params.id}})
-    if(check){return res.status(400).json({err:"email занято"})}
+    let check = await User.findOne({
+      email: req.body.email,
+      _id: { $ne: req.params.id },
+    });
+    if (check) {
+      return res.status(400).json({ err: "email занято" });
+    }
     let merc = await User.findOne({ _id: req.params.id });
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });
     }
-    let keys = Object.keys(req.body)
-    keys.forEach(key => merc[key]=req.body[key]);
+    let keys = Object.keys(req.body);
+    keys.forEach((key) => (merc[key] = req.body[key]));
     await merc.save();
     return res.json(merc);
   } catch (error) {
@@ -111,10 +119,18 @@ router.put("/new/edit/:id", manauth, async (req, res) => {
 router.delete("/:id", manauth, async (req, res) => {
   try {
     await User.findOneAndRemove({ _id: req.params.id });
-    await Project.updateMany(
-      { projects: req.params.id },
-      { $pull: req.params.id }
-    );
+    let projects = await Project.find({ "team2.user": req.params.id });
+    if (projects.length < 0) {
+      projects.forEach(
+        (project) =>
+          project.team2 = project.team2.filter(
+            (user_obj) => user_obj.user != req.params.id
+          ),
+          await project.save()
+      );
+      // projects.forEach((project)=>project.save())
+    }
+
     return res.json({ msg: "Субподрядчик удален" });
   } catch (error) {
     console.error(error);

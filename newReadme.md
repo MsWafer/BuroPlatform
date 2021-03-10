@@ -9,6 +9,7 @@
 ## [Субподрядчики](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%B8-1)
 
 <br/><br/>
+
 # [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B)
 
 <details>
@@ -183,7 +184,7 @@
 |---|---|:---:|:---:|
 |PUT /projects/join2/:crypt|Вступить/выйти в/из команды проекта|[жсон]()|[жсон]()|
 |PUT /projects/updteam/:crypt|Добавить/убрать юзера в/из команды проекта|[жсон]()|[жсон]()|
-|PUT /projects/roleedit/:crypt|Редактирование роли/задачи юзера в отделе|[жсон]()|[жсон]()|
+|PUT /projects//team2/:crypt/:userid|Редактирование роли/задачи юзера в отделе|[жсон]()|[жсон]()|
 
 </details>
 

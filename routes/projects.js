@@ -172,11 +172,11 @@ router.post(
 router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
-      .populate("team", "-projects -password -permission -avatar -tickets -__v")
-      .populate(
-        "team2",
-        "-projects -password -permission -avatar -tickets -__v"
-      )
+      // .populate("team", "-projects -password -permission -avatar -tickets -__v")
+      // .populate(
+      //   "team2",
+      //   "-projects -password -permission -avatar -tickets -__v"
+      // )
       .populate("sprints");
     let que = req.query.field;
     let order;
@@ -282,9 +282,7 @@ router.get("/user/:id", auth, async (req, res) => {
 //delete project
 router.delete("/:crypt", manauth, async (req, res) => {
   try {
-    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
-      "team"
-    );
+    let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
       return res.status(404).json("Проект не найден");
     }
@@ -716,8 +714,8 @@ router.put("/sprints/dd/:id", auth, async (req, res) => {
   }
 });
 
-//add description
-router.put("/sprints/description/:id", auth, async (req, res) => {
+//edit sprint
+router.put("/sprints/edit/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id })
       .populate("tasks.user", "-password -permission")
@@ -725,7 +723,8 @@ router.put("/sprints/description/:id", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
-    sprint.description = req.body.description;
+    let keys = Object.keys(req.body)
+    keys.forEach(key=>sprint[key]=req.body[key])
     await sprint.save();
     return res.json(sprint);
   } catch (error) {
@@ -864,7 +863,7 @@ router.put("/sprints/addtag/:id", auth, async (req, res) => {
 //get sprints by tags
 router.get("/sprint/tags", auth, async (req, res) => {
   try {
-    let sprints = await Sprint.find({ tags: { $all: req.body.tags } })
+    let sprints = await Sprint.find({ tags: { $all: req.query.tag } })
       .populate("creator", "-password -permission")
       .populate("tasks.user", "-password -permission");
     return res.json(sprints);
@@ -1139,7 +1138,7 @@ router.delete("/tag/:crypt", auth, async (req, res) => {
 //find by tags
 router.get("/tag/search", auth, async (req, res) => {
   try {
-    let projects = await Project.find({ tags: { $all: req.body.tags } });
+    let projects = await Project.find({ tags: { $all: req.query.tag } });
     if (!projects) {
       return res
         .status(404)
@@ -1159,7 +1158,6 @@ router.get("/tag/find", auth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    // console.log(project.tags);
     if (
       project.tags === [] ||
       project.tags == null ||
