@@ -1181,4 +1181,14 @@ router.get("/tag/find", auth, async (req, res) => {
   }
 });
 
+//kostil eshe odin
+router.get("/huy/huy/huy",async(req,res)=>{
+  try{
+    let huy = await Sprint.updateMany({},{$set:{title:"huy"}})
+    return res.json(huy)
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({err:"server error"});
+  }
+})
 module.exports = router;

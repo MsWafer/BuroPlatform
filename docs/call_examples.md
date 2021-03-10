@@ -3,8 +3,6 @@
 
 
 ## users
-<details>
-<summary style="font-size:150%;">expand</summary>
 
 ### АВТОРИЗАЦИЯ
 ```json
@@ -92,12 +90,9 @@
     "email":"string"
 }
 ``` 
-</details>
-<br/><br/>
 
 ## propositions
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### НОВОЕ ПРЕДЛОЖЕНИЕ
 ```json
@@ -123,13 +118,10 @@
 ```
 Если не отправлять rocket или отправить как false - исполнителю не приходит оповещение в рокет
 
-</details>
 
-<br/><br/>
 
 ## news
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### ДОБАВИТЬ НОВОСТЬ
 ```json
@@ -148,13 +140,10 @@
 }
 ```
 
-</details>
 
-<br/><br/>
 
 ## tickets
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### НОВЫЙ ТИКЕТ
 ```json
@@ -167,13 +156,10 @@
 ```
 Опционально скриншот проблемы как *file*
 
-</details>
 
-<br/><br/>
 
 ## mercs
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### Новый субподрядчик
 ```json
@@ -198,13 +184,10 @@
 }
 ```
 
-</details>
 
-<br/><br/>
 
 ## Отделы
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### Создать отдел
 ```json
@@ -216,13 +199,10 @@
 ### Добавить обложку отдела
 Отправляете .png/.jpg/.jpeg как *file*
 
-</details>
 
-<br/><br/>
 
 ## Проекты
-<details>
-<summary style="font-size:150%;">expand</summary>
+
 
 ### Создать проект
 ```json
@@ -420,6 +400,3 @@
    /projects/sprints/:sprint_id/tag?tag={tag kotoriy nado ubrat}
 ### Найти спринт по тэгам
     /projects/sprint/tags?tag={tag}&tag={tag2}...
-</details>
-
-<br/><br/>
