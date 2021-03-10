@@ -17,18 +17,18 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /users/|Регистрация|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F)|[жсон]()|
-|POST /auth/|Авторизация|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F)|[жсон]()|
-|GET /users/me|Профиль||[жсон]()|
-|GET /users/me/sprints|Активные спринты||[жсон]()|
-|PUT /users/me|Редактирование профиля|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|[жсон]()|
-|PUT /users/me/pw|Изменение пароля|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8F)|[жсон]()|
-|PUT /users/me/a|Добавление/изменение аватара|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B0%D0%B2%D0%B0%D1%82%D0%B0%D1%80)|[жсон]()|
-|PUT /users/me/rocket|Изменение рокетнейма|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D1%81%D0%B2%D0%BE%D0%B5%D0%B3%D0%BE-%D1%80%D0%BE%D0%BA%D0%B5%D1%82%D1%87%D0%B0%D1%82%D0%B0)|[жсон]()|
-|PUT /users/me/report|Добавить/изменить отчет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D1%82%D1%87%D0%B5%D1%82%D0%BD%D0%BE%D1%81%D1%82%D1%8C)|[жсон]()|
-|GET /users/me/report|Открыть отчет||[жсон]()|
-|POST /users/passRC|Изменение пароля по рокетчату|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%82%D1%8C-%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8C-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%80%D0%BE%D0%BA%D0%B5%D1%82%D1%87%D0%B0%D1%82-%D0%B8-%D0%BC%D1%8B%D0%BB%D0%BE)|[жсон]()|
-|PUT /users/part|Изменение разделов|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D1%81%D0%B2%D0%BE%D0%B8%D1%85-%D1%80%D0%B0%D0%B7%D0%B4%D0%B5%D0%BB%D0%BE%D0%B2)|[жсон]()|
+|POST /users/|Регистрация|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F)|{token:token, id:user.id, msg:String}|
+|POST /auth/|Авторизация|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F)|token|
+|GET /users/me|Профиль||[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|GET /users/me/sprints|Активные спринты||deprecated|
+|PUT /users/me|Редактирование профиля|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|{msg:String,userid:user.id}|
+|PUT /users/me/pw|Изменение пароля|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8F)|{msg:String}|
+|PUT /users/me/a|Добавление/изменение аватара|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B0%D0%B2%D0%B0%D1%82%D0%B0%D1%80)|{msg:String}|
+|PUT /users/me/rocket|Изменение рокетнейма|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D1%81%D0%B2%D0%BE%D0%B5%D0%B3%D0%BE-%D1%80%D0%BE%D0%BA%D0%B5%D1%82%D1%87%D0%B0%D1%82%D0%B0)|{msg:String}|
+|PUT /users/me/report|Добавить/изменить отчет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D1%82%D1%87%D0%B5%D1%82%D0%BD%D0%BE%D1%81%D1%82%D1%8C)|msg:String|
+|GET /users/me/report|Открыть свой отчет||String|
+|POST /users/passRC|Изменение пароля по рокетчату|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%82%D1%8C-%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8C-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D1%80%D0%BE%D0%BA%D0%B5%D1%82%D1%87%D0%B0%D1%82-%D0%B8-%D0%BC%D1%8B%D0%BB%D0%BE)|{msg:String}|
+|PUT /users/part|Изменение разделов|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D1%81%D0%B2%D0%BE%D0%B8%D1%85-%D1%80%D0%B0%D0%B7%D0%B4%D0%B5%D0%BB%D0%BE%D0%B2)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
 </details>
 
 <details>
@@ -36,11 +36,11 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|GET /users/all|Все пользователи|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%B0%D0%B9%D1%82%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D0%BE%D1%82%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D1%8B%D1%85-%D0%BA%D0%B0%D0%BA-%D1%85%D0%BE%D1%82%D0%B8%D1%82%D0%B5)|[жсон]()|
-|GET /users/q/search?field=&value=|Поиск по 1 параметру|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%82%D0%BE%D0%BB%D1%8C%D0%BA%D0%BE-%D1%82%D0%B5%D1%85-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D0%BA%D0%BE%D1%82%D0%BE%D1%80%D1%8B%D0%B5-%D0%BF%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0%D1%8E%D1%82-%D0%BF%D0%BE%D0%B4-%D1%83%D1%81%D0%BB%D0%BE%D0%B2%D0%B8%D1%8F-%D0%BA%D0%B2%D0%B5%D1%80%D0%B8)|[жсон]()|
-|GET /users/:id|Получить профиль пользователя по _id||[жсон]()|
-|GET /users/usr/get?fullname=&division=&partition=|Поиск по имени и/или разделу и/или отделу|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0-%D0%BF%D0%BE-%D1%82%D1%80%D0%B5%D0%BC-%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%B0%D0%BC)|[жсон]()|
-|/users/usr/pos?position=|Поиск по должности|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D1%81-%D0%BE%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%D1%8E)|[жсон]()|
+|GET /users/all|Все пользователи|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%B0%D0%B9%D1%82%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D0%BE%D1%82%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D1%8B%D1%85-%D0%BA%D0%B0%D0%BA-%D1%85%D0%BE%D1%82%D0%B8%D1%82%D0%B5)|Массив из [юзеров](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|GET /users/q/search?field=&value=|Поиск по 1 параметру|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%82%D0%BE%D0%BB%D1%8C%D0%BA%D0%BE-%D1%82%D0%B5%D1%85-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D0%BA%D0%BE%D1%82%D0%BE%D1%80%D1%8B%D0%B5-%D0%BF%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0%D1%8E%D1%82-%D0%BF%D0%BE%D0%B4-%D1%83%D1%81%D0%BB%D0%BE%D0%B2%D0%B8%D1%8F-%D0%BA%D0%B2%D0%B5%D1%80%D0%B8)|Массив из [юзеров](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|GET /users/:id|Получить профиль пользователя по _id||[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|GET /users/usr/get?fullname=&division=&partition=|Поиск по имени и/или разделу и/или отделу|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0-%D0%BF%D0%BE-%D1%82%D1%80%D0%B5%D0%BC-%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%B0%D0%BC)|Массив из [юзеров](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|/users/usr/pos?position=|Поиск по должности|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%8E%D0%B7%D0%B5%D1%80%D0%BE%D0%B2-%D1%81-%D0%BE%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%D1%8E)|Массив из [юзеров](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
 </details>
 
 <details>
@@ -48,10 +48,10 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|PUT /users/poschange/:id|Изменить должность юзера|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8-%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%B3%D0%BE-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|[жсон]()|
-|PUT /users/permchange/:id|Изменить пермишен юзера|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%BF%D0%B5%D1%80%D0%BC%D0%B8%D1%88%D0%B5%D0%BD%D0%B0-%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%B3%D0%BE-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|[жсон]()|
-|DELETE /users/:id|Удалить пользователя||[жсон]()|
-|GET /users/report/:id|Просмотреть отчет другого пользователя||[жсон]()|
+|PUT /users/poschange/:id|Изменить должность юзера|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8-%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%B3%D0%BE-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|{msg:String}|
+|PUT /users/permchange/:id|Изменить пермишен юзера|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BC%D0%B5%D0%BD%D0%B0-%D0%BF%D0%B5%D1%80%D0%BC%D0%B8%D1%88%D0%B5%D0%BD%D0%B0-%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%B3%D0%BE-%D1%8E%D0%B7%D0%B5%D1%80%D0%B0)|{msg:String}|
+|DELETE /users/:id|Удалить пользователя||{msg:String}|
+|GET /users/report/:id|Просмотреть отчет другого пользователя||String|
 </details>
 
 <br/><br/>
@@ -63,11 +63,11 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /news/|Новая новость|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C)|[жсон]()|
-|GET /news/all|Все новости||[жсон]()|
-|GET /news/:id|Просмотреть новость по _id||[жсон]()|
-|PUT /news/:id|Редактировать новость по _id|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C)|[жсон]()|
-|DELETE /news/:id|Удалить новость по _id||[жсон]()|
+|POST /news/|Новая новость|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C)|{news:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C),msg:String}|
+|GET /news/all|Все новости||Массив из [новостей](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C)|
+|GET /news/:id|Просмотреть новость по _id||{news:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C)}|
+|PUT /news/:id|Редактировать новость по _id|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C)|{news:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%8C),msg:String}|
+|DELETE /news/:id|Удалить новость по _id||{msg:String}|
 </details>
 
 <br/><br/>
@@ -79,14 +79,14 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /tickets|Добавить тикет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|[жсон]()|
-|GET /tickets/all|Все тикеты сорт. по дате||[жсон]()|
-|GET /tickets/:id|Просмотр тикета по его _id||[жсон]()|
-|GET /tickets/user/:id|Все тикеты пользователя||[жсон]()|
-|GET /tickets/all/active|Все незавершенные тикеты||[жсон]()|
-|GET /tickets/all/emergency|Все тикеты сорт. по срочности||[жсон]()|
-|PUT /tickets/:id|Деактивировать тикет по _id||[жсон]()|
-|DELETE /tickets/:id|Удалить тикет по _id||[жсон]()|
+|POST /tickets|Добавить тикет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|{msg:String}|
+|GET /tickets/all|Все тикеты сорт. по дате||Массив из [тикетов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|
+|GET /tickets/:id|Просмотр тикета по его _id||[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|
+|GET /tickets/user/:id|Все тикеты пользователя|||Массив из [тикетов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|
+|GET /tickets/all/active|Все незавершенные тикеты|||Массив из [тикетов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|
+|GET /tickets/all/emergency|Все тикеты сорт. по срочности|||Массив из [тикетов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%82%D0%B8%D0%BA%D0%B5%D1%82)|
+|PUT /tickets/:id|Деактивировать тикет по _id||{msg:String})|
+|DELETE /tickets/:id|Удалить тикет по _id||{msg:String}|
 
 </details>
 
@@ -99,14 +99,15 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /props|Добавить предложение|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5-%D0%BF%D1%80%D0%B5%D0%B4%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5)|[жсон]()|
-|GET /props/all/likes|Все предложения сорт. по лайкам||[жсон]()|
-|GET /props/all/date|Все предложения сорт. по дате||[жсон]()|
-|GET /props/search?field=&order=|Кастомизируемый поиск|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%BA%D0%B0-%D0%BF%D0%BE-%D0%BA%D0%B0%D1%81%D1%82%D0%BE%D0%BC%D0%BD%D1%8B%D0%BC-%D0%BA%D1%80%D0%B8%D1%82%D0%B5%D1%80%D0%B8%D1%8F%D0%BC)|[жсон]()|
-|PUT /props/like/:id|Лайк/дизлайк предложения по его _id|[жсон]()|[жсон]()|
-|PUT /props/exec/:id|Добавить исполнителя|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8F)|[жсон]()|
-|PUT /props/sts/:id|Запустить предложение в работу/отложить|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B8%D1%82%D1%8C-%D1%81%D1%82%D0%B0%D1%82%D1%83%D1%81-%D0%BF%D1%80%D0%B5%D0%B4%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F--%D0%BD%D0%B0%D0%B7%D0%BD%D0%B0%D1%87%D0%B8%D1%82%D1%8C-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8F)|[жсон]()|
-|PUT /props/sts/f/:id|Завершить предложение||[жсон]()|
+|POST /props|Добавить предложение|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5-%D0%BF%D1%80%D0%B5%D0%B4%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5)|{msg:String}|
+|GET /props/all/likes|Все предложения сорт. по лайкам||Массив из [предложений](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)|
+|GET /props/all/date|Все предложения сорт. по дате||Массив из [предложений](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)|
+|GET /props/search?field=&order=|Кастомизируемый поиск|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%BA%D0%B0-%D0%BF%D0%BE-%D0%BA%D0%B0%D1%81%D1%82%D0%BE%D0%BC%D0%BD%D1%8B%D0%BC-%D0%BA%D1%80%D0%B8%D1%82%D0%B5%D1%80%D0%B8%D1%8F%D0%BC)|Массив из [предложений](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)|
+|PUT /props/like/:id|Лайк/дизлайк предложения по его _id|[жсон]()|{msg:String}|
+|PUT /props/exec/:id|Добавить исполнителя|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8F)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)|
+|PUT /props/sts/:id|Запустить предложение в работу/отложить|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B8%D1%82%D1%8C-%D1%81%D1%82%D0%B0%D1%82%D1%83%D1%81-%D0%BF%D1%80%D0%B5%D0%B4%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F--%D0%BD%D0%B0%D0%B7%D0%BD%D0%B0%D1%87%D0%B8%D1%82%D1%8C-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8F)|{msg:String, props:[{[prop](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)}]}|
+|PUT /props/sts/f/:id|Завершить предложение||[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%84%D0%B8%D1%81)|
+|DELETE /props/:id|Удалить предложение||{msg:String}|
 
 </details>
 
@@ -119,13 +120,13 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /divisions|Создать новый отдел|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)|[жсон]()|
-|GET /divisions/find/:divname|Найти отдел по имени||[жсон]()|
-|GET /divisions/all|Все отделы||[жсон]()|
-|PUT /divisions/:divname|Вступить в отдел||[жсон]()|
-|DELETE /divisions/:divname|Выйти из отдела||[жсон]()|
-|GET /divisions/projects/:divid|Все проекты пользователей отдела||[жсон]()|
-|PUT /divisions/addcover/:divname|Добавить/изменить обложку отдела|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D1%83-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D0%B0)|[жсон]()|
+|POST /divisions|Создать новый отдел|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)|{msg:String, div:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB) }|
+|GET /divisions/find/:divname|Найти отдел по имени||{division:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB) }|
+|GET /divisions/all|Все отделы||Массив из [жсонов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)|
+|PUT /divisions/:divname|Вступить в отдел||{msg:String, division:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)}|
+|DELETE /divisions/:divname|Выйти из отдела||{msg:String, division:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)}|
+|GET /divisions/projects/:divid|Все проекты пользователей отдела||Массив из пользователей, в которых есть массивы *projects*, в которых лежат [проекты](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|PUT /divisions/addcover/:divname|Добавить/изменить обложку отдела|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D1%83-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D0%B0)|{division:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BE%D1%82%D0%B4%D0%B5%D0%BB)}|
 
 </details>
 
@@ -138,10 +139,10 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /merc/new|Добавить субподрядчика|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA)|[жсон]()|
-|GET /merc/search?name=|Найти всех/найти 1 по имени|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%BE%D0%B2)|[жсон]()|
-|PUT /merc/new/edit/:id|Редактирование по _id|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5)|[жсон]()|
-|DELETE /merc/:id|Удалить субподрядчика по _id||[жсон]()|
+|POST /merc/new|Добавить субподрядчика|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA)|{msg:String, mercs: [[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)]}|
+|GET /merc/search?name=|Найти всех/найти 1 по имени|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%BE%D0%B2)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80) или массив из них|
+|PUT /merc/new/edit/:id|Редактирование по _id|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
+|DELETE /merc/:id|Удалить субподрядчика по _id||{msg:String}|
 
 </details>
 
@@ -155,13 +156,13 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|POST /projects/add|Добавить проект|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|[жсон]()|
-|PUT /projects/:crypt|Редактирование проекта по шифру|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B8%D1%82%D1%8C)|[жсон]()|
-|DELETE /projects/:crypt|Удалить проект по шифру||[жсон]()|
-|PUT /projects/finish/:crypt|Завершить проект||[жсон]()|
-|PUT /projects/inf/:crypt|Добавить информационные ресурсы||[жсон]()|
-|PUT /projects/cover/:crypt|Добавить обложку|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D1%83)|[жсон]()|
-|PUT /projects/budget/:crypt|Добавить/изменить бюджет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B1%D1%8E%D0%B4%D0%B6%D0%B5%D1%82-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)|[жсон]()|
+|POST /projects/add|Добавить проект|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|{msg:String, project: [жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)}|
+|PUT /projects/:crypt|Редактирование проекта по шифру|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B8%D1%82%D1%8C)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|DELETE /projects/:crypt|Удалить проект по шифру||{msg:String}|
+|PUT /projects/finish/:crypt|Завершить проект||{msg:String}|
+|PUT /projects/inf/:crypt|Добавить информационные ресурсы||?|
+|PUT /projects/cover/:crypt|Добавить обложку|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D1%83)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|PUT /projects/budget/:crypt|Добавить/изменить бюджет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B1%D1%8E%D0%B4%D0%B6%D0%B5%D1%82-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
 
 </details>
 
@@ -170,10 +171,10 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|GET /projects|Все проекты + сорт.|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D1%81%D0%B5-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B)|[жсон]()|
-|GET /projects/q/search?field=&value=|Найти проекты, подходящие по квери|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%B0%D0%B9%D1%82%D0%B8-%D1%82%D0%BE%D0%BB%D1%8C%D0%BA%D0%BE-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-%D0%BF%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%B5-%D0%BF%D0%BE%D0%B4-%D0%BA%D0%B2%D0%B5%D1%80%D0%B8)|[жсон]()|
-|GET /projects/:crypt|Найти проект по шифру||[жсон]()|
-|GET /projects/user/:id|Найти все проекты юзера, чей _id в юрл||[жсон]()|
+|GET /projects|Все проекты + сорт.|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D1%81%D0%B5-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B)|Массив из [проектов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|GET /projects/q/search?field=&value=|Найти проекты, подходящие по квери|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%B0%D0%B9%D1%82%D0%B8-%D1%82%D0%BE%D0%BB%D1%8C%D0%BA%D0%BE-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-%D0%BF%D0%BE%D0%BF%D0%B0%D0%B4%D0%B0%D1%8E%D1%89%D0%B8%D0%B5-%D0%BF%D0%BE%D0%B4-%D0%BA%D0%B2%D0%B5%D1%80%D0%B8)|Массив из [проектов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|GET /projects/:crypt|Найти проект по шифру||[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|GET /projects/user/:id|Найти все проекты юзера, чей _id в юрл||Массив из [проектов](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
 
 </details>
 
@@ -182,9 +183,9 @@
 
 |route|description|request|response|
 |---|---|:---:|:---:|
-|PUT /projects/join2/:crypt|Вступить/выйти в/из команды проекта|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D1%81%D1%82%D1%83%D0%BF%D0%B8%D1%82%D1%8C-%D0%B2-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%83%D0%B2%D1%8B%D0%B9%D1%82%D0%B8-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B)|[жсон]()|
-|PUT /projects/updteam/:crypt|Добавить/убрать юзера в/из команды проекта|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%D0%BA%D0%B8%D0%BA%D0%BD%D1%83%D1%82%D1%8C-%D0%B2%D0%B8%D0%B7-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)|[жсон]()|
-|PUT /projects//team2/:crypt/:userid|Редактирование роли/задачи юзера в отделе|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%D1%80%D0%B0%D0%B7%D0%B4%D0%B5%D0%BB-%D1%87%D0%B5%D0%BB%D0%B8%D0%BA%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%B5)|[жсон]()|
+|PUT /projects/join2/:crypt|Вступить/выйти в/из команды проекта|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B2%D1%81%D1%82%D1%83%D0%BF%D0%B8%D1%82%D1%8C-%D0%B2-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%83%D0%B2%D1%8B%D0%B9%D1%82%D0%B8-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B)|{msg:String, project:[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)}|
+|PUT /projects/updteam/:crypt|Добавить/убрать юзера в/из команды проекта|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%D0%BA%D0%B8%D0%BA%D0%BD%D1%83%D1%82%D1%8C-%D0%B2%D0%B8%D0%B7-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|PUT /projects/team2/:crypt/:userid|Редактирование роли/задачи юзера в отделе|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%D1%80%D0%B0%D0%B7%D0%B4%D0%B5%D0%BB-%D1%87%D0%B5%D0%BB%D0%B8%D0%BA%D0%B0-%D0%B2-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%B5)|[жсон]()|
 
 </details>
 

@@ -104,7 +104,7 @@ router.get("/:id", auth, async (req, res) => {
       return res.status(404).json({ err: "Новость не найдена" });
     }
     console.log("get news by id");
-    return res.json({ news: news, msg: "" });
+    return res.json({ news: news });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "Server error" });

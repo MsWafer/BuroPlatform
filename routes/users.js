@@ -566,6 +566,7 @@ router.put("/me/report", auth, async (req, res) => {
       process.env.encKey
     ).toString(CryptoJS.enc.Utf8);
     await user.save();
+    return res.json({msg:"Отчетность добавлена"})
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
