@@ -158,7 +158,7 @@ router.put(
 
       let user = await User.findOne({ _id: req.user.id });
       let keys = Object.keys(req.body);
-      keys.forEach((key) => (user[key] = req.body[key]));
+      keys.forEach((key) => {if(key!="division"){user[key] = req.body[key]}});
       user.fullname = user.lastname + " " + user.name;
       await user.save();
       return res.json({
@@ -528,13 +528,17 @@ router.get("/usr/get", auth, async (req, res) => {
     }
     let usr = await User.find(query)
       .select("-password -permission")
-      .populate("division");
+      .populate("division")
     if (req.query.division && req.query.division != "") {
       usr = usr.filter(
         (user) =>
           user.division != undefined &&
           user.division.divname == req.query.division
       );
+    }
+    if(req.query.crypt&&req.query.crypt!==""){
+      let project = await Project.findOne({crypt:req.query.crypt})
+      usr = usr.filter((user)=>!user.projects.includes(project._id))
     }
 
     return res.json(usr);

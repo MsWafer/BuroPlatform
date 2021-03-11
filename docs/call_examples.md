@@ -357,11 +357,12 @@
     "taskid":"task_id",
 }
 ```
-### Изменить имя таска
+### Изменить таск
 ```json
 {
     "taskid":"task_id",
     "taskTitle":"string",
+    "deadline":2011-11-11,
 }
 ```
 ### Удалить таск
