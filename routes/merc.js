@@ -93,7 +93,7 @@ router.get("/search", auth, async (req, res) => {
       merc = await merc.sortBy(que)
     } else {
       let govno = decodeURI(req.query.name)
-      merc = await User.findOne({ fullname: govno });
+      merc = await User.findOne({ _id : govno });
     }
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });
