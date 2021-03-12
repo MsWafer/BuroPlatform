@@ -343,7 +343,6 @@ router.put("/addrocket/:crypt", async (req, res) => {
     }
     let resp;
     let room = encodeURI(req.body.rocketchat);
-    // console.log(`${process.env.CHAT}/api/v1/channels.info?roomName=${room}`);
     await fetch(`${process.env.CHAT}/api/v1/login`, {
       method: "post",
       headers: {

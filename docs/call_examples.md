@@ -298,7 +298,12 @@
     "budget":"string"
 }
 ```
-
+### Привязать рокет к проекту
+```json
+{
+    "rocketchat":"string"
+}
+```
 <br/><br/>
 <br/><br/>
 
