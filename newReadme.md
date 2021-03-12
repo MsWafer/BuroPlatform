@@ -140,7 +140,7 @@
 |route|description|request|response|
 |---|---|:---:|:---:|
 |POST /merc/new|Добавить субподрядчика|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA)|{msg:String, mercs: [[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)]}|
-|GET /merc/search?name=|Найти всех/найти 1 по имени|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%BE%D0%B2)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80) или массив из них|
+|GET /merc/search?name=&?field=&order=|Найти всех/найти 1 по имени|[квери](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D1%81%D1%83%D0%B1%D0%BF%D0%BE%D0%B4%D1%80%D1%8F%D0%B4%D1%87%D0%B8%D0%BA%D0%BE%D0%B2)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80) или массив из них|
 |PUT /merc/new/edit/:merc_id|Редактирование по _id|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D1%8E%D0%B7%D0%B5%D1%80)|
 |DELETE /merc/:merc_id|Удалить субподрядчика по _id||{msg:String}|
 

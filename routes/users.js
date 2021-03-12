@@ -282,19 +282,26 @@ router.put("/me/pw", auth, async (req, res) => {
 //change or add avatar
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
   try {
-    const a = await User.findOne({ _id: req.user.id }).select("-password");
-    if (!a) {
+    const user = await User.findOne({ _id: req.user.id })
+    .select("-password")
+    .populate({
+      path: "projects",
+      select: "-team",
+      populate: { path: "sprints" },
+    })
+    .populate("tickets", "-user")
+    .populate("division")
+    .populate({
+      path: "sprints",
+      match: { status: false },
+      populate: { path: "project" },
+    });;
+    if (!user) {
       return res.json({ msg: "Пользователь не найден" });
     }
-    const oldavatar = a.avatar;
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      {
-        $set: {
-          avatar: req.file ? "avatars/" + req.file.filename : user.avatar,
-        },
-      }
-    );
+    const oldavatar = user.avatar;
+    user.avatar = req.file ? "avatars/" + req.file.filename : user.avatar;
+    await user.save()
     if (oldavatar != "avatars/spurdo.png") {
       fs.unlink(__dirname + `/../public/${oldavatar}`, (err) => {
         if (err) {
@@ -302,9 +309,26 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
         }
       });
     }
+    let tasks = [];
+    let sprints = await Sprint.find({
+      "tasks.user": req.user.id,
+      status: false,
+    }).select("tasks");
+    if (!sprints) {
+      tasks = [];
+    } else {
+      sprints.forEach((sprint) => {
+        sprint.tasks.forEach((task) => {
+          if (task.user == req.user.id) {
+            tasks.push(task);
+          }
+        });
+      });
+    }
+    user.tasks = tasks;
 
     console.log("avatar changed/added");
-    return res.json({ msg: "Ваш аватар был изменен" });
+    return res.json({ msg: "Ваш аватар был изменен",user:user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ err: "server error" });

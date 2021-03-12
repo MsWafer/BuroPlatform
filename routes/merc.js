@@ -78,6 +78,19 @@ router.get("/search", auth, async (req, res) => {
     let merc;
     if (req.query.name == "all") {
       merc = await User.find({ merc: true });
+      let que = req.query.field;
+      let order;
+      if (req.query.order == "true") {
+        order = 1;
+      } else {
+        order = -1;
+      }
+      Array.prototype.sortBy = (query) => {
+        return merc.slice(0).sort(function (a, b) {
+          return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
+        });
+      };
+      merc = merc.sortBy(que)
     } else {
       merc = await User.findOne({ _id: req.query.name });
     }
