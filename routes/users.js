@@ -209,6 +209,7 @@ router.get("/me", auth, async (req, res) => {
       .populate({
         path: "sprints",
         match: { status: false },
+        populate: { path: "project" },
       });
     if (!user) {
       return res.status(500).json({ msg: "Server error" });

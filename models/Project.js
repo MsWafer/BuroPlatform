@@ -122,6 +122,14 @@ const ProjectSchema = new Schema({
   urnDate: {
     type: Date,
   },
+  urnNew: [
+    {
+      urn: { type: String },
+      date: { type: Date },
+      title: { type: String },
+      version: { type: Number, default: 1}
+    },
+  ],
   obj: {
     type: String,
   },
