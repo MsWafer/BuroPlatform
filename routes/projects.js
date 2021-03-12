@@ -424,8 +424,7 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       };
       project.team2.push(member_object);
       user.projects.push(project._id);
-      await project.save();
-      await user.save();
+      
       if (project.rocketchat) {
         await rcinvprj(project, user);
       }
@@ -443,6 +442,8 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       }
       msg = "Вы вышли из команды проекта";
     }
+    await project.save();
+    await user.save();
     await Project.populate(project, "team2.user");
     return res.json({ project: project, msg: msg });
   } catch (error) {
@@ -830,10 +831,16 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Не найден спринт с указанным id" });
     }
-    await Project.findOneAndUpdate({sprints:sprint._id},{$pull:{sprints:sprint._id}})
-    await User.updateMany({sprints:sprint._id},{$pull:{sprints:sprint._id}})
+    await Project.findOneAndUpdate(
+      { sprints: sprint._id },
+      { $pull: { sprints: sprint._id } }
+    );
+    await User.updateMany(
+      { sprints: sprint._id },
+      { $pull: { sprints: sprint._id } }
+    );
     // await Sprint.findOneAndRemove({ _id: req.params.id });
-    await sprint.remove()
+    await sprint.remove();
     console.log("sprint deleted");
     return res.json({ msg: "Спринт удален" });
   } catch (error) {
@@ -1074,8 +1081,8 @@ router.put("/sprints/taskedit/:id", auth, async (req, res) => {
       return res.status(404).json({ err: "Спринт не найден" });
     }
     let a = sprint.tasks.filter((task) => task._id == req.body.taskid)[0];
-    let keys = Object.keys(req.body)
-    keys.forEach((key)=>a[key]=req.body[key])
+    let keys = Object.keys(req.body);
+    keys.forEach((key) => (a[key] = req.body[key]));
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
     return res.json({ msg: `Таск изменен`, sprint: sprint });
@@ -1221,20 +1228,20 @@ router.get("/huy/pizda/dzhigurda", async (req, res) => {
 });
 
 //sprint killa
-router.delete("/sprintkill/huy/huy",async(req,res)=>{
-  try{
-    let sprints = await Sprint.find()
-    let count=0
-    for(let sprint of sprints){
-      if(!sprint.project){
-        await Sprint.findOneAndRemove({_id:sprint._id});
-        count +=1;
+router.delete("/sprintkill/huy/huy", async (req, res) => {
+  try {
+    let sprints = await Sprint.find();
+    let count = 0;
+    for (let sprint of sprints) {
+      if (!sprint.project) {
+        await Sprint.findOneAndRemove({ _id: sprint._id });
+        count += 1;
       }
     }
-    return res.json({msg:`${count} sprints killed`})
-  }catch(error){
+    return res.json({ msg: `${count} sprints killed` });
+  } catch (error) {
     console.error(error);
-    return res.status(500).json({err:"server error"});
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
 module.exports = router;
