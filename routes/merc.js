@@ -90,9 +90,10 @@ router.get("/search", auth, async (req, res) => {
           return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
         });
       };
-      merc = merc.sortBy(que)
+      merc = await merc.sortBy(que)
     } else {
-      merc = await User.findOne({ _id: req.query.name });
+      let govno = decodeURI(req.query.name)
+      merc = await User.findOne({ fullname: govno });
     }
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });

@@ -334,6 +334,55 @@ router.put("/:crypt", manauth, async (req, res) => {
   }
 });
 
+//add rocket
+router.put("/addrocket/:crypt", async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt });
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    let resp;
+    let room = encodeURI(req.body.rocketchat);
+    // console.log(`${process.env.CHAT}/api/v1/channels.info?roomName=${room}`);
+    await fetch(`${process.env.CHAT}/api/v1/login`, {
+      method: "post",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user: process.env.R_U,
+        password: process.env.R_P,
+      }),
+    })
+      .then((response) => response.json())
+      .then((response) =>
+        fetch(process.env.CHAT + `/api/v1/groups.info?roomName=` + room, {
+          method: "get",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "X-Auth-Token": response.data.authToken,
+            "X-User-Id": response.data.userId,
+          },
+        }).then(async (response) => (resp = await response.json()))
+      );
+    let msg;
+    if (resp.success != false) {
+      project.rocketchat = resp.group._id;
+      project.rocketname = req.body.rocketchat;
+      await project.save();
+      msg = "Рокет привязан к проекту";
+    } else {
+      msg = "Неверно введено имя группы в рокете";
+    }
+    return res.json({ msg: msg });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 //finish project
 router.put("/finish/:crypt", manauth, async (req, res) => {
   try {
@@ -424,7 +473,7 @@ router.put("/join2/:crypt", auth, async (req, res) => {
       };
       project.team2.push(member_object);
       user.projects.push(project._id);
-      
+
       if (project.rocketchat) {
         await rcinvprj(project, user);
       }

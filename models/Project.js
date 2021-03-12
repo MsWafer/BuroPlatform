@@ -112,6 +112,9 @@ const ProjectSchema = new Schema({
   rocketchat: {
     type: String,
   },
+  rocketname: {
+    type: String,
+  },
   tags: {
     type: Array,
     default: [],

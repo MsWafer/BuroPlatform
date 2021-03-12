@@ -163,6 +163,7 @@
 |PUT /projects/inf/:crypt|Добавить информационные ресурсы||?|
 |PUT /projects/cover/:crypt|Добавить обложку|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D1%83)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
 |PUT /projects/budget/:crypt|Добавить/изменить бюджет|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/call_examples.md#%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%D1%80%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B1%D1%8E%D0%B4%D0%B6%D0%B5%D1%82-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)|[жсон](https://github.com/MsWafer/BuroPlatform/blob/master/docs/response_examples.md#%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82)|
+|PUT /projects/addrocket/:crypt|Привязать группу рокета к проекту|[жсон]()|{msg:String}|
 
 </details>
 
@@ -203,7 +204,7 @@
 
 <details>
 <summary style="font-size:150%;">Спринты</summary>
-
+<br></br>
 <details>
 <summary style="font-size:120%;">Общая хуйня</summary>
 
