@@ -7,6 +7,7 @@ const fetch = require("node-fetch");
 
 const User = require("../models/User");
 const News = require("../models/News");
+const mob_push = require("../middleware/mob_push");
 
 //post new news
 router.post(
@@ -32,6 +33,9 @@ router.post(
         subtitle: req.body.subtitle,
       });
       await newNews.save();
+
+      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}` });
+      console.log("Новая новость добавлена");
       await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
         headers: {
@@ -69,9 +73,20 @@ router.post(
             }),
           })
         );
-
-      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}` });
-      console.log("Новая новость добавлена");
+      let users = await User.find();
+      users = users.filter(
+        (user) => user.device_tokens && user.device_tokens.length > 0
+      );
+      if (users.length > 0) {
+        let token_array = [];
+        users.forEach((user) => token_array.concat(user.device_tokens));
+        await mob_push(
+          token_array,
+          "Новая новость добавлена на https://space.buro82.ru"
+        )
+          .then((response) => console.log(response.data))
+          .catch((err) => console.log(err.data));
+      }
     } catch (error) {
       console.error(error);
       return res.status(500).json({ err: "Server error" });

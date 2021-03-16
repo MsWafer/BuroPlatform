@@ -10,6 +10,11 @@
 
 <br/><br/>
 
+# АЙПИ ДЛЯ УДАЛЕНКИ
+|route|description|request|response|
+|---|---|:---:|:---:|
+|GET /ip|АЙПИ ДЛЯ УДАЛЕНКИ||{ip:"string"}|
+
 # [Юзеры](https://github.com/MsWafer/BuroPlatform/blob/master/newReadme.md#%D1%8E%D0%B7%D0%B5%D1%80%D1%8B)
 
 <details>

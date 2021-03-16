@@ -15,6 +15,7 @@ const rckickprj = require("../middleware/rckickprj");
 const rcinvprj = require("../middleware/rcinvprj");
 const { response } = require("express");
 const multer = require("multer");
+const mob_push = require("../middleware/mob_push");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/usr/src/app/public/covers");
@@ -172,12 +173,10 @@ router.post(
 router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
-      // .populate("team", "-projects -password -permission -avatar -tickets -__v")
-      // .populate(
-      //   "team2",
-      //   "-projects -password -permission -avatar -tickets -__v"
-      // )
-      .populate("sprints");
+      .select(
+        "crypt sprints title type dateStart dateFinish par stage status tags"
+      )
+      .populate("sprints", "status");
     let que = req.query.field;
     let order;
     if (req.query.order == "true") {
@@ -203,7 +202,12 @@ router.get("/", auth, async (req, res) => {
 router.get("/q/search", auth, async (req, res) => {
   try {
     if (!req.query.field || req.query.value == "Все") {
-      let prj = await Project.find().sort({ title: 1 });
+      let prj = await Project.find()
+        .sort({ title: 1 })
+        .select(
+          "crypt sprints title type dateStart dateFinish par stage status tags"
+        )
+        .populate("sprints", "status");
       return res.json(prj);
     }
     let qObj = {};
@@ -223,12 +227,13 @@ router.get("/q/search", auth, async (req, res) => {
 router.get("/:auth", async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.auth })
-      .populate("team", "-projects -password -permission -tickets -__v")
-      .populate("team2.user", "-projects -password -permission -tickets -__v")
+      .populate(
+        "team2.user",
+        "-projects -password -permission -tickets -__v -sprints"
+      )
       .populate({
         path: "sprints",
-        populate: { path: "creator", select: "-password -permission" },
-        populate: { path: "tasks.user", select: "-password -permission" },
+        populate: { path: "creator", select: "fullname _id avatar" },
       });
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
@@ -335,7 +340,7 @@ router.put("/:crypt", manauth, async (req, res) => {
 });
 
 //add rocket
-router.put("/addrocket/:crypt", async (req, res) => {
+router.put("/addrocket/:crypt", manauth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
@@ -413,15 +418,19 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ err: "Пользователь не найден" });
     }
+    let notification_body;
     let check = project.team2.filter((mate) => mate.user == req.body.user);
     if (check.length > 0) {
+      //kick
       project.team2 = project.team2.filter(
         (user) => user.user != check[0].user
       );
       user.projects = user.projects.filter(
         (user_project) => user_project != project._id.toString()
       );
+      notification_body = "Вас удалили из команды проекта " + project.title;
     } else {
+      //invite
       if (!req.body.user || !req.body.position || !req.body.task) {
         return res.status(400).json({ err: "Заполните все необходимые поля" });
       }
@@ -433,11 +442,18 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
       };
       project.team2.push(userObj);
       user.projects.push(project._id);
+      notification_body = "Вас добавили в команду проекта " + project.title;
     }
     await user.save();
     await project.save();
     await Project.populate(project, "team2.user");
-    return res.json(project);
+    res.json(project);
+    //notification
+    if (user.device_tokens && user.device_tokens.length > 0) {
+      await mob_push(user.device_tokens, notification_body)
+        .then((response) => console.log(response.data))
+        .catch((err) => console.log(err.data));
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -448,10 +464,15 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
 router.put("/join2/:crypt", auth, async (req, res) => {
   try {
     //checks
-    let project = await Project.findOne({ crypt: req.params.crypt }).populate(
-      "team2.user",
-      "-password -permission"
-    );
+    let project = await Project.findOne({ crypt: req.params.crypt })
+      .populate("team2.user", "-password -permission")
+      .populate({
+        path: "sprints",
+        populate: {
+          path: "creator",
+          select: "fullname _id avatar",
+        },
+      });
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
@@ -897,6 +918,28 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
   }
 });
 
+//get project's sprints filtered by something
+router.get("/sprint/tagsort", auth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.query.crypt })
+      .populate({
+        path: "sprints",
+        populate: { path: "creator" },
+      })
+      .populate({ path: "team2.user", select: "_id avatar phone" });
+    if (!project) {
+      return res.status(404).json({ err: "Проект не найден" });
+    }
+    project.sprints = project.sprints.filter((sprint) =>
+      sprint.tags.includes(req.query.tag)
+    );
+    return res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 //add tags to sprint
 router.put("/sprints/addtag/:id", auth, async (req, res) => {
   try {
@@ -1004,8 +1047,13 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
       "creator"
     );
+
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
+    }
+    let user = await User.findOne({ _id: req.body.userid });
+    if (!user) {
+      return res.status(404).json({ err: "Пользователь не найден" });
     }
     let task = sprint.tasks.filter((task) => task._id == req.body.taskid);
     let ind = sprint.tasks.indexOf(task[0]);
@@ -1015,8 +1063,16 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
 
     res.json(sprint);
 
+    //notifications
+    let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
+
+    if (user.device_tokens && user.device_tokens.length > 0) {
+      await mob_push(user.device_tokens, notification_body)
+        .then((response) => console.log(response.data))
+        .catch((err) => console.log(err.data));
+    }
+
     if (req.body.rocket == true) {
-      let user = await User.findOne({ _id: req.body.userid });
       let rc = () =>
         fetch(`${process.env.CHAT}/api/v1/login`, {
           method: "post",
@@ -1041,7 +1097,7 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
               },
               body: JSON.stringify({
                 channel: `@${user.rocketname}`,
-                text: `Вам назначили новую задачу: ${task[0].taskTitle}`,
+                text: notification_body,
               }),
             })
           );

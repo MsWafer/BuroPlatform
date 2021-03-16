@@ -146,6 +146,7 @@ router.put("/exec/:id", auth, async (req, res) => {
     prop.executor = req.body.user;
     await prop.save();
     let user = await User.findOne({ _id: req.body.user });
+    res.json(prop);
     let rc = () =>
       fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
@@ -174,8 +175,13 @@ router.put("/exec/:id", auth, async (req, res) => {
             }),
           })
         );
-    rc();
-    res.json(prop);
+
+    if (user.device_tokens && user.device_tokens.length > 0) {
+      await mob_push(user.device_tokens, "Вам назначили новую задачу")
+        .then((response) => console.log(response.data))
+        .catch((err) => console.log(err.data));
+    }
+    if (req.body.rocket) rc();
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

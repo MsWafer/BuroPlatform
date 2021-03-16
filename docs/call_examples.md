@@ -5,18 +5,21 @@
 ## users
 
 ### АВТОРИЗАЦИЯ
+*dev_id* - для мобилок
 ```json
 {
     "email":"string",
-    "password":"string"
+    "password":"string",
+    "dev_id":"mobile_reg_token"
 }
 ```
 ### РЕГИСТРАЦИЯ
-Регистрация нового пользователя, если email или rocketname уже есть в БД идете нахуй.
+Регистрация нового пользователя, если email или rocketname уже есть в БД идете нахуй.*dev_id* - для мобилок
 ```json
 {
     "email":"string",
-    "rocketname":"string"
+    "rocketname":"string",
+    "dev_id":"mobile_reg_token"
 }
 ```
 ### РЕДАКТИРОВАНИЕ ЮЗЕРА

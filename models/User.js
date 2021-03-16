@@ -82,6 +82,7 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  device_tokens: { type: Array, default: [] },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

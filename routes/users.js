@@ -109,6 +109,7 @@ router.post("/", async (req, res) => {
       rocketname,
       avatar: "avatars/spurdo.png",
       rocketId,
+      device_tokens: req.body.dev_id ? [req.body.dev_id] : [],
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -158,7 +159,11 @@ router.put(
 
       let user = await User.findOne({ _id: req.user.id });
       let keys = Object.keys(req.body);
-      keys.forEach((key) => {if(key!="division"){user[key] = req.body[key]}});
+      keys.forEach((key) => {
+        if (key != "division") {
+          user[key] = req.body[key];
+        }
+      });
       user.fullname = user.lastname + " " + user.name;
       await user.save();
       return res.json({
@@ -186,13 +191,33 @@ router.put(
     //   //   }
     //   // );
 
-
     // } catch (error) {
     //   console.error(error);
     //   return res.status(500).json({ err: "server error" });
     // }
   }
 );
+
+//edit another user
+router.put("/edit/:id", manauth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.params.id })
+      .populate("sprint")
+      .populate("division")
+      .populate("projects");
+    if (!user) {
+      return res.status(404).json({ err: "Пользователь не найден" });
+    }
+    req.body.fullname = req.body.lastname + " " + req.body.name;
+    let keys = Object.keys(req.body);
+    keys.forEach((key) => (user[key] = req.body[key]));
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 
 //get current user's info
 router.get("/me", auth, async (req, res) => {
@@ -283,25 +308,25 @@ router.put("/me/pw", auth, async (req, res) => {
 router.put("/me/a", upload.single("file"), auth, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id })
-    .select("-password")
-    .populate({
-      path: "projects",
-      select: "-team",
-      populate: { path: "sprints" },
-    })
-    .populate("tickets", "-user")
-    .populate("division")
-    .populate({
-      path: "sprints",
-      match: { status: false },
-      populate: { path: "project" },
-    });;
+      .select("-password")
+      .populate({
+        path: "projects",
+        select: "-team",
+        populate: { path: "sprints" },
+      })
+      .populate("tickets", "-user")
+      .populate("division")
+      .populate({
+        path: "sprints",
+        match: { status: false },
+        populate: { path: "project" },
+      });
     if (!user) {
       return res.json({ msg: "Пользователь не найден" });
     }
     const oldavatar = user.avatar;
     user.avatar = req.file ? "avatars/" + req.file.filename : user.avatar;
-    await user.save()
+    await user.save();
     if (oldavatar != "avatars/spurdo.png") {
       fs.unlink(__dirname + `/../public/${oldavatar}`, (err) => {
         if (err) {
@@ -328,7 +353,7 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
     user.tasks = tasks;
 
     console.log("avatar changed/added");
-    return res.json({ msg: "Ваш аватар был изменен",user:user });
+    return res.json({ msg: "Ваш аватар был изменен", user: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ err: "server error" });
@@ -416,11 +441,10 @@ router.put("/me/rocket", auth, async (req, res) => {
 //find all users
 router.get("/all", auth, async (req, res) => {
   try {
-    let users = await User.find({})
-      .select("-password -permission")
-      .populate("projects", "-team")
-      .populate("division")
-      .populate("tickets", "-user");
+    let users = await User.find({}).select("-password -permission");
+    // .populate("projects", "-team")
+    // .populate("division")
+    // .populate("tickets", "-user");
     users = users.filter((user) => user.merc !== true);
     let que = req.query.field;
     let order;
@@ -553,7 +577,7 @@ router.get("/usr/get", auth, async (req, res) => {
     }
     let usr = await User.find(query)
       .select("-password -permission")
-      .populate("division")
+      .populate("division");
     if (req.query.division && req.query.division != "") {
       usr = usr.filter(
         (user) =>
@@ -561,9 +585,9 @@ router.get("/usr/get", auth, async (req, res) => {
           user.division.divname == req.query.division
       );
     }
-    if(req.query.crypt&&req.query.crypt!==""){
-      let project = await Project.findOne({crypt:req.query.crypt})
-      usr = usr.filter((user)=>!user.projects.includes(project._id))
+    if (req.query.crypt && req.query.crypt !== "") {
+      let project = await Project.findOne({ crypt: req.query.crypt });
+      usr = usr.filter((user) => !user.projects.includes(project._id));
     }
 
     return res.json(usr);
@@ -595,7 +619,7 @@ router.put("/me/report", auth, async (req, res) => {
       process.env.encKey
     ).toString(CryptoJS.enc.Utf8);
     await user.save();
-    return res.json({msg:"Отчетность добавлена"})
+    return res.json({ msg: "Отчетность добавлена" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
