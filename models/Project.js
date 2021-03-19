@@ -130,7 +130,17 @@ const ProjectSchema = new Schema({
       urn: { type: String },
       date: { type: Date },
       title: { type: String },
-      version: { type: Number, default: 1}
+      version: { type: Number, default: 1 },
+      user: { type: mongoose.Schema.Types.ObjectId, ref:"user" },
+      tags: { type: Array, default: [] },
+      old: [
+        {
+          urn: { type: String },
+          date: { type : Date },
+          version: { type: Number },
+          user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        }
+      ]
     },
   ],
   obj: {
@@ -182,6 +192,9 @@ const ProjectSchema = new Schema({
   cover: {
     type: String,
     default: "avatars/spurdo.png",
+  },
+  object: {
+    type: String,
   },
 });
 

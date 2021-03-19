@@ -17,7 +17,7 @@ module.exports = async (req, res, next) => {
     req.user = await decoded.user;
     let user = await User.findOne({ _id: req.user.id });
     if (user.permission != "manager" && user.permission != "admin") {
-      res
+      return res
         .status(401)
         .json({ err: "У вас недостаточно прав для просмотра этой страницы" });
     }

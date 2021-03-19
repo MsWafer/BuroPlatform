@@ -33,20 +33,19 @@ router.post("/", async (req, res) => {
         errors: [{ err: "Пользователь с указанным email не найден" }],
       });
     }
-    if (req.body.dev_id) {
-      if (user.device_tokens) {
-        if (!user.device_tokens.includes(req.body.dev_id)) {
-          user.device_tokens.push(req.body.dev_id);
-        }
-      } else {
-        user.device_tokens = [req.body.dev_id];
-      }
-      await user.save();
-    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ errors: [{ err: "Неверный пароль" }] });
+    }
+
+    if (req.body.dev_id) {
+      if (user.device_tokens && !user.device_tokens.includes(req.body.dev_id)) {
+        user.device_tokens.push(req.body.dev_id);
+      } else {
+        user.device_tokens = [req.body.dev_id];
+      }
+      await user.save();
     }
 
     //jsonwebtoken return

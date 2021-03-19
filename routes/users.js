@@ -64,8 +64,8 @@ router.post("/", async (req, res) => {
   let { email, rocketname } = req.body;
   rocketname = encodeURI(rocketname);
 
-  //existing user check
   try {
+    //existing user check
     let rcheck = await User.findOne({ rocketname }).select("-password");
     if (rcheck) {
       return res.status(400).json({
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
       .status(404)
       .json({ err: "Указанный пользователь rocket.chat не найден" });
   }
-
+  //registration
   function makeid(length) {
     let result = "";
     let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -226,15 +226,16 @@ router.get("/me", auth, async (req, res) => {
       .select("-password")
       .populate({
         path: "projects",
-        select: "-team",
+        select: "sprints type stage dateFinish title crypt status",
         populate: { path: "sprints" },
       })
       .populate("tickets", "-user")
       .populate("division")
       .populate({
         path: "sprints",
+        select: "status project title tasks tags",
         match: { status: false },
-        populate: { path: "project" },
+        populate: { path: "project", select: "crypt title" },
       });
     if (!user) {
       return res.status(500).json({ msg: "Server error" });
@@ -441,9 +442,12 @@ router.put("/me/rocket", auth, async (req, res) => {
 //find all users
 router.get("/all", auth, async (req, res) => {
   try {
-    let users = await User.find({}).select("-password -permission");
-    // .populate("projects", "-team")
-    // .populate("division")
+    let users = await User.find({ merc: { $ne: true } })
+      .select(
+        "_id avatar fullname name lastname position partition division sprints projects bday email"
+      )
+      // .populate("projects", "-team")
+      .populate("division");
     // .populate("tickets", "-user");
     users = users.filter((user) => user.merc !== true);
     let que = req.query.field;
@@ -568,17 +572,27 @@ router.put("/part", auth, async (req, res) => {
 //get user by letters
 router.get("/usr/get", auth, async (req, res) => {
   try {
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
     let query = {};
     if (req.query.name && req.query.name != "") {
-      query.fullname = { $regex: req.query.name, $options: "i" };
+      query.fullname = { $regex: regexEscape(req.query.name), $options: "i" };
     }
     if (req.query.partition && req.query.partition != "") {
       query.partition = req.query.partition;
     }
+    if (req.query.merc) {
+      query.merc = { $ne: true };
+    }
     let usr = await User.find(query)
       .select("-password -permission")
       .populate("division");
-    if (req.query.division && req.query.division != "") {
+    if (
+      req.query.division &&
+      req.query.division != "" &&
+      req.query.division != "all"
+    ) {
       usr = usr.filter(
         (user) =>
           user.division != undefined &&
@@ -600,9 +614,16 @@ router.get("/usr/get", auth, async (req, res) => {
 //get users by position
 router.get("/usr/pos", auth, async (req, res) => {
   try {
-    let usrs = await User.find({ position: req.query.position }).select(
-      "-password -permission"
-    );
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+    let usrs = await User.find({
+      position: { $regex: regexEscape(req.query.position), $options: "i" },
+    })
+      .select(
+        "_id avatar fullname name lastname position partition division sprints projects email"
+      )
+      .populate("division");
     return res.json(usrs);
   } catch (error) {
     console.error(error);
@@ -692,6 +713,42 @@ router.post("/passRC", async (req, res) => {
     await rcpwdsend(req, res, pwd);
 
     return res.json({ msg: "Новый пароль был отправлен вам в rocket.chat" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//bday sort
+router.get("/eee/dr", async (req, res) => {
+  try {
+    let currMonth = new Date().getMonth() + 1;
+    let nextMonth;
+    if (currMonth <= 11) {
+      nextMonth = currMonth + 1;
+    } else {
+      nextMonth = 1;
+    }
+    let users = await User.find({ merc: { $ne: true } }).select(
+      "bday fullname avatar"
+    );
+    users = users.filter(
+      (user) =>
+        (user.bday && user.bday.getMonth() + 1 == currMonth) ||
+        (user.bday && user.bday.getMonth() + 1 == nextMonth)
+    );
+    users.sort((a, b) => {
+      let aMonth = a.bday.getMonth() + 1;
+      let aDay = a.bday.getDate();
+      let bMonth = b.bday.getMonth() + 1;
+      let bDay = b.bday.getDate();
+      if (aMonth == bMonth) {
+        return aDay < bDay ? -1 : aDay > bDay ? 1 : 0;
+      } else {
+        return aMonth < bMonth ? -1 : 1;
+      }
+    });
+    return res.json(users);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

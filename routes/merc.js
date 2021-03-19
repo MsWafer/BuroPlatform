@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { check, validationResult } = require("express-validator");
+const { check, validationResult, query } = require("express-validator");
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const multer = require("multer");
@@ -90,15 +90,49 @@ router.get("/search", auth, async (req, res) => {
           return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
         });
       };
-      merc = await merc.sortBy(que)
+      merc = await merc.sortBy(que);
     } else {
-      let govno = decodeURI(req.query.name)
-      merc = await User.findOne({ _id : govno });
+      let govno = decodeURI(req.query.name);
+      merc = await User.findOne({ _id: govno });
     }
     if (!merc) {
       return res.status(404).json({ err: "Субподрядчик не найден" });
     }
     return res.json(merc);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//search fullname
+router.get("/fullname/search", auth, async (req, res) => {
+  try {
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+    let mercs = await User.find({
+      fullname: { $regex: regexEscape(req.query.name), $options: "i" },
+      merc: true,
+    });
+    return res.json(mercs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get mercs by partition
+router.get("/partition/search", auth, async (req, res) => {
+  try {
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+    let mercs = await User.find({
+      partition: { $regex: regexEscape(req.query.partition), $options: "i" },
+      merc: true,
+    });
+    return res.json(mercs);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -134,17 +168,15 @@ router.delete("/:id", manauth, async (req, res) => {
   try {
     await User.findOneAndRemove({ _id: req.params.id });
     let projects = await Project.find({ "team2.user": req.params.id });
-    if (projects.length < 0) {
+    if (projects.length > 0) {
       projects.forEach(
         (project) =>
-          project.team2 = project.team2.filter(
+          (project.team2 = project.team2.filter(
             (user_obj) => user_obj.user != req.params.id
-          ),
-          await project.save()
+          )),
+        await project.save()
       );
-      // projects.forEach((project)=>project.save())
     }
-
     return res.json({ msg: "Субподрядчик удален" });
   } catch (error) {
     console.error(error);

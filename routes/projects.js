@@ -81,6 +81,7 @@ router.post(
       schedule,
       userid2,
       customerNew,
+      object,
     } = req.body;
 
     if (!dateStart) {
@@ -130,6 +131,7 @@ router.post(
         cusStorage,
         schedule,
         tags: [type],
+        object,
       });
       project.customerNew = req.body.customerNew ? [].push(customerNew) : [];
 
@@ -174,7 +176,7 @@ router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
-        "crypt sprints title type dateStart dateFinish par stage status tags"
+        "crypt sprints title type dateStart dateFinish par stage status tags object"
       )
       .populate("sprints", "status");
     let que = req.query.field;
@@ -205,14 +207,25 @@ router.get("/q/search", auth, async (req, res) => {
       let prj = await Project.find()
         .sort({ title: 1 })
         .select(
-          "crypt sprints title type dateStart dateFinish par stage status tags"
+          "crypt sprints title type dateStart dateFinish par stage status tags object"
         )
         .populate("sprints", "status");
       return res.json(prj);
     }
     let qObj = {};
-    qObj[req.query.field] = req.query.value;
-    let prj = await Project.find(qObj).sort({ title: 1 });
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+    qObj[req.query.field] = {
+      $regex: regexEscape(req.query.value),
+      $options: "i",
+    };
+    let prj = await Project.find(qObj)
+      .sort({ title: 1 })
+      .select(
+        "crypt sprints title type dateStart dateFinish par stage status tags object"
+      )
+      .populate("sprints", "status");
     if (!prj) {
       return res.status(404).json({ err: "Проекты не найдены" });
     }
@@ -234,7 +247,9 @@ router.get("/:auth", async (req, res) => {
       .populate({
         path: "sprints",
         populate: { path: "creator", select: "fullname _id avatar" },
-      });
+      })
+      .populate("urnNew.user", "avatar fullname _id")
+      .populate("urnNew.old.user", "avatar fullname _id");
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
@@ -322,7 +337,9 @@ router.put("/:crypt", manauth, async (req, res) => {
     let body_arr = Object.keys(req.body);
     body_arr.forEach((field) => {
       if (field != "customerNew") {
-        project[field] = req.body[field];
+        req.body[key].trim().length > 0
+          ? (project[field] = req.body[field])
+          : console.log();
       }
     });
     //for changing old project front needs to send old obj or it's index
@@ -380,7 +397,36 @@ router.put("/addrocket/:crypt", manauth, async (req, res) => {
     } else {
       msg = "Неверно введено имя группы в рокете";
     }
-    return res.json({ msg: msg });
+    res.json({ msg: msg });
+    if (resp.success != false) {
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) =>
+          fetch(process.env.CHAT + `/api/v1/chat.postMessage`, {
+            method: "post",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "X-Auth-Token": response.data.authToken,
+              "X-User-Id": response.data.userId,
+            },
+            body: JSON.stringify({
+              roomId: resp.group._id,
+              text: "Канал подключен к платформе",
+            }),
+          })
+        );
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -711,6 +757,50 @@ router.put("/team2/:crypt/:userid", manauth, async (req, res) => {
   }
 });
 
+//search title
+router.get("/title/search", auth, async (req, res) => {
+  try {
+    function regexEscape(str) {
+      return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+    let query =
+      typeof req.query.title == "string"
+        ? {
+            title: { $regex: regexEscape(req.query.title), $options: "i" },
+          }
+        : {};
+    let projects = await Project.find(query);
+    return res.json(projects);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//search [object Object]
+router.get("/search/objectobject/object/object", auth, async (req, res) => {
+  try {
+    let prjs = await Project.find({ object: { $ne: null } }).select("object");
+    // prjs.forEach(prj=>{if(!prj.object){prj.obj="";await prj.save}})
+    let obj_arr = [];
+    prjs.forEach((prj) => {
+      obj_arr.push(prj.object);
+    });
+    if (req.query.object !== "") {
+      function regexEscape(str) {
+        return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      }
+      let regex = new RegExp(regexEscape(decodeURI(req.query.object)), "g");
+      obj_arr = obj_arr.filter((obj) => obj.match(regex));
+    }
+    let obj_set = new Set(obj_arr);
+    return res.json(Array.from(obj_set));
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 ///////////////////
 ///////////////////
 ///////////////////
@@ -745,8 +835,8 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       tags: tags,
       project: project,
     });
-
-    await project.sprints.unshift(sprint);
+    await sprint.save();
+    await project.sprints.unshift(sprint._id);
 
     if (!Array.isArray(project.tags)) {
       project.tags = [];
@@ -755,7 +845,6 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     let dupe_array = project.tags.concat(tags);
     project.tags = [...new Set(dupe_array)];
 
-    await sprint.save();
     await project.save();
     console.log("sprint added to project");
     return res.json(sprint);
@@ -798,7 +887,13 @@ router.put("/sprints/edit/:id", auth, async (req, res) => {
       return res.status(404).json({ err: "Спринт не найден" });
     }
     let keys = Object.keys(req.body);
-    keys.forEach((key) => (sprint[key] = req.body[key]));
+    keys.forEach((key) => {
+      typeof key == "string"
+        ? req.body[key].trim().length > 0
+          ? (sprint[key] = req.body[key])
+          : console.log("Обосрався")
+        : (sprint[key] = req.body[key]);
+    });
     await sprint.save();
     return res.json(sprint);
   } catch (error) {
@@ -1300,6 +1395,8 @@ router.get("/tag/find", auth, async (req, res) => {
   }
 });
 
+//////////////////// KOSTILI ////////////////////////
+
 //kostil eshe odin
 router.get("/huy/huy/huy", async (req, res) => {
   try {
@@ -1348,4 +1445,19 @@ router.delete("/sprintkill/huy/huy", async (req, res) => {
     return res.status(500).json({ err: "server error" });
   }
 });
+
+//kostil object Object
+router.get("/object/object/object/object", async (req, res) => {
+  try {
+    let prjs = await Project.updateMany(
+      { object: undefined },
+      { $set: { object: "" } }
+    );
+    return res.json(prjs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 module.exports = router;
