@@ -14,13 +14,19 @@ const message_template = {
 module.exports = (tokens, notification_body) => {
   message = message_template;
   message.notification.body = notification_body;
-  axios.post(process.env.PUSH_SERVER, {
-    tokens: tokens,
-    message: message,
-    key: process.env.PUSH_SERVER_KEY,
-  });
+  axios
+    .post(process.env.PUSH_SERVER, {
+      tokens: tokens,
+      message: message,
+      key: process.env.PUSH_SERVER_KEY,
+    })
+    .then((response) => {
+      return console.log(response.data);
+    })
+    .catch((err) => {
+      return console.log(err.data);
+    });
 };
-
 
 //call example
 

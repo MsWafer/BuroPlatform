@@ -496,9 +496,7 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     res.json(project);
     //notification
     if (user.device_tokens && user.device_tokens.length > 0) {
-      await mob_push(user.device_tokens, notification_body)
-        .then((response) => console.log(response.data))
-        .catch((err) => console.log(err.data));
+      mob_push(user.device_tokens, notification_body)
     }
   } catch (error) {
     console.error(error);
@@ -1162,9 +1160,7 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
     let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
 
     if (user.device_tokens && user.device_tokens.length > 0) {
-      await mob_push(user.device_tokens, notification_body)
-        .then((response) => console.log(response.data))
-        .catch((err) => console.log(err.data));
+      mob_push(user.device_tokens, notification_body)
     }
 
     if (req.body.rocket == true) {

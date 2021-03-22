@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/usr/src/app/public/ticketSS");
+    cb(null, __dirname + "/../public/ticketSS");
   },
   filename: (req, file, cb) => {
     cb(

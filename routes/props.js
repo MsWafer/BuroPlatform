@@ -177,9 +177,7 @@ router.put("/exec/:id", auth, async (req, res) => {
         );
 
     if (user.device_tokens && user.device_tokens.length > 0) {
-      await mob_push(user.device_tokens, "Вам назначили новую задачу")
-        .then((response) => console.log(response.data))
-        .catch((err) => console.log(err.data));
+      mob_push(user.device_tokens, "Вам назначили новую задачу")
     }
     if (req.body.rocket) rc();
   } catch (error) {

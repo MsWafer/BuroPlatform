@@ -73,19 +73,22 @@ router.post(
             }),
           })
         );
-      let users = await User.find();
+      let users = await User.find({
+        device_tokens: { $ne: [] },
+        device_tokens: { $ne: undefined },
+      });
       users = users.filter(
         (user) => user.device_tokens && user.device_tokens.length > 0
       );
       if (users.length > 0) {
         let token_array = [];
-        users.forEach((user) => token_array.concat(user.device_tokens));
-        await mob_push(
+        users.forEach(
+          (user) => (token_array = token_array.concat(user.device_tokens))
+        );
+        mob_push(
           token_array,
           "Новая новость добавлена на https://space.buro82.ru"
         )
-          .then((response) => console.log(response.data))
-          .catch((err) => console.log(err.data));
       }
     } catch (error) {
       console.error(error);
