@@ -254,19 +254,21 @@ router.get("/me", auth, async (req, res) => {
     let sprints = await Sprint.find({
       "tasks.user": req.user.id,
       status: false,
-    }).select("tasks");
+    })
+      .select("tasks project")
+      .populate("project", "crypt title");
     if (!sprints) {
       tasks = [];
     } else {
       sprints.forEach((sprint) => {
         sprint.tasks.forEach((task) => {
           if (task.user == req.user.id) {
-            tasks.push(task);
+            (task.project = sprint.project), tasks.push(task);
           }
         });
       });
     }
-    user.tasks = tasks;
+    user.tasks = user.tasks.concat(tasks);
     console.log("user found");
     return res.json(user);
   } catch (error) {
@@ -507,14 +509,16 @@ router.get("/:id", auth, async (req, res) => {
     let sprints = await Sprint.find({
       "tasks.user": req.params.id,
       status: false,
-    }).select("tasks");
+    })
+      .select("tasks project")
+      .populate("project", "crypt title");
     if (!sprints) {
       tasks = [];
     } else {
       sprints.forEach((sprint) => {
         sprint.tasks.forEach((task) => {
           if (task.user == req.params.id) {
-            tasks.push(task);
+            (task.project = sprint.project), tasks.push(task);
           }
         });
       });
@@ -901,4 +905,83 @@ router.put(
     }
   }
 );
+
+//add own task
+router.put("/me/addtask", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let task = {
+      taskTitle: req.body.title,
+      workVolume: 0,
+      date: Date.now(),
+      deadline: req.body.deadline,
+    };
+    user.tasks.push(task);
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change own task status
+router.put("/me/task/status/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
+    task.taskStatus = !task.taskStatus;
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit own task
+router.put("/me/task/edit/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let task = user.tasks.filter((el) => el._id == req.params.id);
+    let keys = Object.keys(req.body);
+    for (let key of keys) {
+      task[0][key] = req.body[key];
+    }
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delete own task
+router.delete("/me/task/delete/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.params.id });
+    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
+    let ind = user.tasks.indexOf(task);
+    user.tasks.splice(ind, 1);
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delay/undelay own task
+router.put("/me/task/delay/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.params.id });
+    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
+    task.delay = !task.delay;
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 module.exports = router;

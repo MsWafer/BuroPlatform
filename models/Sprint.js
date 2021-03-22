@@ -45,9 +45,16 @@ const SprintSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
+      user2: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      date: {
+        type: Date,
+      },
       deadline: {
         type: Date,
-      }
+      },
     },
   ],
   urn: {
@@ -59,8 +66,8 @@ const SprintSchema = new Schema({
   },
   project: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "project"
-  }
+    ref: "project",
+  },
 });
 
 module.exports = Sprint = mongoose.model("sprint", SprintSchema);

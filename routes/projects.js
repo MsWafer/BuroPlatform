@@ -83,22 +83,26 @@ router.post(
       customerNew,
       object,
     } = req.body;
-
+    let crypt;
     if (!dateStart) {
       dateStart = Date.now();
     }
 
     try {
       let count = await Project.find().select("crypt");
-      let govno2 = count
-        .map((mocha) => (mocha.crypt = Number(mocha.crypt)))
-        .sort((a, b) => {
+      if (count.length > 0) {
+        let arr = [];
+        for (let el of count) {
+          arr.push(Number(el.crypt));
+        }
+        arr.sort((a, b) => {
           return a - b;
         });
-      let crypt = Number(govno2[govno2.length - 1]) + 1;
-      if (crypt == NaN) {
+        crypt = arr[arr.length - 1] + 1;
+      } else {
         crypt = 1;
       }
+
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
@@ -107,11 +111,12 @@ router.post(
       let crypter = `${dateStart.toString().slice(0, 4)}-${pad(
         crypt
       )}${stage.slice(0, 1)}-${par}`;
-      let rocketchat;
 
+      let rocketchat;
       if (rcheck) {
-        rocketchat = await rcprojcreate(title, rocketchat, pepo);
-      }
+        rocketchat = await rcprojcreate(title, pepo);
+      } else { rocketchat = null}
+
       project = new Project({
         crypt,
         title,
@@ -125,42 +130,31 @@ router.post(
         crypter,
         about,
         status,
-        rocketchat: rocketchat ? rocketchat : null,
+        rocketchat,
         par,
         offTitle,
         cusStorage,
         schedule,
         tags: [type],
         object,
+        customerNew: customerNew ? [customerNew] : [],
+        team2: userid2,
       });
-      project.customerNew = req.body.customerNew ? [].push(customerNew) : [];
 
       await project.save();
-      if (userid2.length == 0) {
-        console.log(`Проект ${crypt} добавлен`);
-        return res.status(200).json({
-          project: project,
-          msg: `Проект ${title} добавлен`,
+      if (userid2.length > 0) {
+        let govno = async (project, user) => {
+          rcinvprj(project, user), user.projects.push(project._id);
+        };
+        userid = [];
+        await userid2.map((user) => {
+          userid.push(user.user);
         });
+        let usrs = await User.find({ _id: { $in: userid } });
+        usrs.map((user) => govno(project, user));
       }
 
-      await Project.findOneAndUpdate(
-        { crypt: crypt },
-        { $addToSet: { team2: { $each: userid2 } } }
-      );
-      project = await Project.findOne({ crypt: crypt });
-      console.log(userid2);
-      let govno = async (project, user) => {
-        rcinvprj(project, user), user.projects.push(project._id);
-      };
-      userid = [];
-      await userid2.map((user) => {
-        userid.push(user.user);
-      });
-      console.log("huy2");
-      let usrs = await User.find({ _id: { $in: userid } });
-      usrs.map((user) => govno(project, user));
-      console.log(`Проект ${crypt} добавлен`);
+      console.log(`Проект ${title} добавлен`);
       return res
         .status(200)
         .json({ project: project, msg: `Проект ${title} добавлен` });
@@ -334,12 +328,21 @@ router.put("/:crypt", manauth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
+    if (typeof req.body.dateStart == "string") {
+      req.body.dateStart = new Date(req.body.dateStart);
+    }
+    if (typeof req.body.dateFinish == "string") {
+      req.body.dateFinish = new Date(req.body.dateFinish);
+    }
     let body_arr = Object.keys(req.body);
     body_arr.forEach((field) => {
-      if (field != "customerNew") {
-        req.body[key].trim().length > 0
-          ? (project[field] = req.body[field])
-          : console.log();
+      if (field != null && field != "customerNew") {
+        console.log(req.body[field]),
+          typeof req.body[field] == "string"
+            ? req.body[field].trim().length > 0
+              ? (project[field] = req.body[field])
+              : console.log()
+            : (project[field] = req.body[field]);
       }
     });
     //for changing old project front needs to send old obj or it's index
@@ -496,7 +499,7 @@ router.put("/updteam/:crypt", manauth, async (req, res) => {
     res.json(project);
     //notification
     if (user.device_tokens && user.device_tokens.length > 0) {
-      mob_push(user.device_tokens, notification_body)
+      mob_push(user.device_tokens, notification_body);
     }
   } catch (error) {
     console.error(error);
@@ -1123,6 +1126,7 @@ router.post("/sprints/task/:id", auth, async (req, res) => {
       taskState: req.body.taskState,
       taskTitle: req.body.taskTitle,
       workVolume: req.body.workVolume,
+      date: Date.now(),
     });
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
@@ -1151,6 +1155,7 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
     let task = sprint.tasks.filter((task) => task._id == req.body.taskid);
     let ind = sprint.tasks.indexOf(task[0]);
     sprint.tasks[ind].user = req.body.userid;
+    sprint.tasks[ind].user2 = req.user.id;
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
 
@@ -1160,7 +1165,7 @@ router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
     let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
 
     if (user.device_tokens && user.device_tokens.length > 0) {
-      mob_push(user.device_tokens, notification_body)
+      mob_push(user.device_tokens, notification_body);
     }
 
     if (req.body.rocket == true) {

@@ -82,6 +82,32 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  tasks: [
+    {
+      taskTitle: {
+        type: String,
+        required: true,
+      },
+      taskStatus: {
+        type: Boolean,
+        default: false,
+      },
+      date: {
+        type: Date,
+      },
+      deadline: {
+        type: Date,
+      },
+      own: {
+        type: Boolean,
+        default: true,
+      },
+      delay: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
   device_tokens: { type: Array, default: [] },
 });
 
