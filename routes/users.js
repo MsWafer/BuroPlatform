@@ -166,35 +166,15 @@ router.put(
       });
       user.fullname = user.lastname + " " + user.name;
       await user.save();
-      return res.json({
-        msg: "Данные пользователя обновлены",
-        userid: req.user.id,
-      });
+      return res.redirect(303, "/users/me")
+      // json({
+      //   msg: "Данные пользователя обновлены",
+      //   userid: user,
+      // });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ err: "server error" });
     }
-
-    // try {
-    //   // await User.findOneAndUpdate(
-    //   //   { _id: req.user.id },
-    //   //   {
-    //   //     $set: {
-    //   //       name: req.body.name,
-    //   //       lastname: req.body.lastname,
-    //   //       position: req.body.position,
-    //   //       email: req.body.email,
-    //   //       fullname: req.body.lastname + " " + req.body.name,
-    //   //       phone: req.body.phone,
-    //   //       bday: req.body.bday,
-    //   //     },
-    //   //   }
-    //   // );
-
-    // } catch (error) {
-    //   console.error(error);
-    //   return res.status(500).json({ err: "server error" });
-    // }
   }
 );
 
@@ -224,19 +204,23 @@ router.get("/me", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id })
       .select("-password")
-      .populate({
-        path: "projects",
-        select: "sprints type stage dateFinish title crypt status",
-        populate: { path: "sprints" },
-      })
-      .populate("tickets", "-user")
-      .populate("division")
-      .populate({
-        path: "sprints",
-        select: "status project title tasks tags",
-        match: { status: false },
-        populate: { path: "project", select: "crypt title" },
-      });
+      .populate([
+        {
+          path: "projects",
+          select: "sprints type stage dateFinish title crypt status",
+          populate: { path: "sprints" },
+        },
+        {
+          path: "division",
+        },
+        {
+          path: "sprints",
+          select: "status project title tasks tags",
+          match: { status: false },
+          populate: { path: "project", select: "crypt title" },
+        },
+      ]);
+
     if (!user) {
       return res.status(500).json({ msg: "Server error" });
     }
@@ -253,22 +237,35 @@ router.get("/me", auth, async (req, res) => {
     let tasks = [];
     let sprints = await Sprint.find({
       "tasks.user": req.user.id,
-      status: false,
-    })
-      .select("tasks project")
-      .populate("project", "crypt title");
+      // status: false,
+    }).select("tasks project");
     if (!sprints) {
       tasks = [];
     } else {
       sprints.forEach((sprint) => {
         sprint.tasks.forEach((task) => {
           if (task.user == req.user.id) {
-            (task.project = sprint.project), tasks.push(task);
+            task.project = sprint.project;
+            // task.sprint = sprint._id;
+            tasks.push(task);
           }
         });
       });
     }
     user.tasks = user.tasks.concat(tasks);
+    await user
+      .populate([
+        {
+          path: "tasks.user2",
+          select: "avatar fullname",
+        },
+        {
+          path: "tasks.project",
+          select: "crypt title",
+        },
+      ])
+      .execPopulate();
+
     console.log("user found");
     return res.json(user);
   } catch (error) {
@@ -448,9 +445,7 @@ router.get("/all", auth, async (req, res) => {
       .select(
         "_id avatar fullname name lastname position partition division sprints projects bday email"
       )
-      // .populate("projects", "-team")
       .populate("division");
-    // .populate("tickets", "-user");
     users = users.filter((user) => user.merc !== true);
     let que = req.query.field;
     let order;
@@ -481,10 +476,12 @@ router.get("/q/search", auth, async (req, res) => {
     }
     let qObj = {};
     qObj[req.query.field] = req.query.value;
+    // console.log(qObj)
     let prj = await User.find(qObj).sort({ fullname: 1 });
     if (!prj) {
       return res.status(404).json({ err: "Проекты не найдены" });
     }
+    console.log("huy");
     return res.json(prj);
   } catch (error) {
     console.error(error);
@@ -580,6 +577,7 @@ router.get("/usr/get", auth, async (req, res) => {
       return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     }
     let query = {};
+    // console.log(req.query)
     if (req.query.name && req.query.name != "") {
       query.fullname = { $regex: regexEscape(req.query.name), $options: "i" };
     }
@@ -600,7 +598,7 @@ router.get("/usr/get", auth, async (req, res) => {
       usr = usr.filter(
         (user) =>
           user.division != undefined &&
-          user.division.divname == req.query.division
+          user.division.divname == decodeURI(req.query.division)
       );
     }
     if (req.query.crypt && req.query.crypt !== "") {
@@ -759,6 +757,110 @@ router.get("/eee/dr", async (req, res) => {
   }
 });
 
+//////////////////
+//////TASKS//////
+/////////////////
+
+//add own task
+router.put("/me/addtask", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let task = {
+      taskTitle: req.body.taskTitle,
+      workVolume: 0,
+      date: Date.now(),
+      deadline: req.body.deadline,
+      own: true,
+      user2: req.user.id,
+    };
+    user.tasks.push(task);
+    await user.save();
+    return res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change own task status
+router.put("/me/task/status/:id", auth, async (req, res) => {
+  try {
+    let query = await Sprint.findOne({
+      "tasks._id": req.params.id,
+    }).select("tasks");
+    if (!query) {
+      query = await User.findOne({ _id: req.user.id }).select("tasks");
+    }
+    if (!query) {
+      return res.status(404).json("pisos");
+    }
+    query.tasks.forEach((task) => {
+      if (task._id == req.params.id) {
+        task.taskStatus = !task.taskStatus;
+      }
+    });
+    await query.save();
+    console.log("task de/activated");
+    res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit own task
+router.put("/me/task/edit/:id", auth, async (req, res) => {
+  try {
+    let query = await Sprint.findOne({ "tasks._id": req.params.id });
+    if (!query) {
+      query = await User.findOne({ _id: req.user.id });
+    }
+    let task = query.tasks.filter((el) => el._id == req.params.id);
+    if (task.length < 1) {
+      return res.status(404);
+    }
+    let keys = Object.keys(req.body);
+    for (let key of keys) {
+      task[0][key] = req.body[key];
+    }
+    await query.save();
+    return res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delete own task
+router.delete("/me/task/delete/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    // let task = user.tasks.filter((el) => el._id == req.params.id)[0];
+    // let ind = user.tasks.indexOf(task);
+    // user.tasks.splice(ind, 1);
+    user.tasks = user.tasks.filter((task) => task._id != req.params.id);
+    await user.save();
+    return res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delay/undelay own task
+router.put("/me/task/delay/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
+    task.delay = !task.delay;
+    await user.save();
+    return res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 ////////////////////
 ///УГОЛ ОПУЩЕНЦЕВ///
 ////////////////////
@@ -906,82 +1008,4 @@ router.put(
   }
 );
 
-//add own task
-router.put("/me/addtask", auth, async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.user.id });
-    let task = {
-      taskTitle: req.body.title,
-      workVolume: 0,
-      date: Date.now(),
-      deadline: req.body.deadline,
-    };
-    user.tasks.push(task);
-    await user.save();
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//change own task status
-router.put("/me/task/status/:id", auth, async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.user.id });
-    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
-    task.taskStatus = !task.taskStatus;
-    await user.save();
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//edit own task
-router.put("/me/task/edit/:id", auth, async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.user.id });
-    let task = user.tasks.filter((el) => el._id == req.params.id);
-    let keys = Object.keys(req.body);
-    for (let key of keys) {
-      task[0][key] = req.body[key];
-    }
-    await user.save();
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//delete own task
-router.delete("/me/task/delete/:id", auth, async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.params.id });
-    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
-    let ind = user.tasks.indexOf(task);
-    user.tasks.splice(ind, 1);
-    await user.save();
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
-
-//delay/undelay own task
-router.put("/me/task/delay/:id", auth, async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.params.id });
-    let task = user.tasks.filter((el) => el._id == req.params.id)[0];
-    task.delay = !task.delay;
-    await user.save();
-    return res.json(user);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
 module.exports = router;

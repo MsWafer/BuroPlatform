@@ -100,12 +100,24 @@ const UserSchema = new mongoose.Schema({
       },
       own: {
         type: Boolean,
-        default: true,
+        // default: true,
       },
       delay: {
         type: Boolean,
         default: false,
       },
+      project: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "project"
+      },
+      user2: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user"
+      },
+      // sprint: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: "sprint"
+      // }
     },
   ],
   device_tokens: { type: Array, default: [] },

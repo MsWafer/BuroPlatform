@@ -339,7 +339,8 @@
 {
     "description":"string",
     "title":"string",
-    "dateClosePlan":2011-11-11
+    "dateClosePlan":2011-11-11,
+    "explanation":"string"
 }
 ```
 ### Добавить таск к спринту

@@ -28,6 +28,9 @@ const SprintSchema = new Schema({
     type: Array,
     default: [],
   },
+  explanation: {
+    type: String,
+  },
   tasks: [
     {
       taskTitle: {
@@ -49,6 +52,14 @@ const SprintSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
+      project: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "project",
+      },
+      // sprint: {
+      //   type: mongoose.Schema.Types.ObjectId,
+      //   ref: "sprint"
+      // },
       date: {
         type: Date,
       },

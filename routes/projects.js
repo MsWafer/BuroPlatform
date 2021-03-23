@@ -50,45 +50,23 @@ router.post(
   auth,
   [
     check("title", "Введите название проекта").not().isEmpty(),
-    // check("city", "Введите город").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
     check("stage", "Выберите этап строительства").not().isEmpty(),
     check("par", "Выберите раздел").not().isEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return res.status(400).json({ err: errors.array() });
     }
 
-    let {
-      title,
-      dateStart,
-      dateFinish,
-      city,
-      type,
-      stage,
-      area,
-      customer,
-      about,
-      status,
-      par,
-      rcheck,
-      userid,
-      offTitle,
-      cusStorage,
-      schedule,
-      userid2,
-      customerNew,
-      object,
-    } = req.body;
-    let crypt;
-    if (!dateStart) {
-      dateStart = Date.now();
-    }
-
     try {
+      let proj_obj = req.body;
+      console.log(proj_obj);
+      if (!proj_obj.dateStart) {
+        proj_obj.dateStart = Date.now();
+      }
+
       let count = await Project.find().select("crypt");
       if (count.length > 0) {
         let arr = [];
@@ -98,66 +76,43 @@ router.post(
         arr.sort((a, b) => {
           return a - b;
         });
-        crypt = arr[arr.length - 1] + 1;
+        proj_obj.crypt = arr[arr.length - 1] + 1;
       } else {
-        crypt = 1;
+        proj_obj.crypt = 1;
       }
 
       function pad(crypt) {
         return crypt < 10 ? "0" + crypt.toString() : crypt.toString();
       }
+      let pepo =
+        pad(proj_obj.crypt) + proj_obj.stage.slice(0, 1) + "-" + proj_obj.par;
+      proj_obj.crypter = `${proj_obj.dateStart.toString().slice(0, 4)}-${pad(
+        proj_obj.crypt
+      )}${proj_obj.stage.slice(0, 1)}-${proj_obj.par}`;
 
-      let pepo = pad(crypt) + stage.slice(0, 1) + "-" + par;
-      let crypter = `${dateStart.toString().slice(0, 4)}-${pad(
-        crypt
-      )}${stage.slice(0, 1)}-${par}`;
-
-      let rocketchat;
-      if (rcheck) {
-        rocketchat = await rcprojcreate(title, pepo);
-      } else { rocketchat = null}
-
-      project = new Project({
-        crypt,
-        title,
-        dateStart,
-        dateFinish,
-        city,
-        type,
-        stage,
-        area,
-        customer,
-        crypter,
-        about,
-        status,
-        rocketchat,
-        par,
-        offTitle,
-        cusStorage,
-        schedule,
-        tags: [type],
-        object,
-        customerNew: customerNew ? [customerNew] : [],
-        team2: userid2,
-      });
+      if (proj_obj.rcheck) {
+        proj_obj.rocketchat = await rcprojcreate(proj_obj.title, pepo);
+      } else {
+        proj_obj.rocketchat = null;
+      }
+      proj_obj.tags = [proj_obj.type];
+      project = new Project(proj_obj);
 
       await project.save();
-      if (userid2.length > 0) {
+      console.log(`Проект ${project.title} добавлен`);
+      res.json({ project: project, msg: `Проект ${project.title} добавлен` });
+
+      if (proj_obj.team2 && proj_obj.team2.length > 0) {
         let govno = async (project, user) => {
           rcinvprj(project, user), user.projects.push(project._id);
         };
-        userid = [];
-        await userid2.map((user) => {
+        let userid = [];
+        await proj_obj.team2.map((user) => {
           userid.push(user.user);
         });
         let usrs = await User.find({ _id: { $in: userid } });
         usrs.map((user) => govno(project, user));
       }
-
-      console.log(`Проект ${title} добавлен`);
-      return res
-        .status(200)
-        .json({ project: project, msg: `Проект ${title} добавлен` });
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("server error");
@@ -930,6 +885,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     sprint.status = !sprint.status;
+    req.body.explanation && (sprint.explanation = req.body.explanation);
     await sprint.save();
     console.log("srint status changed");
     return res.json({ msg: `Статус спринта изменен` });
