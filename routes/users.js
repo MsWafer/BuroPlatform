@@ -166,7 +166,7 @@ router.put(
       });
       user.fullname = user.lastname + " " + user.name;
       await user.save();
-      return res.redirect(303, "/users/me")
+      return res.redirect(303, "/users/me");
       // json({
       //   msg: "Данные пользователя обновлены",
       //   userid: user,
@@ -207,7 +207,7 @@ router.get("/me", auth, async (req, res) => {
       .populate([
         {
           path: "projects",
-          select: "sprints type stage dateFinish title crypt status",
+          select: "sprints type stage dateFinish title crypt status about",
           populate: { path: "sprints" },
         },
         {
@@ -221,9 +221,6 @@ router.get("/me", auth, async (req, res) => {
         },
       ]);
 
-    if (!user) {
-      return res.status(500).json({ msg: "Server error" });
-    }
     if (user.division && !user.division.members.includes(req.user.id)) {
       await Division.findOneAndUpdate(
         { divname: user.division.divname },
@@ -234,37 +231,127 @@ router.get("/me", auth, async (req, res) => {
       user.partition = [];
       await user.save();
     }
-    let tasks = [];
-    let sprints = await Sprint.find({
-      "tasks.user": req.user.id,
-      // status: false,
-    }).select("tasks project");
-    if (!sprints) {
-      tasks = [];
-    } else {
-      sprints.forEach((sprint) => {
-        sprint.tasks.forEach((task) => {
-          if (task.user == req.user.id) {
-            task.project = sprint.project;
-            // task.sprint = sprint._id;
-            tasks.push(task);
-          }
+
+    if (req.query.tasks == "true") {
+      let history_array = user.tasks.sort((a, b) => a.date - b.date);
+      let userTasks = user.tasks
+        .filter((el) => el.taskStatus == false)
+        .sort((a, b) => a.date - b.date);
+      // console.log(userTasks)
+      let sprints = await Sprint.find({
+        "tasks.user": req.user.id,
+      }).select("tasks project");
+      if (sprints.length > 0) {
+        let arr = [];
+        sprints.forEach((sprint) => {
+          sprint.tasks.forEach((task) => {
+            if (task.user == req.user.id) {
+              task.project = sprint.project;
+              arr.push(task);
+              history_array.push(task);
+            }
+          });
         });
-      });
+        user.tasks = arr;
+        if (req.query.project && req.query.project != "Все") {
+          await user
+            .populate([
+              {
+                path: "tasks.project",
+                select: "title",
+              },
+            ])
+            .execPopulate();
+          function regexEscape(str) {
+            return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+          }
+          let regex = new RegExp(
+            regexEscape(decodeURI(req.query.project)),
+            "g"
+          );
+
+          user.tasks = user.tasks.filter((el) => el.project.title.match(regex));
+        }
+      }
+      await user
+        .populate([
+          {
+            path: "tasks.user2",
+            select: "avatar fullname",
+          },
+          {
+            path: "tasks.project",
+            select: "title crypt",
+          },
+        ])
+        .execPopulate();
+
+      let arr = [];
+      let arr2 = [];
+      user.tasks = user.tasks
+        .filter((task) => task.date)
+        .sort((a, b) => a.date - b.date);
+      if (userTasks.length > 0) {
+        for (let task of userTasks) {
+          arr2 = arr.filter(
+            (el) =>
+              el.date.getDate() === task.date.getDate() &&
+              el.date.getMonth() === task.date.getMonth() &&
+              el.date.getFullYear() === task.date.getFullYear()
+          );
+          arr2.length < 1
+            ? arr.push({
+                date: task.date,
+                tasks: [task],
+              })
+            : arr[arr.indexOf(arr2[0])].tasks.push(task);
+        }
+        user.activeTasks = arr.reverse();
+      }
+      let final_array = [];
+      let check_array = [];
+      for (let task of history_array) {
+        check_array = task.date
+          ? final_array.filter(
+              (year_obj) => year_obj.year == task.date.getFullYear()
+            )
+          : final_array.filter((year_obj) => year_obj.year == "Без даты");
+        if (check_array.length == 0) {
+          let obj = {
+            year: task.date ? task.date.getFullYear() : "Без даты",
+            month_tasks: task.date
+              ? [
+                  { month: "Январь", tasks: [] },
+                  { month: "Февраль", tasks: [] },
+                  { month: "Март", tasks: [] },
+                  { month: "Апрель", tasks: [] },
+                  { month: "Май", tasks: [] },
+                  { month: "Июнь", tasks: [] },
+                  { month: "Июль", tasks: [] },
+                  { month: "Август", tasks: [] },
+                  { month: "Сентябрь", tasks: [] },
+                  { month: "Октябрь", tasks: [] },
+                  { month: "Ноябрь", tasks: [] },
+                  { month: "Декабрь", tasks: [] },
+                ]
+              : [{ month: "Неизвестно", tasks: [] }],
+          };
+          task.date
+            ? obj.month_tasks[task.date.getMonth()].tasks.push(task)
+            : obj.month_tasks[0].tasks.push(task);
+          final_array.push(obj);
+        } else {
+          let ind = final_array.indexOf(check_array[0]);
+          task.date
+            ? final_array[ind].month_tasks[task.date.getMonth()].tasks.push(
+                task
+              )
+            : final_array[ind].month_tasks[0].tasks.push(task);
+        }
+      }
+
+      user.taskHistory = final_array.reverse();
     }
-    user.tasks = user.tasks.concat(tasks);
-    await user
-      .populate([
-        {
-          path: "tasks.user2",
-          select: "avatar fullname",
-        },
-        {
-          path: "tasks.project",
-          select: "crypt title",
-        },
-      ])
-      .execPopulate();
 
     console.log("user found");
     return res.json(user);
@@ -775,7 +862,7 @@ router.put("/me/addtask", auth, async (req, res) => {
     };
     user.tasks.push(task);
     await user.save();
-    return res.redirect(303, "/users/me");
+    return res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -797,11 +884,14 @@ router.put("/me/task/status/:id", auth, async (req, res) => {
     query.tasks.forEach((task) => {
       if (task._id == req.params.id) {
         task.taskStatus = !task.taskStatus;
+        task.taskStatus
+          ? (task.dateClose = new Date())
+          : (task.dateClose = null);
       }
     });
     await query.save();
     console.log("task de/activated");
-    res.redirect(303, "/users/me");
+    res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -824,7 +914,7 @@ router.put("/me/task/edit/:id", auth, async (req, res) => {
       task[0][key] = req.body[key];
     }
     await query.save();
-    return res.redirect(303, "/users/me");
+    return res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -835,12 +925,9 @@ router.put("/me/task/edit/:id", auth, async (req, res) => {
 router.delete("/me/task/delete/:id", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id });
-    // let task = user.tasks.filter((el) => el._id == req.params.id)[0];
-    // let ind = user.tasks.indexOf(task);
-    // user.tasks.splice(ind, 1);
     user.tasks = user.tasks.filter((task) => task._id != req.params.id);
     await user.save();
-    return res.redirect(303, "/users/me");
+    return res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -854,7 +941,7 @@ router.put("/me/task/delay/:id", auth, async (req, res) => {
     let task = user.tasks.filter((el) => el._id == req.params.id)[0];
     task.delay = !task.delay;
     await user.save();
-    return res.redirect(303, "/users/me");
+    return res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

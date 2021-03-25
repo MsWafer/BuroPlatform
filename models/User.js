@@ -98,6 +98,9 @@ const UserSchema = new mongoose.Schema({
       deadline: {
         type: Date,
       },
+      dateClose: {
+        type: Date,
+      },
       own: {
         type: Boolean,
         // default: true,
@@ -108,11 +111,11 @@ const UserSchema = new mongoose.Schema({
       },
       project: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "project"
+        ref: "project",
       },
       user2: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user"
+        ref: "user",
       },
       // sprint: {
       //   type: mongoose.Schema.Types.ObjectId,
@@ -120,6 +123,8 @@ const UserSchema = new mongoose.Schema({
       // }
     },
   ],
+  activeTasks: { type: Array, default: [] },
+  taskHistory: { type: Array, default: [] },
   device_tokens: { type: Array, default: [] },
 });
 

@@ -886,9 +886,20 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     sprint.status = !sprint.status;
     req.body.explanation && (sprint.explanation = req.body.explanation);
+    let project = await Project.findOne({ sprints: req.params.id }).populate({
+      path: "sprints",
+      populate: [
+        { path: "tasks.user", select: "avatar fullname" },
+        { path: "creator", select: "avatar fullname" },
+      ],
+    });
     await sprint.save();
     console.log("srint status changed");
-    return res.json({ msg: `Статус спринта изменен` });
+    return res.json({
+      msg: `Статус спринта изменен`,
+      sprint: sprint,
+      project: project,
+    });
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });
@@ -952,18 +963,24 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Не найден спринт с указанным id" });
     }
-    await Project.findOneAndUpdate(
-      { sprints: sprint._id },
-      { $pull: { sprints: sprint._id } }
+    let project = await Project.findOne({ sprints: req.params.id }).populate({
+      path: "sprints",
+      populate: [
+        { path: "tasks.user", select: "avatar fullname" },
+        { path: "creator", select: "avatar fullname" },
+      ],
+    });
+    project.sprints = project.sprints.filter(
+      (el) => el._id.toString() != req.params.id.toString()
     );
+    await project.save();
     await User.updateMany(
       { sprints: sprint._id },
       { $pull: { sprints: sprint._id } }
     );
-    // await Sprint.findOneAndRemove({ _id: req.params.id });
     await sprint.remove();
     console.log("sprint deleted");
-    return res.json({ msg: "Спринт удален" });
+    return res.json({ msg: "Спринт удален", project: project });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

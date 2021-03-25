@@ -66,6 +66,9 @@ const SprintSchema = new Schema({
       deadline: {
         type: Date,
       },
+      dateClose: {
+        type: Date,
+      },
     },
   ],
   urn: {
