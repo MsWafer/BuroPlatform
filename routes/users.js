@@ -236,8 +236,11 @@ router.get("/me", auth, async (req, res) => {
       let history_array = user.tasks; //.sort((a, b) => a.date - b.date);
       let dateless_arr = [];
       let userTasks = user.tasks
-        .filter((el) => el.taskStatus == false)
+        .filter((el) => !el.deadline && el.taskStatus == false)
         .sort((a, b) => a.date - b.date);
+      let userTasksDeadline = user.tasks
+        .filter((el) => el.deadline && el.taskStatus == false)
+        .sort((a, b) => a.deadline - b.deadline);
       let sprints = await Sprint.find({
         "tasks.user": req.user.id,
       }).select("tasks project");
@@ -298,44 +301,37 @@ router.get("/me", auth, async (req, res) => {
         .sort((a, b) => a.date - b.date);
       if (userTasks.length > 0) {
         for (let task of userTasks) {
-          if (task.deadline == undefined || task.deadline == null) {
-            arr2 = arr.filter(
-              (el) =>
-                // console.log(el)&&
-                el.date.getDate() === task.date.getDate() &&
-                el.date.getMonth() === task.date.getMonth() &&
-                el.date.getFullYear() === task.date.getFullYear()
-            );
-            arr2.length < 1
-              ? arr.push({
-                  date: task.date,
-                  tasks: [task],
-                })
-              : arr[arr.indexOf(arr2[0])].tasks.push(task);
-          } else {
-            arr4 = arr3.filter(
-              (el) =>
-                console.log() &&
-                el.deadline.getDate() === task.deadline.getDate() &&
-                el.deadline.getMonth() === task.deadline.getMonth() &&
-                el.deadline.getFullYear() === task.deadline.getFullYear()
-            );
-            arr4.length < 1
-              ? arr3.push({
-                  date: task.deadline,
-                  tasks: [task],
-                })
-              : arr3[arr3.indexOf(arr4[0])].tasks.push(task);
-          }
+          arr2 = arr.filter(
+            (el) =>
+              el.date.getDate() === task.date.getDate() &&
+              el.date.getMonth() === task.date.getMonth() &&
+              el.date.getFullYear() === task.date.getFullYear()
+          );
+          arr2.length < 1
+            ? arr.push({
+                date: task.date,
+                tasks: [task],
+              })
+            : arr[arr.indexOf(arr2[0])].tasks.push(task);
         }
-        // arr.forEach((el) =>{
-        //   console.log(el.deadline);
-        //   (el.deadline!=undefined && el.deadline !=null) ? user.deadlineTasks.push(el) : user.activeTasks.push(el)}
-        // );
         user.activeTasks = arr;
+      }
+      if (userTasksDeadline.length > 0) {
+        for (let task of userTasksDeadline) {
+          arr4 = arr3.filter(
+            (el) =>
+              el.date.getDate() === task.deadline.getDate() &&
+              el.date.getMonth() === task.deadline.getMonth() &&
+              el.date.getFullYear() === task.deadline.getFullYear()
+          );
+          arr4.length < 1
+            ? arr3.push({
+                date: task.deadline,
+                tasks: [task],
+              })
+            : arr3[arr3.indexOf(arr4[0])].tasks.push(task);
+        }
         user.deadlineTasks = arr3;
-        // user.deadlineTasks = arr.filter((el) => el.deadline).reverse();
-        // console.log(user.deadlineTasks);
       }
       let final_array = [];
       let check_array = [];
