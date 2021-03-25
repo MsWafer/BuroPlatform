@@ -768,7 +768,9 @@ router.get("/search/objectobject/object/object", auth, async (req, res) => {
 //add sprint to project found by crypt
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
-    let project = await Project.findOne({ crypt: req.params.crypt });
+    let project = await Project.findOne({ crypt: req.params.crypt }).populate([
+      {path:"sprints"},{path:"team2.user"}
+    ]);
     if (!project) {
       return res
         .status(404)
@@ -803,7 +805,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
 
     await project.save();
     console.log("sprint added to project");
-    return res.json(sprint);
+    return res.json({sprint:sprint, project: project});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -950,7 +952,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
       console.log(`user favorited sprint`);
       msg = "Вы добавили спринт в избранные";
     }
-    return res.json({ msg: msg });
+    return res.json({ msg: msg, user: user });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

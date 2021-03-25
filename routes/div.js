@@ -120,7 +120,7 @@ router.put("/:divname", auth, async (req, res) => {
     }
     let a = await User.findOne({ _id: req.user.id })
       .select("-password")
-      .populate("division");
+      .populate([{path:"division"},{path:"sprints"},{path:"projects"}]);
     if (a.division != null || a.division != undefined) {
       await Division.findOneAndUpdate(
         { divname: a.division.divname },
@@ -143,6 +143,7 @@ router.put("/:divname", auth, async (req, res) => {
     return res.json({
       msg: `Вы вступили в отдел ${req.params.divname}`,
       division: div,
+      user: a
     });
   } catch (error) {
     console.error(error);

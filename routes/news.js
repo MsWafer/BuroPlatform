@@ -33,8 +33,8 @@ router.post(
         subtitle: req.body.subtitle,
       });
       await newNews.save();
-
-      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}` });
+      let allNews = await News.find()
+      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}`,allNews:allNews });
       console.log("Новая новость добавлена");
       await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
