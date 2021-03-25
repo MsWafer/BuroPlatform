@@ -233,11 +233,11 @@ router.get("/me", auth, async (req, res) => {
     }
 
     if (req.query.tasks == "true") {
-      let history_array = user.tasks.sort((a, b) => a.date - b.date);
+      let history_array = user.tasks; //.sort((a, b) => a.date - b.date);
+      let dateless_arr = [];
       let userTasks = user.tasks
         .filter((el) => el.taskStatus == false)
         .sort((a, b) => a.date - b.date);
-      // console.log(userTasks)
       let sprints = await Sprint.find({
         "tasks.user": req.user.id,
       }).select("tasks project");
@@ -248,10 +248,13 @@ router.get("/me", auth, async (req, res) => {
             if (task.user == req.user.id) {
               task.project = sprint.project;
               arr.push(task);
-              history_array.push(task);
+              task.date ? history_array.push(task) : dateless_arr.push(task);
             }
           });
         });
+        history_array = history_array
+          .sort((a, b) => a.date - b.date)
+          .concat(dateless_arr);
         user.tasks = arr;
         if (req.query.project && req.query.project != "Все") {
           await user
@@ -288,25 +291,51 @@ router.get("/me", auth, async (req, res) => {
 
       let arr = [];
       let arr2 = [];
+      let arr3 = [];
+      let arr4 = [];
       user.tasks = user.tasks
         .filter((task) => task.date)
         .sort((a, b) => a.date - b.date);
       if (userTasks.length > 0) {
         for (let task of userTasks) {
-          arr2 = arr.filter(
-            (el) =>
-              el.date.getDate() === task.date.getDate() &&
-              el.date.getMonth() === task.date.getMonth() &&
-              el.date.getFullYear() === task.date.getFullYear()
-          );
-          arr2.length < 1
-            ? arr.push({
-                date: task.date,
-                tasks: [task],
-              })
-            : arr[arr.indexOf(arr2[0])].tasks.push(task);
+          if (task.deadline == undefined || task.deadline == null) {
+            arr2 = arr.filter(
+              (el) =>
+                // console.log(el)&&
+                el.date.getDate() === task.date.getDate() &&
+                el.date.getMonth() === task.date.getMonth() &&
+                el.date.getFullYear() === task.date.getFullYear()
+            );
+            arr2.length < 1
+              ? arr.push({
+                  date: task.date,
+                  tasks: [task],
+                })
+              : arr[arr.indexOf(arr2[0])].tasks.push(task);
+          } else {
+            arr4 = arr3.filter(
+              (el) =>
+                console.log() &&
+                el.deadline.getDate() === task.deadline.getDate() &&
+                el.deadline.getMonth() === task.deadline.getMonth() &&
+                el.deadline.getFullYear() === task.deadline.getFullYear()
+            );
+            arr4.length < 1
+              ? arr3.push({
+                  date: task.deadline,
+                  tasks: [task],
+                })
+              : arr3[arr3.indexOf(arr4[0])].tasks.push(task);
+          }
         }
-        user.activeTasks = arr.reverse();
+        // arr.forEach((el) =>{
+        //   console.log(el.deadline);
+        //   (el.deadline!=undefined && el.deadline !=null) ? user.deadlineTasks.push(el) : user.activeTasks.push(el)}
+        // );
+        user.activeTasks = arr;
+        user.deadlineTasks = arr3;
+        // user.deadlineTasks = arr.filter((el) => el.deadline).reverse();
+        // console.log(user.deadlineTasks);
       }
       let final_array = [];
       let check_array = [];
@@ -351,6 +380,12 @@ router.get("/me", auth, async (req, res) => {
       }
 
       user.taskHistory = final_array.reverse();
+      await User.populate(user, {
+        path: "taskHistory.month_tasks.tasks.project",
+        select: "title crypt",
+      });
+      // user.__v+=Math.floor(Math.random()*200)
+      // console.log(user.__v)
     }
 
     console.log("user found");
@@ -851,6 +886,9 @@ router.get("/eee/dr", async (req, res) => {
 //add own task
 router.put("/me/addtask", auth, async (req, res) => {
   try {
+    if (!req.body.taskTitle) {
+      return res.json({ err: "Введите текст задачи" });
+    }
     let user = await User.findOne({ _id: req.user.id });
     let task = {
       taskTitle: req.body.taskTitle,
@@ -912,6 +950,9 @@ router.put("/me/task/edit/:id", auth, async (req, res) => {
     let keys = Object.keys(req.body);
     for (let key of keys) {
       task[0][key] = req.body[key];
+    }
+    if (!task[0].taskTitle) {
+      return res.json({ err: "Введите текст задачи" });
     }
     await query.save();
     return res.redirect(303, "/users/me?tasks=true");

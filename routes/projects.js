@@ -886,6 +886,8 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     sprint.status = !sprint.status;
     req.body.explanation && (sprint.explanation = req.body.explanation);
+    
+    await sprint.save();
     let project = await Project.findOne({ sprints: req.params.id }).populate({
       path: "sprints",
       populate: [
@@ -893,7 +895,6 @@ router.put("/sprints/:id", manauth, async (req, res) => {
         { path: "creator", select: "avatar fullname" },
       ],
     });
-    await sprint.save();
     console.log("srint status changed");
     return res.json({
       msg: `Статус спринта изменен`,
