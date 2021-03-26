@@ -768,9 +768,7 @@ router.get("/search/objectobject/object/object", auth, async (req, res) => {
 //add sprint to project found by crypt
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
-    let project = await Project.findOne({ crypt: req.params.crypt }).populate([
-      {path:"sprints"},{path:"team2.user"}
-    ]);
+    let project = await Project.findOne({ crypt: req.params.crypt })
     if (!project) {
       return res
         .status(404)
@@ -804,6 +802,9 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     project.tags = [...new Set(dupe_array)];
 
     await project.save();
+    await Project.populate(project,[
+      {path:"sprints"},{path:"team2.user"}
+    ]);
     console.log("sprint added to project");
     return res.json({sprint:sprint, project: project});
   } catch (error) {
