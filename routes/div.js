@@ -118,19 +118,21 @@ router.put("/:divname", auth, async (req, res) => {
     if (div.members.includes(req.user.id)) {
       return res.json({ err: "Вы уже находитесь в этом отделе" });
     }
-    let a = await User.findOne({ _id: req.user.id })
+    let user = await User.findOne({ _id: req.user.id })
       .select("-password")
-      .populate([{path:"division"},{path:"sprints"},{path:"projects"}]);
-    if (a.division != null || a.division != undefined) {
-      await Division.findOneAndUpdate(
-        { divname: a.division.divname },
-        { $pull: { members: req.user.id } }
-      );
+      .populate([
+        { path: "division" },
+        { path: "sprints" },
+        { path: "projects" },
+      ]);
+    if (user.division != null || user.division != undefined) {
+      div.members = div.members.filter((el) => el.toString() != req.user.id);
     }
+
     div.members.push(req.user.id);
-    a.division = div._id;
+    user.division = div._id;
     await div.save();
-    await a.save();
+    await user.save();
     await Division.populate(div, {
       path: "members",
       select: "-password -permission",
@@ -143,7 +145,7 @@ router.put("/:divname", auth, async (req, res) => {
     return res.json({
       msg: `Вы вступили в отдел ${req.params.divname}`,
       division: div,
-      user: a
+      user: user,
     });
   } catch (error) {
     console.error(error);

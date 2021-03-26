@@ -118,7 +118,7 @@ router.put("/like/:id", auth, async (req, res) => {
         { $inc: { likeCount: -1 } }
       );
       await prop.save();
-      return res.json({ msg: "-" });
+      return res.redirect(303,"/props/all/likes");
     }
 
     prop.likes.unshift({ user: req.user.id });
@@ -127,7 +127,7 @@ router.put("/like/:id", auth, async (req, res) => {
       { $inc: { likeCount: 1 } }
     );
     await prop.save();
-    return res.json({ msg: "+" });
+    return res.redirect(303,"/props/all/likes");
   } catch (err) {
     consoler.error(err.message);
     res.status(500).send("server error");
