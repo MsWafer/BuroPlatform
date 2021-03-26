@@ -954,6 +954,7 @@ router.put("/favsprint/:id", auth, async (req, res) => {
       console.log(`user favorited sprint`);
       // msg = "Вы добавили спринт в избранные";
     }
+    await user.save();
     return res.redirect(303,"/users/me");
   } catch (error) {
     console.error(error);
