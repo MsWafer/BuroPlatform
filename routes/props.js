@@ -34,7 +34,7 @@ router.post(
       });
       await prop.save();
       console.log("+prop");
-      return res.json({ msg: "Предложение добавлено" });
+      return res.redirect(303,"/props/all/likes");
     } catch (error) {
       console.error(error);
       return res.status(500).json({ err: "server error" });
