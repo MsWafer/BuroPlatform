@@ -934,25 +934,27 @@ router.put("/favsprint/:id", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
-    let msg;
+    // let msg;
     if (user.sprints.includes(req.params.id)) {
       //unfavorite
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
-        { $pull: { sprints: req.params.id } }
-      );
+      // await User.findOneAndUpdate(
+      //   { _id: req.user.id },
+      //   { $pull: { sprints: req.params.id } }
+      // );
+      user.sprints = user.sprints.filter(el=>el.toString()!=req.params.id.toString())
       console.log(`user unfavorited sprint`);
-      msg = "Вы убрали спринт из избранных";
+      // msg = "Вы убрали спринт из избранных";
     } else {
       //favorite
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
-        { $push: { sprints: req.params.id } }
-      );
+      // await User.findOneAndUpdate(
+      //   { _id: req.user.id },
+      //   { $push: { sprints: req.params.id } }
+      // );
+      user.sprints.push(req.params.id)
       console.log(`user favorited sprint`);
-      msg = "Вы добавили спринт в избранные";
+      // msg = "Вы добавили спринт в избранные";
     }
-    return res.json({ msg: msg, user: user });
+    return res.redirect(303,"/users/me");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
