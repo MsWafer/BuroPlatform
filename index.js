@@ -40,6 +40,8 @@ app.use("/props", require("./routes/props"));
 app.use("/divisions", require("./routes/div"));
 app.use("/customer", require("./routes/customer"));
 app.use("/merc", require("./routes/merc"));
+app.use("/docs", require("./routes/docs"));
+app.use("/prjevent", require("./routes/projevents"));
 
 const PORT = process.env.PORT || 7070;
 

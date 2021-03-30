@@ -129,7 +129,7 @@ router.put("/like/:id", auth, async (req, res) => {
     await prop.save();
     return res.redirect(303,"/props/all/likes");
   } catch (err) {
-    consoler.error(err.message);
+    console.error(err.message);
     res.status(500).send("server error");
   }
 });

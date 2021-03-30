@@ -896,6 +896,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
       populate: [
         { path: "tasks.user", select: "avatar fullname" },
         { path: "creator", select: "avatar fullname" },
+        { path: "team2.user", select: "fullname avatar"}
       ],
     });
     console.log("srint status changed");
@@ -975,6 +976,7 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
       populate: [
         { path: "tasks.user", select: "avatar fullname" },
         { path: "creator", select: "avatar fullname" },
+        { path: "team2.user", select: "fullname avatar"}
       ],
     });
     project.sprints = project.sprints.filter(
@@ -1119,7 +1121,7 @@ router.post("/sprints/task/:id", auth, async (req, res) => {
 });
 
 //add user to task
-router.put("/sprints/task/adduser/:id", manauth, async (req, res) => {
+router.put("/sprints/task/adduser/:id", auth, async (req, res) => {
   try {
     let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
       "creator"

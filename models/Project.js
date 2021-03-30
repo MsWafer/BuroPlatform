@@ -6,6 +6,40 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
+  epics: [
+    {
+      title: { type: String },
+      description: { type: String },
+      datePlan: { type: Date },
+      dateFact: { type: Date },
+      status: { type: Number, default: 0 },
+      notes: [
+        {
+          text: { type: String },
+          date: { type: Date },
+        },
+      ],
+    },
+  ],
+  stageChange: [
+    {
+      status: {
+        type: Number,
+      },
+      oldStage: {
+        type: String,
+      },
+      nextStage: {
+        type: String,
+      },
+      datePlan: {
+        type: Date,
+      },
+      dateFact: {
+        type: Date,
+      },
+    },
+  ],
   offTitle: {
     type: String,
   },
@@ -80,19 +114,6 @@ const ProjectSchema = new Schema({
       other: { type: Array, default: [] },
     },
   ],
-  // [
-  //   {
-  //     email: {
-  //       type: String,
-  //     },
-  //     phone: {
-  //       type: String,
-  //     },
-  //     name: {
-  //       type: String,
-  //     },
-  //   },
-  // ],
   city: {
     type: String,
   },
@@ -131,16 +152,16 @@ const ProjectSchema = new Schema({
       date: { type: Date },
       title: { type: String },
       version: { type: Number, default: 1 },
-      user: { type: mongoose.Schema.Types.ObjectId, ref:"user" },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
       tags: { type: Array, default: [] },
       old: [
         {
           urn: { type: String },
-          date: { type : Date },
+          date: { type: Date },
           version: { type: Number },
           user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        }
-      ]
+        },
+      ],
     },
   ],
   obj: {
