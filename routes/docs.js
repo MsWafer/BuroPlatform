@@ -9,7 +9,7 @@ const Doc = require("../models/Docs");
 const mainDir = __dirname + "/../public/docs";
 
 //get folder structure
-router.get("/huy", async (req, res) => {
+router.get("/directory", async (req, res) => {
   try {
     // let mainDir = __dirname + "/../public/docs";
     let func = async (mainDir) => {
@@ -20,7 +20,7 @@ router.get("/huy", async (req, res) => {
       }
       for (let dir of subdirs) {
         if (dir.match(/\./g)) {
-          dirs[0].files.push(`docs/`+dir);
+          dirs[0].files.push(`docs/` + dir);
         } else {
           let subdirObj = { dirname: dir, files: [], subdirs: [] };
           dirs.push(subdirObj);
@@ -28,7 +28,7 @@ router.get("/huy", async (req, res) => {
           let files = fs.readdirSync(mainDir + "/" + dir);
           for (let file of files) {
             if (file.match(/\./g)) {
-              dirs[dirInd].files.push(`docs/${dir}/`+file);
+              dirs[dirInd].files.push(`docs/${dir}/` + file);
             } else {
               let obj_obj = { dirname: file, files: [] };
               dirs[dirInd].subdirs.push(obj_obj);
@@ -36,7 +36,9 @@ router.get("/huy", async (req, res) => {
               console.log(file);
               let idk = fs.readdirSync(mainDir + "/" + dir + "/" + file);
               for (let shit of idk) {
-                dirs[dirInd].subdirs[subdirInd].files.push(`docs/${dir}/${file}/`+shit);
+                dirs[dirInd].subdirs[subdirInd].files.push(
+                  `docs/${dir}/${file}/` + shit
+                );
               }
             }
           }
@@ -55,8 +57,14 @@ router.get("/huy", async (req, res) => {
 //make dir
 router.put("/mkdir", async (req, res) => {
   try {
+    if (req.body.dirname.match(/\.\./g)) {
+      return res.json("huy");
+    }
+    if (fs.existsSync(mainDir + "/" + req.body.dirname)) {
+      return res.json("Папка с таким именем уже существует");
+    }
     fs.mkdirSync(mainDir + "/" + req.body.dirname);
-    res.redirect(303, "/docs/huy");
+    res.redirect(303, "/docs/directory");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -66,13 +74,37 @@ router.put("/mkdir", async (req, res) => {
 //write file
 router.post("/filepost", async (req, res) => {
   try {
+    let keys = Object.keys(req.body);
+    let text = req.body.text;
+    req.body.text = "";
+    for (let key of keys) {
+      if (req.body[key].match(/\.\./g)) {
+        return res.json("huy");
+      }
+    }
+    if (!fs.existsSync(mainDir + "/" + req.body.dir)) {
+      return res.json("Указанной папки не существует");
+    }
     let file = path.resolve(
       req.body.dir
         ? mainDir + "/" + req.body.dir + "/" + req.body.filename
         : mainDir + "/" + req.body.filename
     );
-    fs.writeFileSync(file, req.body.text);
-    res.redirect(303, "/docs/huy");
+    fs.writeFileSync(file, text);
+    res.redirect(303, "/docs/directory");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//readfile
+router.get("/read", async (req, res) => {
+  try {
+    if (req.body.filepath.match(/\.\./g)) {
+      return res.json("huy");
+    }
+    res.download(__dirname + "/../public/" + req.body.filepath, "file.txt");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
