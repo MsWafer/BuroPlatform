@@ -307,7 +307,7 @@ router.put("/:crypt", manauth, async (req, res) => {
     await project.save();
 
     console.log(`project ${req.params.crypt} edited`);
-    return res.json(project);
+    return res.redirect(303, "/projects/" + project.crypt);
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ msg: "server error" });
@@ -768,7 +768,7 @@ router.get("/search/objectobject/object/object", auth, async (req, res) => {
 //add sprint to project found by crypt
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
-    let project = await Project.findOne({ crypt: req.params.crypt })
+    let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
       return res
         .status(404)
@@ -802,11 +802,12 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
     project.tags = [...new Set(dupe_array)];
 
     await project.save();
-    await Project.populate(project,[
-      {path:"sprints"},{path:"team2.user"}
+    await Project.populate(project, [
+      { path: "sprints" },
+      { path: "team2.user" },
     ]);
     console.log("sprint added to project");
-    return res.json({sprint:sprint, project: project});
+    return res.json({ sprint: sprint, project: project });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -889,16 +890,18 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     let sprint = await Sprint.findOne({ _id: req.params.id });
     sprint.status = !sprint.status;
     req.body.explanation && (sprint.explanation = req.body.explanation);
-    
+
     await sprint.save();
-    let project = await Project.findOne({ sprints: req.params.id }).populate({
-      path: "sprints",
-      populate: [
-        { path: "tasks.user", select: "avatar fullname" },
-        { path: "creator", select: "avatar fullname" },
-        { path: "team2.user", select: "fullname avatar"}
-      ],
-    });
+    let project = await Project.findOne({ sprints: req.params.id }).populate([
+      {
+        path: "sprints",
+        populate: [
+          { path: "tasks.user", select: "avatar fullname" },
+          { path: "creator", select: "avatar fullname" },
+        ],
+      },
+      { path: "team2.user", select: "fullname avatar" },
+    ]);
     console.log("srint status changed");
     return res.json({
       msg: `Статус спринта изменен`,
@@ -943,7 +946,9 @@ router.put("/favsprint/:id", auth, async (req, res) => {
       //   { _id: req.user.id },
       //   { $pull: { sprints: req.params.id } }
       // );
-      user.sprints = user.sprints.filter(el=>el.toString()!=req.params.id.toString())
+      user.sprints = user.sprints.filter(
+        (el) => el.toString() != req.params.id.toString()
+      );
       console.log(`user unfavorited sprint`);
       // msg = "Вы убрали спринт из избранных";
     } else {
@@ -952,12 +957,12 @@ router.put("/favsprint/:id", auth, async (req, res) => {
       //   { _id: req.user.id },
       //   { $push: { sprints: req.params.id } }
       // );
-      user.sprints.push(req.params.id)
+      user.sprints.push(req.params.id);
       console.log(`user favorited sprint`);
       // msg = "Вы добавили спринт в избранные";
     }
     await user.save();
-    return res.redirect(303,"/users/me");
+    return res.redirect(303, "/users/me");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -971,14 +976,16 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Не найден спринт с указанным id" });
     }
-    let project = await Project.findOne({ sprints: req.params.id }).populate({
-      path: "sprints",
-      populate: [
-        { path: "tasks.user", select: "avatar fullname" },
-        { path: "creator", select: "avatar fullname" },
-        { path: "team2.user", select: "fullname avatar"}
-      ],
-    });
+    let project = await Project.findOne({ sprints: req.params.id }).populate([
+      {
+        path: "sprints",
+        populate: [
+          { path: "tasks.user", select: "avatar fullname" },
+          { path: "creator", select: "avatar fullname" },
+        ],
+      },
+      { path: "team2.user", select: "fullname avatar" },
+    ]);
     project.sprints = project.sprints.filter(
       (el) => el._id.toString() != req.params.id.toString()
     );
