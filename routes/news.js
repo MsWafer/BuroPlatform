@@ -91,12 +91,13 @@ router.post(
         users.forEach(
           (user) => (token_array = token_array.concat(user.device_tokens))
         );
-        let data = { news_id: newNews._id };
-        mob_push(
-          token_array,
-          "Новая новость добавлена на https://space.buro82.ru",
-          data
-        );
+        let user = await User.findOne({ _id: req.user.id });
+        let data = {
+          news_id: newNews._id,
+          avatar: user.avatar,
+          fullname: user.fullname,
+        };
+        mob_push(token_array, req.body.title, data, "Новость в бюро");
       }
     } catch (error) {
       console.error(error);

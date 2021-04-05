@@ -13,7 +13,7 @@ app.use(express.static("public"));
 app.use("/ticketSS", express.static(__dirname + "/ticketSS"));
 app.use("/avatars", express.static(__dirname + "/avatars"));
 app.use("/covers", express.static(__dirname + "/covers"));
-app.use("/docs", express.static(__dirname + "/docs"));
+app.use("/docfiles", express.static(__dirname + "/docs"));
 app.use("/docimages", express.static(__dirname + "/docimages"));
 
 app.get("/", (req, res) => res.send("Не крашься плиз"));

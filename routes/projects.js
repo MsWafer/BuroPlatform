@@ -1153,7 +1153,9 @@ router.put("/sprints/task/adduser/:id", auth, async (req, res) => {
     let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
 
     if (user.device_tokens && user.device_tokens.length > 0) {
-      mob_push(user.device_tokens, notification_body);
+      let user2 = await User.findOne({_id:req.user.id})
+      let data = { sprint_id: sprint._id._id, avatar: user2.avatar, fullname: user2.fullname };
+      mob_push(user.device_tokens, task[0].taskTitle, data, "Вам назначили задачу");
     }
 
     if (req.body.rocket == true) {
