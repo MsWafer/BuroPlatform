@@ -12,7 +12,7 @@ module.exports = (tokens, notification_body, data) => {
     },
   };
   message.notification.body = notification_body;
-  message.addData(data);
+  message.data = data;
   axios
     .post(process.env.PUSH_SERVER, {
       tokens: tokens,
