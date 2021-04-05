@@ -34,7 +34,13 @@ router.post(
       });
       await newNews.save();
       let allNews = await News.find()
-      res.json({ news: newNews, msg: `Новость добавлена ${newNews.title}`,allNews:allNews });
+        .populate("author", "avatar fullname")
+        .sort({ postDate: -1 });
+      res.json({
+        news: newNews,
+        msg: `Новость добавлена ${newNews.title}`,
+        allNews: allNews,
+      });
       console.log("Новая новость добавлена");
       await fetch(`${process.env.CHAT}/api/v1/login`, {
         method: "post",
@@ -85,10 +91,12 @@ router.post(
         users.forEach(
           (user) => (token_array = token_array.concat(user.device_tokens))
         );
+        let data = { news_id: newNews._id };
         mob_push(
           token_array,
-          "Новая новость добавлена на https://space.buro82.ru"
-        )
+          "Новая новость добавлена на https://space.buro82.ru",
+          data
+        );
       }
     } catch (error) {
       console.error(error);

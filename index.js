@@ -13,6 +13,8 @@ app.use(express.static("public"));
 app.use("/ticketSS", express.static(__dirname + "/ticketSS"));
 app.use("/avatars", express.static(__dirname + "/avatars"));
 app.use("/covers", express.static(__dirname + "/covers"));
+app.use("/docs", express.static(__dirname + "/docs"));
+app.use("/docimages", express.static(__dirname + "/docimages"));
 
 app.get("/", (req, res) => res.send("Не крашься плиз"));
 app.post("/ip", async (req, res) => {
@@ -42,6 +44,7 @@ app.use("/customer", require("./routes/customer"));
 app.use("/merc", require("./routes/merc"));
 app.use("/docs", require("./routes/docs"));
 app.use("/prjevent", require("./routes/projevents"));
+app.use("/ideas", require("./routes/ideas"));
 
 const PORT = process.env.PORT || 7070;
 

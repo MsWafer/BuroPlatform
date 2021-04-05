@@ -1,19 +1,18 @@
 const axios = require("axios");
-let message;
-const message_template = {
-  priority: "high",
-  delayWhileIdle: true,
-  timeToLive: 3,
-  restrictedPackageName: "com.buronative",
-  notification: {
-    title: "buro platform",
-    icon: "ic_launcher",
-  },
-};
 
-module.exports = (tokens, notification_body) => {
-  message = message_template;
+module.exports = (tokens, notification_body, data) => {
+  let message = {
+    priority: "high",
+    delayWhileIdle: true,
+    timeToLive: 3,
+    restrictedPackageName: "com.buronative",
+    notification: {
+      title: "buro platform",
+      icon: "ic_launcher",
+    },
+  };
   message.notification.body = notification_body;
+  message.addData(data);
   axios
     .post(process.env.PUSH_SERVER, {
       tokens: tokens,

@@ -292,7 +292,6 @@ router.put("/:crypt", manauth, async (req, res) => {
     let body_arr = Object.keys(req.body);
     body_arr.forEach((field) => {
       if (field != null && field != "customerNew") {
-        console.log(req.body[field]),
           typeof req.body[field] == "string"
             ? req.body[field].trim().length > 0
               ? (project[field] = req.body[field])
