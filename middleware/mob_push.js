@@ -1,7 +1,7 @@
 const axios = require("axios");
 const User = require("../models/User");
 
-module.exports = async(tokens, notification_body, data, push_title) => {
+module.exports = async (tokens, notification_body, data, push_title) => {
   let message = {
     priority: "high",
     delayWhileIdle: true,
@@ -12,23 +12,33 @@ module.exports = async(tokens, notification_body, data, push_title) => {
     },
   };
   message.notification.body = notification_body;
-  message.notification.title = push_title
+  message.notification.title = push_title;
   message.data = data;
   message.data.read = false;
-  message.data.id = Math.random().toString(36)
-  message.data.date = Date.now()
-  for(let token of tokens){
-    let user = await User.findOne({device_tokens:token})
-    if(!user){continue}
-    user.notifications.push(message)
-    for(let note of user.notifications){
-      let ind = user.notifications.indexOf(note)
-      if(note.data.id==user.notifications[ind-1].data.id || note.data.id==user.notifications[ind+1].data.id){
-        user.notifications.splice(ind,1)
-      }
+  message.data.id = Math.random().toString(36);
+  message.data.date = Date.now();
+  for (let token of tokens) {
+    let user = await User.findOne({ device_tokens: token });
+    if (!user) {
+      continue;
     }
-    if(user.notifications.length>10){user.notifications.splice(10,1)}
-    await user.save()
+    user.notifications.push(message);
+    for (let note of user.notifications) {
+      let ind = user.notifications.indexOf(note);
+      if (ind >= 0 || ind < user.notifications.length){
+        if (
+          note.data.id == user.notifications[ind - 1].data.id ||
+          note.data.id == user.notifications[ind + 1].data.id
+        ) {
+          user.notifications.splice(ind, 1);
+        }
+      }
+        
+    }
+    if (user.notifications.length > 10) {
+      user.notifications.splice(10, 1);
+    }
+    await user.save();
   }
   axios
     .post(process.env.PUSH_SERVER, {
