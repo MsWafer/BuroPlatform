@@ -986,22 +986,27 @@ router.put("/me/task/delay/:id", auth, async (req, res) => {
 });
 
 //read notification
-router.put("/notificationread",auth,async(req,res)=>{
-  try{
-    let user = await User.findOne({_id:req.user.id})
-    console.log(req.body)
-    for(let id of req.body.ids){
-      for(let notification of user.notifications){
-        if(notification.data.id==id){notification.data.read = true}
+router.put("/notificationread", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    // console.log(req.body)
+    // for(let id of req.body.ids){
+    //   for(let notification of user.notifications){
+    //     if(notification.data.id==id){notification.data.read = true}
+    //   }
+    // }
+    for (let notification of user.notifications) {
+      if (req.body.ids.includes(notification.data.id)) {
+        notification.data.read = true;
       }
     }
-    await user.save()
-    return res.redirect(303,"/users/me")
-  }catch(error){
+    await user.save();
+    return res.redirect(303, "/users/me");
+  } catch (error) {
     console.error(error);
-    return res.status(500).json({err:"server error"});
+    return res.status(500).json({ err: "server error" });
   }
-})
+});
 
 ////////////////////
 ///УГОЛ ОПУЩЕНЦЕВ///
