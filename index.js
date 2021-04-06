@@ -8,7 +8,14 @@ require("dotenv").config();
 const app = express();
 connectDB();
 app.use(express.json({ extended: false }));
-app.use(cors());
+app.use(
+  cors({
+    exposedHeaders:
+      "Content-Type,Authorization,filename,Cache-Control,Date,Keep-Alive,Connection,Content-Length,Access-Control-Allow-Origin",
+    credentials: true,
+    origin: true,
+  })
+);
 app.use(express.static("public"));
 app.use("/ticketSS", express.static(__dirname + "/ticketSS"));
 app.use("/avatars", express.static(__dirname + "/avatars"));

@@ -120,7 +120,7 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   activeTasks: { type: Array, default: [] },
-  deadlineTasks: {type: Array, default: [] },
+  deadlineTasks: { type: Array, default: [] },
   taskHistory: [
     {
       year: { type: mongoose.Schema.Types.Mixed },
@@ -146,6 +146,7 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   device_tokens: { type: Array, default: [] },
+  notifications: { type: Array, default: [] },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);
