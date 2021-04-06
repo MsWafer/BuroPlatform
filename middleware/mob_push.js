@@ -25,15 +25,16 @@ module.exports = async (tokens, notification_body, data, push_title) => {
     user.notifications.push(message);
     for (let note of user.notifications) {
       let ind = user.notifications.indexOf(note);
-      if (ind >= 0 || ind < user.notifications.length){
+      if (ind >= 0 || ind < user.notifications.length) {
         if (
-          note.data.id == user.notifications[ind - 1].data.id ||
-          note.data.id == user.notifications[ind + 1].data.id
+          (user.notifications[ind - 1] &&
+            note.data.id == user.notifications[ind - 1].data.id) ||
+          (user.notifications[ind + 1] &&
+            note.data.id == user.notifications[ind + 1].data.id)
         ) {
           user.notifications.splice(ind, 1);
         }
       }
-        
     }
     if (user.notifications.length > 10) {
       user.notifications.splice(10, 1);
