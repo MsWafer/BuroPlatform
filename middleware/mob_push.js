@@ -21,7 +21,12 @@ module.exports = async(tokens, notification_body, data, push_title) => {
     let user = await User.findOne({device_tokens:token})
     if(!user){continue}
     user.notifications.push(message)
-    user.notifications = user.notifications.filter((v,i,a)=>a.findIndex(t=>(JSON.stringify(t) === JSON.stringify(v)))===i)
+    for(let note of user.notifications){
+      let ind = user.notifications.indexOf(note)
+      if(note.data.id==user.notifications[ind-1].data.id || note.data.id==user.notifications[ind+1].data.id){
+        user.notifications.splice(ind,1)
+      }
+    }
     if(user.notifications.length>10){user.notifications.splice(10,1)}
     await user.save()
   }
