@@ -999,8 +999,10 @@ router.put("/notificationread", auth, async (req, res) => {
       if (req.body.ids.includes(notification.data.id.toString())) {
         notification.data.read = true;
         console.log("if", notification.data, req.body.ids);
+        await user.save()
       }
     }
+    console.log(user.notifications)
     await user.save();
     return res.redirect(303, "/users/me");
   } catch (error) {
