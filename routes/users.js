@@ -989,6 +989,7 @@ router.put("/me/task/delay/:id", auth, async (req, res) => {
 router.put("/notificationread",auth,async(req,res)=>{
   try{
     let user = await User.findOne({_id:req.user.id})
+    console.log(req.body)
     for(let id of req.body.ids){
       for(let notification of user.notifications){
         if(notification.data.id==id){notification.data.read = true}

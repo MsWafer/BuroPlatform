@@ -16,12 +16,12 @@ module.exports = async(tokens, notification_body, data, push_title) => {
   message.data = data;
   message.data.read = false;
   message.data.id = Math.random().toString(36)
+  message.data.date = Date.now()
   for(let token of tokens){
     let user = await User.findOne({device_tokens:token})
     if(!user){continue}
     user.notifications.push(message)
-    let set = new Set(user.notifications)
-    user.notifications = Array.from(set)
+    user.notifications = user.notifications.filter((v,i,a)=>a.findIndex(t=>(JSON.stringify(t) === JSON.stringify(v)))===i)
     if(user.notifications.length>10){user.notifications.splice(10,1)}
     await user.save()
   }
