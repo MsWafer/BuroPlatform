@@ -996,8 +996,9 @@ router.put("/notificationread", auth, async (req, res) => {
     //   }
     // }
     for (let notification of user.notifications) {
-      if (req.body.ids.includes(notification.data.id)) {
+      if (req.body.ids.includes(notification.data.id.toString())) {
         notification.data.read = true;
+        console.log("if", notification.data, req.body.ids);
       }
     }
     await user.save();
