@@ -989,21 +989,18 @@ router.put("/me/task/delay/:id", auth, async (req, res) => {
 router.put("/notificationread", auth, async (req, res) => {
   try {
     let user = await User.findOne({ _id: req.user.id });
-    // console.log(req.body)
-    // for(let id of req.body.ids){
-    //   for(let notification of user.notifications){
-    //     if(notification.data.id==id){notification.data.read = true}
-    //   }
-    // }
     for (let notification of user.notifications) {
       if (req.body.ids.includes(notification.data.id.toString())) {
-        notification.data.read = true;
-        console.log("if", notification.data, req.body.ids);
-        await user.save()
+        notification.data.read = !notification.data.read;
       }
     }
-    console.log(user.notifications)
+    for (abc of user.notifications) {
+      console.log("before", abc.data);
+    }
     await user.save();
+    for (abc of user.notifications) {
+      console.log("after", abc.data);
+    }
     return res.redirect(303, "/users/me");
   } catch (error) {
     console.error(error);
