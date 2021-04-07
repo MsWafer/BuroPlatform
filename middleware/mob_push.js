@@ -25,7 +25,7 @@ module.exports = async (tokens, notification_body, data, push_title) => {
     user.notifications.push(message);
     for (let note of user.notifications) {
       let ind = user.notifications.indexOf(note);
-      if (ind >= 0 || ind < user.notifications.length) {
+      if (ind >= 0 && ind < user.notifications.length) {
         if (
           (user.notifications[ind - 1] &&
             note.data.id == user.notifications[ind - 1].data.id) ||

@@ -8,6 +8,7 @@ const fetch = require("node-fetch");
 const User = require("../models/User");
 const News = require("../models/News");
 const mob_push = require("../middleware/mob_push");
+const Stat = require("../models/Stat");
 
 //post new news
 router.post(
@@ -168,6 +169,23 @@ router.put("/:id", manauth, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "Server error" });
+  }
+});
+
+//get stats
+router.get("/get/stats", auth, async (req, res) => {
+  try {
+    let stat = await Stat.find();
+    let response;
+    if (req.query.type == "all") {
+      response = stat;
+    } else {
+      response = stat.pop();
+    }
+    return res.json(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 module.exports = router;

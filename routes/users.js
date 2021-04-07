@@ -49,6 +49,8 @@ const rcusercheck = require("../middleware/rcusercheck");
 const rcpwdsend = require("../middleware/rcpwdsend");
 const Division = require("../models/Division");
 const Sprint = require("../models/Sprint");
+const { use } = require("./ideas");
+const Stat = require("../models/Stat");
 
 //registration
 router.post("/", async (req, res) => {
@@ -220,6 +222,29 @@ router.get("/me", auth, async (req, res) => {
           populate: { path: "project", select: "crypt title" },
         },
       ]);
+    let d = new Date();
+    let stat = await Stat.findOne({
+      day: d.getDate(),
+      month: d.getMonth() + 1,
+      year: d.getFullYear(),
+    });
+    if (!stat) {
+      stat = new Stat({
+        date: d,
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+        users: [user._id],
+        user_count: 1,
+      });
+      await stat.save();
+    } else {
+      if (!stat.users.includes(user._id)) {
+        stat.users.push(user._id);
+        stat.user_count += 1;
+        await stat.save();
+      }
+    }
 
     if (user.division && !user.division.members.includes(req.user.id)) {
       await Division.findOneAndUpdate(
@@ -1002,6 +1027,17 @@ router.put("/notificationread", auth, async (req, res) => {
       console.log("after", abc.data);
     }
     return res.redirect(303, "/users/me");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//PERMISSIOn
+router.get("/permission/mne/zapili", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id }).select("permission");
+    return res.json({ permission: user.permission });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

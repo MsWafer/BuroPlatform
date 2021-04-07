@@ -58,19 +58,7 @@ router.get("/directory", async (req, res) => {
           let dirInd = dirs.indexOf(subdirObj);
           let files = fs.readdirSync(mainDir + "/" + dir);
           for (let file of files) {
-            // if (file.match(/\./g)) {
             dirs[dirInd].files.push(file);
-            // } else {
-            //   let obj_obj = { dirname: file, files: [] };
-            //   dirs[dirInd].subdirs.push(obj_obj);
-            //   let subdirInd = dirs[dirInd].subdirs.indexOf(obj_obj);
-            //   let idk = fs.readdirSync(mainDir + "/" + dir + "/" + file);
-            //   for (let shit of idk) {
-            //     dirs[dirInd].subdirs[subdirInd].files.push(
-            //       shit
-            //     );
-            //   }
-            // }
           }
         }
       }
@@ -85,7 +73,7 @@ router.get("/directory", async (req, res) => {
 });
 
 //upload file
-router.post("/imageupload", upload.single("file"), async (req, res) => {
+router.post("/imageupload",manauth, upload.single("file"), async (req, res) => {
   try {
     return res.json({
       msg: "Файл загружен",
@@ -98,7 +86,7 @@ router.post("/imageupload", upload.single("file"), async (req, res) => {
 });
 
 //make dir
-router.put("/mkdir", async (req, res) => {
+router.put("/mkdir",manauth, async (req, res) => {
   try {
     if (req.body.dirname.match(/\.\./g)) {
       return res.json("huy");
@@ -115,7 +103,7 @@ router.put("/mkdir", async (req, res) => {
 });
 
 //write file
-router.post("/filepost", async (req, res) => {
+router.post("/filepost",manauth, async (req, res) => {
   try {
     let keys = Object.keys(req.body);
     let text = JSON.stringify(req.body.text);
@@ -142,7 +130,7 @@ router.post("/filepost", async (req, res) => {
 });
 
 //write file
-router.post("/editfile", async (req, res) => {
+router.post("/editfile",manauth, async (req, res) => {
   try {
     let keys = Object.keys(req.body);
     let text = JSON.stringify(req.body.text);
@@ -174,11 +162,6 @@ router.put("/read", async (req, res) => {
     if (req.body.filepath.match(/\.\./g)) {
       return res.json("huy");
     }
-    // res.hea
-    // res.header("filename",encodeURI(req.body.filepath).substring(req.body.filepath.lastIndexOf("/") + 1))
-    // console.log(res)
-    // res.status(req.body.filepath)
-    // res.json(fs.readFileSync(path.resolve(__dirname + "/../public/docs/" + req.body.filepath),'utf8'))
     res.download(
       path.resolve(__dirname + "/../public/docs/" + req.body.filepath),
       req.body.filepath
