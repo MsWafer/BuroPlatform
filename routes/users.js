@@ -467,22 +467,16 @@ router.put("/me/a", upload.single("file"), auth, async (req, res) => {
     if (!user) {
       return res.json({ msg: "Пользователь не найден" });
     }
-    console.log(req.file);
-    console.log("old",user.avatar)
-    if (
-      user.avatar != "avatars/spurdo.png" &&
-      user.avatar != "avatars/spurdo.jpg"
-    ) {
-      fs.unlink(__dirname + `/../public/${user.avatar}`, (err) => {
+    const oldavatar = user.avatar;
+    user.avatar = req.file ? "avatars/" + req.file.filename : user.avatar;
+    await user.save();
+    if (oldavatar != "avatars/spurdo.png") {
+      fs.unlink(__dirname + `/../public/${oldavatar}`, (err) => {
         if (err) {
           throw err;
         }
       });
     }
-    user.avatar = req.file ? "avatars/" + req.file.filename : user.avatar;
-    await user.save();
-    console.log("new",user.avatar)
-
     let tasks = [];
     let sprints = await Sprint.find({
       "tasks.user": req.user.id,
