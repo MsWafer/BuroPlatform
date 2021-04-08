@@ -10,6 +10,7 @@ const CryptoJS = require("crypto-js");
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
 const User = require("../models/User");
+const Stat = require("../models/Stat")
 const rcprojcreate = require("../middleware/rcprojcreate");
 const rckickprj = require("../middleware/rckickprj");
 const rcinvprj = require("../middleware/rcinvprj");
@@ -292,11 +293,11 @@ router.put("/:crypt", manauth, async (req, res) => {
     let body_arr = Object.keys(req.body);
     body_arr.forEach((field) => {
       if (field != null && field != "customerNew") {
-          typeof req.body[field] == "string"
-            ? req.body[field].trim().length > 0
-              ? (project[field] = req.body[field])
-              : console.log()
-            : (project[field] = req.body[field]);
+        typeof req.body[field] == "string"
+          ? req.body[field].trim().length > 0
+            ? (project[field] = req.body[field])
+            : console.log()
+          : (project[field] = req.body[field]);
       }
     });
     //for changing old project front needs to send old obj or it's index
@@ -806,7 +807,16 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
       { path: "team2.user" },
     ]);
     console.log("sprint added to project");
-    return res.json({ sprint: sprint, project: project });
+    res.json({ sprint: sprint, project: project });
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { sprints_created: 1 } }
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "server error" });
@@ -902,11 +912,26 @@ router.put("/sprints/:id", manauth, async (req, res) => {
       { path: "team2.user", select: "fullname avatar" },
     ]);
     console.log("srint status changed");
-    return res.json({
+    res.json({
       msg: `Статус спринта изменен`,
       sprint: sprint,
       project: project,
     });
+    let obj = {complete_sprints_closed:1}
+    for(let ass of sprint.tasks){
+      if(ass.taskStatus == false){
+        obj = {incomplete_sprints_closed:1}
+      }
+    }
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: obj }
+    );
   } catch (error) {
     console.log(error);
     return res.json({ err: "server error" });
@@ -1116,6 +1141,16 @@ router.post("/sprints/task/:id", auth, async (req, res) => {
       workVolume: req.body.workVolume,
       date: Date.now(),
     });
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { task_open_count: 1 } }
+    );
+
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
     await Sprint.populate(sprint, "creator");
@@ -1153,9 +1188,18 @@ router.put("/sprints/task/adduser/:id", auth, async (req, res) => {
     let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
 
     if (user.device_tokens && user.device_tokens.length > 0) {
-      let user2 = await User.findOne({_id:req.user.id})
-      let data = { sprint_id: sprint._id._id, avatar: user2.avatar, fullname: user2.fullname };
-      mob_push(user.device_tokens, task[0].taskTitle, data, "Вам назначили задачу");
+      let user2 = await User.findOne({ _id: req.user.id });
+      let data = {
+        sprint_id: sprint._id._id,
+        avatar: user2.avatar,
+        fullname: user2.fullname,
+      };
+      mob_push(
+        user.device_tokens,
+        task[0].taskTitle,
+        data,
+        "Вам назначили задачу"
+      );
     }
 
     if (req.body.rocket == true) {
@@ -1243,11 +1287,27 @@ router.put("/sprints/DAtask/test", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
-    sprint.tasks.forEach((task) => {
-      if (task._id == req.body.taskid) {
-        task.taskStatus = !task.taskStatus;
+    for (let task of sprint.tasks){
+      if(task._id==req.body.taskid){
+        task.taskStatus = ! task.taskStatus;
+        let num = task.taskStatus ? 1 : -1;
+        let d = new Date();
+        await Stat.findOneAndUpdate(
+          {
+            day: d.getDate(),
+            month: d.getMonth() + 1,
+            year: d.getFullYear(),
+          },
+          { $inc: { task_close_count: num } }
+        );
       }
-    });
+    }
+    // sprint.tasks.forEach((task) => {
+    //   if (task._id == req.body.taskid) {
+    //     task.taskStatus = !task.taskStatus;
+        
+    //   }
+    // });
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
     console.log("task de/activated");

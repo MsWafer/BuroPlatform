@@ -921,6 +921,15 @@ router.put("/me/addtask", auth, async (req, res) => {
     };
     user.tasks.push(task);
     await user.save();
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { my_tasks_created: 1 } }
+    );
     return res.redirect(303, "/users/me?tasks=true");
   } catch (error) {
     console.error(error);

@@ -46,7 +46,7 @@ router.get("/recurse", async (req, res) => {
     let a = path.resolve(__dirname + "/../public");
     let func = (dir,dirname) => {
       let govno = dir + "/" + dirname
-      let result = { dirname: dirname, files: [], subdirs: [] };
+      let result = { dirname: dirname,dirpath:/public(.+)/.exec(govno)[1], files: [], subdirs: [] };
       let b = fs.readdirSync(govno);
       for (let c of b) {
         if (fs.lstatSync(govno + "/" + c).isFile()) {
@@ -130,7 +130,7 @@ router.put("/mkdir", manauth, async (req, res) => {
       return res.json("Папка с таким именем уже существует");
     }
     fs.mkdirSync(mainDir + "/" + req.body.dirname);
-    res.redirect(303, "/docs/directory");
+    res.redirect(303, "/docs/recurse");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -157,7 +157,7 @@ router.post("/filepost", manauth, async (req, res) => {
         : mainDir + "/" + req.body.filename
     );
     fs.writeFileSync(file, text);
-    res.redirect(303, "/docs/directory");
+    res.redirect(303, "/docs/recurse");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -216,7 +216,7 @@ router.put("/delete", async (req, res) => {
     if (fs.existsSync(mainDir + "/" + req.body.filepath)) {
       fs.unlinkSync(mainDir + "/" + req.body.filepath);
     }
-    res.redirect(303, "/docs/directory");
+    res.redirect(303, "/docs/recurse");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -232,6 +232,7 @@ router.put("/delete/dir", async (req, res) => {
     if (fs.existsSync(mainDir + "/" + req.body.path)) {
       fs.rmSync(mainDir + "/" + req.body.path, { recursive: true });
     }
+    res.redirect(303, "/docs/recurse");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

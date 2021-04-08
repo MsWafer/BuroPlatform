@@ -189,4 +189,64 @@ router.get("/get/stats", auth, async (req, res) => {
   }
 });
 
+//get stats for today
+router.get("/get/stats/today", auth, async (req, res) => {
+  try {
+    let stat = await Stat.findOne({}, {}, { sort: { date: -1 } });
+    return res.json(stat);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//get stats for last week
+router.get("/get/stats/week", auth, async (req, res) => {
+  try {
+    let stats = await Stat.find();
+    let arr = [];
+    let func = (stats) => {
+      let f_arr = [];
+      while (f_arr.length < 7) {
+        if (stats.length >= 1) {
+          f_arr.push(stats.pop());
+        } else {
+          break;
+        }
+      }
+      let week = {
+        user_count: 0,
+        task_close_count: 0,
+        task_open_count: 0,
+        my_tasks_created: 0,
+        sprints_created: 0,
+        complete_sprints_closed: 0,
+        incomplete_sprints_closed: 0,
+        sprints_closed: 0,
+        date: f_arr[f_arr.length - 1].date,
+      };
+      for (let el of f_arr) {
+        week.user_count += el.user_count;
+        week.task_close_count += el.task_close_count;
+        week.task_open_count += el.task_open_count;
+        week.my_tasks_created += el.my_tasks_created;
+        week.sprints_created += el.sprints_created;
+        week.incomplete_sprints_closed += el.incomplete_sprints_closed;
+        week.complete_sprints_closed += el.complete_sprints_closed;
+        week.sprints_closed +=
+          el.complete_sprints_closed + el.incomplete_sprints_closed;
+      }
+      return week;
+    };
+    while (stats.length >= 1) {
+      arr.push(func(stats));
+    }
+
+    res.json(arr);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 module.exports = router;
