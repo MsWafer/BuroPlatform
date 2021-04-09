@@ -37,7 +37,7 @@ module.exports = async (tokens, notification_body, data, push_title) => {
       }
     }
     if (user.notifications.length > 10) {
-      user.notifications.splice(10, 1);
+      user.notifications.splice(0, 1);
     }
     await user.save();
   }
