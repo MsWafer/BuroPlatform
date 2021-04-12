@@ -702,8 +702,8 @@ router.put("/team2/:crypt/:userid", manauth, async (req, res) => {
     let user2 = project.team2.filter(
       (user) => user.user == req.params.userid
     )[0];
-    user2[position] = req.body.position;
-    user2[task] = req.body.task;
+    user2.position = req.body.position;
+    user2.task = req.body.task;
     await project.save();
     await Project.populate(project, "team2.user");
     return res.json({ msg: "Данные пользователя обновлены", project: project });
