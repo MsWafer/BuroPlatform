@@ -164,8 +164,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
     let task = sprint.tasks.filter((el) => el._id == req.params.taskid);
-    console.log(req.params)
-    console.log(task.length)
+    console.log("DA",req.params)
     task[0].taskStatus = !task[0].taskStatus;
     let num = task[0].taskStatus ? 1 : -1;
     let d = new Date();
@@ -178,7 +177,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
       { $inc: { task_close_count: num } }
     );
     await sprint.save();
-    await Sprint.populate(sprint, "tasks.user");
+    await Sprint.populate(sprint, {path:"tasks.user",select:"fullname avatar"});
     return res.json(task[0]);
   } catch (error) {
     console.log(error);
@@ -189,6 +188,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
 //edit task
 router.put("/sprints/taskedit/:taskid", auth, async (req, res) => {
   try {
+    console.log("edit",req.params)
     let sprint = await Sprint.findOne({
       "tasks._id": req.params.taskid,
     }).populate("creator");
@@ -199,7 +199,7 @@ router.put("/sprints/taskedit/:taskid", auth, async (req, res) => {
     let keys = Object.keys(req.body);
     keys.forEach((key) => (a[key] = req.body[key]));
     await sprint.save();
-    await Sprint.populate(sprint, "tasks.user");
+    await Sprint.populate(sprint, {path:"tasks.user",select:"fullname avatar"});
     return res.json(a);
   } catch (error) {
     console.error(error);
