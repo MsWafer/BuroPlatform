@@ -163,11 +163,11 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
-    let task = sprint.tasks.filter((el) => {
-      el._id == req.params.taskid;
-    })[0];
-    task.taskStatus = !task.taskStatus;
-    let num = task.taskStatus ? 1 : -1;
+    let task = sprint.tasks.filter((el) => el._id == req.params.taskid);
+    console.log(req.params)
+    console.log(task.length)
+    task[0].taskStatus = !task[0].taskStatus;
+    let num = task[0].taskStatus ? 1 : -1;
     let d = new Date();
     await Stat.findOneAndUpdate(
       {
@@ -179,7 +179,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
     );
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
-    return res.json(task);
+    return res.json(task[0]);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ err: "server error" });
@@ -189,9 +189,9 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
 //edit task
 router.put("/sprints/taskedit/:taskid", auth, async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({"tasks._id": req.params.taskid }).populate(
-      "creator"
-    );
+    let sprint = await Sprint.findOne({
+      "tasks._id": req.params.taskid,
+    }).populate("creator");
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
