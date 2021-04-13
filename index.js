@@ -52,6 +52,7 @@ app.use("/merc", require("./routes/merc"));
 app.use("/docs", require("./routes/docs"));
 app.use("/prjevent", require("./routes/projevents"));
 app.use("/ideas", require("./routes/ideas"));
+app.use("/mob", require("./routes/mobroutes"));
 
 const PORT = process.env.PORT || 7070;
 

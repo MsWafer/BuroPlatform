@@ -11,6 +11,9 @@ services:
     volumes:
       - ticketSS:/usr/src/app/public/ticketSS
       - avatars:/usr/src/app/public/avatars
+      - docs:/usr/src/app/public/docs
+      - docimages:/usr/src/app/public/docimages
+      - covers:/usr/src/app/public/covers
   mongo:
     container_name: mongo_platform
     restart: always
@@ -25,6 +28,9 @@ volumes:
   mongo-config:
   ticketSS:
   avatars:
+  docs:
+  docimages:
+  covers:
   mongoData:
     external:
       name: mongo_external
