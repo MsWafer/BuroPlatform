@@ -38,7 +38,9 @@ router.get("/mobsprint/:id", async (req, res) => {
 //get sprint's tasks
 router.get("/mobtasks/:id", async (req, res) => {
   try {
-    let sprint = await Sprint.findOne({ _id: req.params.id }).select("tasks");
+    let sprint = await Sprint.findOne({ _id: req.params.id })
+      .select("tasks")
+      .populate("tasks.user", "fullname avatar");
     if (!sprint) {
       return res.status(404).json({ err: "Спринт не найден" });
     }
@@ -164,7 +166,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
     let task = sprint.tasks.filter((el) => el._id == req.params.taskid);
-    console.log("DA",req.params)
+    console.log("DA", req.params);
     task[0].taskStatus = !task[0].taskStatus;
     let num = task[0].taskStatus ? 1 : -1;
     let d = new Date();
@@ -177,7 +179,10 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
       { $inc: { task_close_count: num } }
     );
     await sprint.save();
-    await Sprint.populate(sprint, {path:"tasks.user",select:"fullname avatar"});
+    await Sprint.populate(sprint, {
+      path: "tasks.user",
+      select: "fullname avatar",
+    });
     return res.json(task[0]);
   } catch (error) {
     console.log(error);
@@ -188,7 +193,7 @@ router.put("/sprints/DAtask/:taskid", auth, async (req, res) => {
 //edit task
 router.put("/sprints/taskedit/:taskid", auth, async (req, res) => {
   try {
-    console.log("edit",req.params)
+    console.log("edit", req.params);
     let sprint = await Sprint.findOne({
       "tasks._id": req.params.taskid,
     }).populate("creator");
@@ -199,11 +204,187 @@ router.put("/sprints/taskedit/:taskid", auth, async (req, res) => {
     let keys = Object.keys(req.body);
     keys.forEach((key) => (a[key] = req.body[key]));
     await sprint.save();
-    await Sprint.populate(sprint, {path:"tasks.user",select:"fullname avatar"});
+    await Sprint.populate(sprint, {
+      path: "tasks.user",
+      select: "fullname avatar",
+    });
     return res.json(a);
   } catch (error) {
     console.error(error);
     return res.json({ msg: "server error" });
+  }
+});
+
+//add user to task
+router.put("/sprints/task/adduser/:id", auth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id }).populate(
+      "creator"
+    );
+
+    if (!sprint) {
+      return res.status(404).json({ err: "Спринт не найден" });
+    }
+    let user = await User.findOne({ _id: req.body.userid });
+    if (!user) {
+      return res.status(404).json({ err: "Пользователь не найден" });
+    }
+    let task = sprint.tasks.filter((task) => task._id == req.body.taskid);
+    let ind = sprint.tasks.indexOf(task[0]);
+    sprint.tasks[ind].user = req.body.userid;
+    sprint.tasks[ind].user2 = req.user.id;
+    await sprint.save();
+    await Sprint.populate(sprint, {
+      path: "tasks.user",
+      select: "fullname avatar",
+    });
+
+    res.json(task[0]);
+
+    //notifications
+    let notification_body = `Вам назначили новую задачу: ${task[0].taskTitle}`;
+
+    if (user.device_tokens && user.device_tokens.length > 0) {
+      let user2 = await User.findOne({ _id: req.user.id });
+      let data = {
+        sprint_id: sprint._id._id,
+        avatar: user2.avatar,
+        fullname: user2.fullname,
+      };
+      mob_push(
+        user.device_tokens,
+        task[0].taskTitle,
+        data,
+        "Вам назначили задачу"
+      );
+    }
+
+    if (req.body.rocket == true) {
+      let rc = () =>
+        fetch(`${process.env.CHAT}/api/v1/login`, {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: process.env.R_U,
+            password: process.env.R_P,
+          }),
+        })
+          .then((res) => res.json())
+          .then((res) =>
+            fetch(`${process.env.CHAT}/api/v1/chat.postMessage`, {
+              method: "post",
+              headers: {
+                Accept: "application/json, text/plain, */*",
+                "Content-Type": "application/json",
+                "X-Auth-Token": res.data.authToken,
+                "X-User-Id": res.data.userId,
+              },
+              body: JSON.stringify({
+                channel: `@${user.rocketname}`,
+                text: notification_body,
+              }),
+            })
+          );
+
+      rc();
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delete sprint by id
+router.delete("/sprints/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    if (!sprint) {
+      return res.status(404).json({ err: "Не найден спринт с указанным id" });
+    }
+    let project = await Project.findOne({ sprints: req.params.id })
+    project.sprints = project.sprints.filter(
+      (el) => el.toString() != req.params.id.toString()
+    );
+    await project.save();
+    await User.updateMany(
+      { sprints: sprint._id },
+      { $pull: { sprints: sprint._id } }
+    );
+    await sprint.remove();
+    console.log("sprint deleted");
+    return res.redirect(303, `/docs/mobprjspr/${project.crypt}`);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change sprint status
+router.put("/sprints/:id", manauth, async (req, res) => {
+  try {
+    let sprint = await Sprint.findOne({ _id: req.params.id });
+    sprint.status = !sprint.status;
+    req.body.explanation && (sprint.explanation = req.body.explanation);
+
+    await sprint.save();
+    let project = await Project.findOne({ sprints: req.params.id })
+    console.log("srint status changed");
+    res.redirect(303, `/docs/mobprjspr/${project.crypt}`);
+    let obj = { complete_sprints_closed: 1 };
+    for (let ass of sprint.tasks) {
+      if (ass.taskStatus == false) {
+        obj = { incomplete_sprints_closed: 1 };
+      }
+    }
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: obj }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.json({ err: "server error" });
+  }
+});
+
+//dis/like proposition
+router.put("/like/:id", auth, async (req, res) => {
+  try {
+    let prop = await Prop.findById(req.params.id);
+
+    if (
+      prop.likes.filter((like) => like.user.toString() === req.user.id).length >
+      0
+    ) {
+      let removeIndex = prop.likes
+        .map((like) => like.user.toString())
+        .indexOf(req.user.id);
+      prop.likes.splice(removeIndex, 1);
+      await Prop.findOneAndUpdate(
+        { _id: req.params.id },
+        { $inc: { likeCount: -1 } }
+      );
+      await prop.save();
+      return res.redirect(303,"/props/all/likes");
+    }
+
+    prop.likes.unshift({ user: req.user.id });
+    await Prop.findOneAndUpdate(
+      { _id: req.params.id },
+      { $inc: { likeCount: 1 } }
+    );
+    await prop.save();
+    return res.json({msg:"let it end please"});
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("server error");
   }
 });
 
