@@ -304,7 +304,7 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ err: "Не найден спринт с указанным id" });
     }
-    let project = await Project.findOne({ sprints: req.params.id })
+    let project = await Project.findOne({ sprints: req.params.id });
     project.sprints = project.sprints.filter(
       (el) => el.toString() != req.params.id.toString()
     );
@@ -330,7 +330,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     req.body.explanation && (sprint.explanation = req.body.explanation);
 
     await sprint.save();
-    let project = await Project.findOne({ sprints: req.params.id })
+    let project = await Project.findOne({ sprints: req.params.id });
     console.log("srint status changed");
     res.redirect(303, `/docs/mobprjspr/${project.crypt}`);
     let obj = { complete_sprints_closed: 1 };
@@ -372,7 +372,7 @@ router.put("/like/:id", auth, async (req, res) => {
         { $inc: { likeCount: -1 } }
       );
       await prop.save();
-      return res.redirect(303,"/props/all/likes");
+      return res.redirect(303, "/props/all/likes");
     }
 
     prop.likes.unshift({ user: req.user.id });
@@ -381,10 +381,66 @@ router.put("/like/:id", auth, async (req, res) => {
       { $inc: { likeCount: 1 } }
     );
     await prop.save();
-    return res.json({msg:"let it end please"});
+    return res.json({ msg: "let it end please" });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("server error");
+  }
+});
+
+//add sprint to project found by crypt
+router.post("/sprints/new/:crypt", auth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ crypt: req.params.crypt })
+      .populate("sprints", "title status tags tasks.taskStatus")
+      .select("sprints crypt");
+    if (!project) {
+      return res
+        .status(404)
+        .json({ msg: "Не найдено проекта с указанным шифром" });
+    }
+    let tags;
+    if (req.body.tasks) {
+      tags = req.body.tags.filter((tag) => tag != null);
+    } else {
+      tags = [];
+    }
+
+    sprint = new Sprint({
+      title: req.body.title,
+      dateOpen: Date.now(),
+      description: req.body.description,
+      dateClosePlan: req.body.date,
+      tasks: req.body.tasks ? req.body.tasks : [],
+      creator: req.user.id,
+      tags: tags,
+      project: project,
+    });
+    await sprint.save();
+    await project.sprints.unshift(sprint._id);
+
+    if (!Array.isArray(project.tags)) {
+      project.tags = [];
+    }
+    //check if project.tags includes tags from sprint
+    let dupe_array = project.tags.concat(tags);
+    project.tags = [...new Set(dupe_array)];
+
+    await project.save();
+    console.log("sprint added to project");
+    res.json({ sprint: sprint, project:project });
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { sprints_created: 1 } }
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "server error" });
   }
 });
 
