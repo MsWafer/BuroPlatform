@@ -44,20 +44,25 @@ const mainDir = path.resolve(__dirname + "/../public/docs");
 router.get("/recurse", async (req, res) => {
   try {
     let a = path.resolve(__dirname + "/../public");
-    let func = (dir,dirname) => {
-      let govno = dir + "/" + dirname
-      let result = { dirname: dirname,dirpath:/public(.+)/.exec(govno)[1], files: [], subdirs: [] };
+    let func = (dir, dirname) => {
+      let govno = dir + "/" + dirname;
+      let result = {
+        dirname: dirname,
+        dirpath: /public(.+)/.exec(govno)[1],
+        files: [],
+        subdirs: [],
+      };
       let b = fs.readdirSync(govno);
       for (let c of b) {
         if (fs.lstatSync(govno + "/" + c).isFile()) {
           result.files.push(c);
         } else {
-          result.subdirs.push(func(govno,c));
+          result.subdirs.push(func(govno, c));
         }
       }
       return result;
     };
-    res.json(func(a,"docs"));
+    res.json(func(a, "docs"));
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -126,6 +131,9 @@ router.put("/mkdir", manauth, async (req, res) => {
     if (req.body.dirname.match(/\.\./g)) {
       return res.json("huy");
     }
+    if (req.body.dirname.match(/public\//g)) {
+      req.body.dirname = req.body.dirname.replace(/public\//g, "");
+    }
     if (fs.existsSync(mainDir + "/" + req.body.dirname)) {
       return res.json("Папка с таким именем уже существует");
     }
@@ -166,7 +174,6 @@ router.post("/filepost", manauth, async (req, res) => {
 
 //write file
 router.post("/editfile", manauth, async (req, res) => {
-  console.log(req.body)
   try {
     let keys = Object.keys(req.body);
     let text = JSON.stringify(req.body.text);
@@ -197,6 +204,9 @@ router.put("/read", async (req, res) => {
   try {
     if (req.body.filepath.match(/\.\./g)) {
       return res.json("huy");
+    }
+    if (req.body.filepath.match(/public\//g)) {
+      req.body.filepath = req.body.filepath.replace(/public\//g, "");
     }
     res.download(
       path.resolve(__dirname + "/../public/docs/" + req.body.filepath),
