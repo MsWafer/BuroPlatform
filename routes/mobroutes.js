@@ -315,7 +315,7 @@ router.delete("/sprints/:id", manauth, async (req, res) => {
     );
     await sprint.remove();
     console.log("sprint deleted");
-    return res.redirect(303, `/docs/mobprjspr/${project.crypt}`);
+    return res.redirect(303, `/mob/mobprjspr/${project.crypt}`);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -332,7 +332,7 @@ router.put("/sprints/:id", manauth, async (req, res) => {
     await sprint.save();
     let project = await Project.findOne({ sprints: req.params.id });
     console.log("srint status changed");
-    res.redirect(303, `/docs/mobprjspr/${project.crypt}`);
+    res.redirect(303, `/mob/mobprjspr/${project.crypt}`);
     let obj = { complete_sprints_closed: 1 };
     for (let ass of sprint.tasks) {
       if (ass.taskStatus == false) {
