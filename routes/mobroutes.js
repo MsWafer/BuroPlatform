@@ -392,8 +392,7 @@ router.put("/like/:id", auth, async (req, res) => {
 router.post("/sprints/new/:crypt", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ crypt: req.params.crypt })
-      .populate("sprints", "title status tags tasks.taskStatus")
-      .select("sprints crypt");
+      .select("sprints crypt tags");
     if (!project) {
       return res
         .status(404)
@@ -428,7 +427,7 @@ router.post("/sprints/new/:crypt", auth, async (req, res) => {
 
     await project.save();
     console.log("sprint added to project");
-    res.json({ sprint: sprint, project:project });
+    res.json({ sprint: sprint });
     let d = new Date();
     await Stat.findOneAndUpdate(
       {

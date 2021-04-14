@@ -166,6 +166,7 @@ router.post("/filepost", manauth, async (req, res) => {
 
 //write file
 router.post("/editfile", manauth, async (req, res) => {
+  console.log(req.body)
   try {
     let keys = Object.keys(req.body);
     let text = JSON.stringify(req.body.text);
