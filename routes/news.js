@@ -201,18 +201,18 @@ router.get("/get/stats/today", auth, async (req, res) => {
 });
 
 //get stats for last week
-router.get("/get/stats/week", auth, async (req, res) => {
+router.get("/get/stats/week", async (req, res) => {
   try {
     let stats = await Stat.find();
     let arr = [];
     let func = (stats) => {
       let f_arr = [];
-      while (f_arr.length < 7) {
-        if (stats.length >= 1) {
+      while (f_arr.length < 7 && stats.length > 0) {
+        // if (stats.length >= 1) {
           f_arr.push(stats.pop());
-        } else {
-          break;
-        }
+        // } else {
+        //   break;
+        // }
       }
       let week = {
         user_count: 0,

@@ -213,6 +213,10 @@ router.get("/me", auth, async (req, res) => {
           populate: { path: "sprints" },
         },
         {
+          path: "fav_proj",
+          select: "type stage dateFinish title crypt status about"
+        },
+        {
           path: "division",
         },
         {

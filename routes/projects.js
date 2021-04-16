@@ -10,7 +10,7 @@ const CryptoJS = require("crypto-js");
 const Project = require("../models/Project");
 const Sprint = require("../models/Sprint");
 const User = require("../models/User");
-const Stat = require("../models/Stat")
+const Stat = require("../models/Stat");
 const rcprojcreate = require("../middleware/rcprojcreate");
 const rckickprj = require("../middleware/rckickprj");
 const rcinvprj = require("../middleware/rcinvprj");
@@ -917,10 +917,10 @@ router.put("/sprints/:id", manauth, async (req, res) => {
       sprint: sprint,
       project: project,
     });
-    let obj = {complete_sprints_closed:1}
-    for(let ass of sprint.tasks){
-      if(ass.taskStatus == false){
-        obj = {incomplete_sprints_closed:1}
+    let obj = { complete_sprints_closed: 1 };
+    for (let ass of sprint.tasks) {
+      if (ass.taskStatus == false) {
+        obj = { incomplete_sprints_closed: 1 };
       }
     }
     let d = new Date();
@@ -1287,9 +1287,9 @@ router.put("/sprints/DAtask/test", auth, async (req, res) => {
     if (!sprint) {
       return res.status(404).json({ msg: "Спринт не найден" });
     }
-    for (let task of sprint.tasks){
-      if(task._id==req.body.taskid){
-        task.taskStatus = ! task.taskStatus;
+    for (let task of sprint.tasks) {
+      if (task._id == req.body.taskid) {
+        task.taskStatus = !task.taskStatus;
         let num = task.taskStatus ? 1 : -1;
         let d = new Date();
         await Stat.findOneAndUpdate(
@@ -1305,7 +1305,7 @@ router.put("/sprints/DAtask/test", auth, async (req, res) => {
     // sprint.tasks.forEach((task) => {
     //   if (task._id == req.body.taskid) {
     //     task.taskStatus = !task.taskStatus;
-        
+
     //   }
     // });
     await sprint.save();
@@ -1440,6 +1440,28 @@ router.get("/tag/find", auth, async (req, res) => {
     let regex = new RegExp(regexEscape(req.query.tag), "g");
     let tags = project.tags.filter((tag) => tag != null && tag.match(regex));
     return res.json(tags);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add proj to fav
+router.put("/favproj/:id", auth, async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.user.id });
+    let msg;
+    if (!user.fav_proj.includes(req.params.id.toString())) {
+      user.fav_proj.push(req.params.id);
+      msg = "Проект добавлен в избранные";
+    } else {
+      user.fav_proj = user.fav_proj.filter(
+        (el) => el.toString() != req.params.id.toString()
+      );
+      msg = "Проект убран из избранных";
+    }
+    await user.save();
+    res.json({ msg: msg });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

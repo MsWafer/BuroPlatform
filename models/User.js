@@ -146,26 +146,34 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   device_tokens: { type: Array, default: [] },
-  notifications: [{
-    priority: {type: String},
-    delayWhileIdle: {type: Boolean},
-    timeToLive: {type: Number},
-    restrictedPackageName: {type: String},
-    notification: {
-      icon: {type: String},
-      body: {type: String},
-      title: {type: String},
+  notifications: [
+    {
+      priority: { type: String },
+      delayWhileIdle: { type: Boolean },
+      timeToLive: { type: Number },
+      restrictedPackageName: { type: String },
+      notification: {
+        icon: { type: String },
+        body: { type: String },
+        title: { type: String },
+      },
+      data: {
+        news_id: { type: mongoose.Schema.Types.ObjectId },
+        avatar: { type: String },
+        fullname: { type: String },
+        read: { type: Boolean },
+        id: { type: String },
+        date: { type: String },
+        sprint_id: { type: mongoose.Schema.Types.ObjectId },
+      },
     },
-    data: {
-      news_id: {type: mongoose.Schema.Types.ObjectId},
-      avatar: {type: String},
-      fullname: {type: String},
-      read: {type: Boolean},
-      id: {type: String},
-      date: {type: String},
-      sprint_id: {type: mongoose.Schema.Types.ObjectId}
-    }
-  }],
+  ],
+  fav_proj: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "project",
+    },
+  ],
 });
 
 module.exports = User = mongoose.model("user", UserSchema);
