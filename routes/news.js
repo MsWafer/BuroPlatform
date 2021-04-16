@@ -214,7 +214,6 @@ router.get("/get/stats/week", async (req, res) => {
         //   break;
         // }
       }
-      console.log(f_arr)
       let week = {
         user_count: 0,
         task_close_count: 0,
@@ -243,7 +242,7 @@ router.get("/get/stats/week", async (req, res) => {
       arr.push(func(stats));
     }
 
-    res.json(arr);
+    res.json(arr.reverse());
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
