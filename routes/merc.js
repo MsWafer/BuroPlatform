@@ -169,15 +169,15 @@ router.delete("/:id", manauth, async (req, res) => {
     await User.findOneAndRemove({ _id: req.params.id });
     let projects = await Project.find({ "team2.user": req.params.id });
     if (projects.length > 0) {
-      projects.forEach(
-        (project) =>
-          (project.team2 = project.team2.filter(
-            (user_obj) => user_obj.user != req.params.id
-          )),
-        await project.save()
-      );
+      for (let project of projects) {
+        project.team2 = project.team2.filter(
+          (user_obj) => user_obj.user != req.params.id
+        );
+        await project.save();
+      }
     }
-    return res.json({ msg: "Субподрядчик удален" });
+
+    return res.redirect(303, "/merc/search?name=all");
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
