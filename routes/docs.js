@@ -240,8 +240,11 @@ router.put("/delete/dir", async (req, res) => {
     if (req.body.path.match(/\.\./g)) {
       return res.json("huy");
     }
+    console.log(path.resolve(mainDir + "/" + req.body.path));
     if (fs.existsSync(mainDir + "/" + req.body.path)) {
-      fs.rmSync(mainDir + "/" + req.body.path, { recursive: true });
+      fs.rmSync(path.resolve(mainDir + "/" + req.body.path), {
+        recursive: true,
+      });
     }
     res.redirect(303, "/docs/recurse");
   } catch (error) {
