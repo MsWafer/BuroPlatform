@@ -242,7 +242,8 @@ router.put("/delete/dir", async (req, res) => {
     }
     console.log(path.resolve(mainDir + "/" + req.body.path));
     if (fs.existsSync(mainDir + "/" + req.body.path)) {
-      fs.rmSync(path.resolve(mainDir + "/" + req.body.path), {
+      fs.rmdirSync(path.resolve(mainDir + "/" + req.body.path), {
+        force: true,
         recursive: true,
       });
     }
