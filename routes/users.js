@@ -51,6 +51,7 @@ const Division = require("../models/Division");
 const Sprint = require("../models/Sprint");
 const { use } = require("./ideas");
 const Stat = require("../models/Stat");
+const Card = require("../models/Card");
 
 //registration
 router.post("/", async (req, res) => {
@@ -214,7 +215,7 @@ router.get("/me", auth, async (req, res) => {
         },
         {
           path: "fav_proj",
-          select: "type stage dateFinish title crypt status about"
+          select: "type stage dateFinish title crypt status about",
         },
         {
           path: "division",
@@ -224,6 +225,20 @@ router.get("/me", auth, async (req, res) => {
           select: "status project title tasks tags",
           match: { status: false },
           populate: { path: "project", select: "crypt title" },
+        },
+        {
+          path: "fav_cards",
+        },
+        {
+          path: "fav_boards.project",
+          select: "crypt backlog boards",
+          populate: [
+            {
+              path: "boards.categories",
+              populate: [{ path: "timeline.cards" }, { path: "expired" }],
+            },
+            { path: "backlog" },
+          ],
         },
       ]);
     let d = new Date();
@@ -238,12 +253,12 @@ router.get("/me", auth, async (req, res) => {
         day: d.getDate(),
         month: d.getMonth() + 1,
         year: d.getFullYear(),
-        users: [user._id],
+        users: [req.user._id],
         user_count: 1,
       });
       await stat.save();
     } else {
-      if (!stat.users.includes(user._id)) {
+      if (!stat.users.includes(req.user.id)) {
         stat.users.push(user._id);
         stat.user_count += 1;
         await stat.save();
@@ -260,9 +275,8 @@ router.get("/me", auth, async (req, res) => {
       user.partition = [];
       await user.save();
     }
-
     if (req.query.tasks == "true") {
-      let history_array = user.tasks; //.sort((a, b) => a.date - b.date);
+      let history_array = user.tasks;
       let dateless_arr = [];
       let userTasks = user.tasks
         .filter((el) => !el.deadline && el.taskStatus == false)
@@ -273,12 +287,24 @@ router.get("/me", auth, async (req, res) => {
       let sprints = await Sprint.find({
         "tasks.user": req.user.id,
       }).select("tasks project");
-      if (sprints.length > 0) {
+      let cards = await Card.find({
+        "tasks.user": req.user.id,
+      }).select("tasks project");
+      if (sprints.length > 0 || cards.length > 0) {
         let arr = [];
         sprints.forEach((sprint) => {
           sprint.tasks.forEach((task) => {
             if (task.user == req.user.id) {
               task.project = sprint.project;
+              arr.push(task);
+              task.date ? history_array.push(task) : dateless_arr.push(task);
+            }
+          });
+        });
+        cards.forEach((card) => {
+          card.tasks.forEach((task) => {
+            if (task.user == req.user.id) {
+              // task.project = card.project;
               arr.push(task);
               task.date ? history_array.push(task) : dateless_arr.push(task);
             }
@@ -409,15 +435,34 @@ router.get("/me", auth, async (req, res) => {
         path: "taskHistory.month_tasks.tasks.project",
         select: "title crypt",
       });
-      // user.__v+=Math.floor(Math.random()*200)
-      // console.log(user.__v)
     }
 
-    console.log("user found");
+    for (let fav_board of user.fav_boards) {
+      user.boards.push(
+        fav_board.project.boards.filter((el) => el._id == fav_board.board_id)[0]
+      );
+    }
     return res.json(user);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: "Server error" });
+  }
+});
+
+//close any task
+router.put("/tasks/changestatus/:id", auth, async (req, res) => {
+  try {
+    let task_source = await Sprint.findOne({ "tasks._id": req.params.id });
+    if (!task_source) {
+      task_source = await Card.findOne({ "tasks._id": req.params.id });
+    }
+    let task = task_source.tasks.filter((el) => el._id == req.params.id)[0];
+    task.taskStatus = !task.taskStatus;
+    await task_source.save();
+    return res.redirect(303, "/users/me?tasks=true");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
   }
 });
 
@@ -606,7 +651,7 @@ router.get("/all", auth, async (req, res) => {
         return a[query] > b[query] ? order : a[query] < b[query] ? -order : 0;
       });
     };
-    console.log("GET all users");
+    // console.log("GET all users");
     return res.json(users.sortBy(que));
   } catch (err) {
     console.error(err.message);

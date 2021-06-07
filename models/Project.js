@@ -210,6 +210,32 @@ const ProjectSchema = new Schema({
       },
     },
   ],
+  boards: [
+    {
+      name: String,
+      categories: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "category",
+        },
+      ],
+      columns: {
+        type: Array,
+      },
+      archive: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "card",
+        },
+      ],
+    },
+  ],
+  backlog: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "card",
+    },
+  ],
   cover: {
     type: String,
     default: "avatars/spurdo.png",

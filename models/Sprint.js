@@ -56,10 +56,6 @@ const SprintSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "project",
       },
-      // sprint: {
-      //   type: mongoose.Schema.Types.ObjectId,
-      //   ref: "sprint"
-      // },
       date: {
         type: Date,
       },

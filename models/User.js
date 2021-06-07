@@ -174,6 +174,26 @@ const UserSchema = new mongoose.Schema({
       ref: "project",
     },
   ],
+  fav_cards: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "card",
+    },
+  ],
+  fav_boards: [
+    {
+      board_id: String,
+      project: { type: mongoose.Schema.Types.ObjectId, ref: "project" },
+    },
+  ],
+  boards: {
+    type: Array,
+    default: [],
+  },
+  theme: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = User = mongoose.model("user", UserSchema);

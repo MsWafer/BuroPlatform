@@ -194,14 +194,37 @@ router.get("/:auth", async (req, res) => {
         "team2.user",
         "-projects -password -permission -tickets -__v -sprints"
       )
-      .populate({
-        path: "sprints",
-        populate: { path: "creator", select: "fullname _id avatar" },
-      })
+      .populate([
+        {
+          path: "sprints",
+          populate: { path: "creator", select: "fullname _id avatar" },
+        },
+        {
+          path: "boards.categories",
+          populate: {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+            ],
+          },
+        },
+        {
+          path: "backlog",
+          populate: [
+            { path: "creator" },
+            { path: "execs", select: "avatar fullname" },
+          ],
+        },
+      ])
       .populate("urnNew.user", "avatar fullname _id")
       .populate("urnNew.old.user", "avatar fullname _id");
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
+    }
+    if (!project.backlog) {
+      project.backlog = [];
+      await project.save();
     }
     if (project.team2.length == 0 && project.team.length != 0) {
       let team2 = [];
@@ -221,7 +244,6 @@ router.get("/:auth", async (req, res) => {
       await project.tags.unshift(project.type);
       await project.save();
     }
-    console.log("found project by crypt");
     return res.json(project);
   } catch (error) {
     console.error(error);

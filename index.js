@@ -53,7 +53,32 @@ app.use("/docs", require("./routes/docs"));
 app.use("/prjevent", require("./routes/projevents"));
 app.use("/ideas", require("./routes/ideas"));
 app.use("/mob", require("./routes/mobroutes"));
+app.use("/kanban", require("./routes/boards"));
 
 const PORT = process.env.PORT || 7070;
 
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+
+const { timeline_refresh, expired_check } = require("./middleware/tm_dd");
+
+let timeline_check = async () => {
+  await timeline_refresh();
+  setTimeout(timeline_check, 1000 * 60 * 60 * 1);
+};
+let expired = async () => {
+  await expired_check();
+  setTimeout(expired, 1000 * 60 * 60 * 1);
+};
+
+expired();
+timeline_check();
+
+// delete later
+app.get("/test-next",async(req,res)=>{
+  try{
+    res.json("frontend lezhat")
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({err:"server error"});
+  }
+})
