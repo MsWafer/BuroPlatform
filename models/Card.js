@@ -16,7 +16,7 @@ const CardSchema = new Schema({
   deadline: Date,
   event_date: Date,
   explanation: String,
-  emergency: { type: String, default: "Нет" },
+  emergency: { type: String, default: "Обычная" },
   comments: [
     {
       text: String,

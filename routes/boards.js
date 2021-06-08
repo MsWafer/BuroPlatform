@@ -35,13 +35,13 @@ router.post("/boards/new/:crypt", async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    let category = new Category({
-      name: "Категория",
-      timeline: [{ start: undefined, end: undefined, cards: [] }],
-    });
-    await category.save();
+    // let category = new Category({
+    //   name: "Категория",
+    //   timeline: [{ start: undefined, end: undefined, cards: [] }],
+    // });
+    // await category.save();
     let timed_category = new Category({
-      name: "Категория в неделю",
+      name: "Спринт",
       step: 7,
       timeline: [{ start: start, end: end, cards: [] }],
     });
@@ -49,7 +49,7 @@ router.post("/boards/new/:crypt", async (req, res) => {
     let board = {
       name: req.body.name,
       columns: ["В работе", "Готово"],
-      categories: [category._id, timed_category._id],
+      categories: [timed_category._id],
     };
     project.boards.push(board);
     await project.save();
@@ -145,7 +145,17 @@ router.post("/categories/new/:id", async (req, res) => {
       {
         path: "boards.categories",
         populate: [
-          { path: "timeline.cards" },
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
           {
             path: "expired",
             populate: [
@@ -181,11 +191,11 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
     category.month = req.body.month ? req.body.month : undefined;
     let start;
     let end;
-    if (req.body.step < 15) {
+    if (!req.body.month) {
       start = Date.now() - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
       end = new Date(start + 1000 * 60 * 60 * 24 * (req.body.step - 1));
     }
-    if (req.body.step > 14) {
+    if (req.body.month) {
       start = new Date(
         Date.now() - 1000 * 60 * 60 * 24 * (new Date().getDate() - 1)
       );
@@ -193,7 +203,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
         start.getMonth() + req.body.month < 12
           ? start.getMonth() + req.body.month
           : start.getMonth() + req.body.month - 12;
-      end = new Date(start.getFullYear(), month);
+      end = new Date(start.getFullYear(), month, 0);
     }
     timeline.start = start;
     timeline.end = end;
@@ -203,7 +213,17 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
     }).populate({
       path: "boards.categories",
       populate: [
-        { path: "timeline.cards" },
+        {
+          path: "timeline.cards",
+          populate: [
+            { path: "creator" },
+            { path: "execs", select: "avatar fullname" },
+            {
+              path: "event_users",
+              select: "avatar fullname",
+            },
+          ],
+        },
         {
           path: "expired",
           populate: [
@@ -234,26 +254,27 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
       path: "timeline.cards",
     });
 
-    let new_timeline = {
-      start:
-        Number(category.timeline[category.timeline.length - 1].end) +
-        1000 * 60 * 60 * 24,
-      cards: [],
-    };
-    new_timeline.end =
-      new_timeline.start + 1000 * 60 * 60 * 24 * (category.step - 1);
-    for (let card of category.timeline[category.timeline.length - 1].cards) {
-      if (card.regular) {
-        let newCard = new Card(card._doc);
-        newCard._id = undefined;
-        newCard.status = false;
-        newCard.comments = [];
-        newCard.expired = false;
-        newCard.column = "В работе";
-        newCard.deadline
-          ? (newCard.deadline += 1000 * 60 * 60 * 24 * category.step)
-          : undefined;
-        if (newCard.tasks) {
+    if (!category.month) {
+      let new_timeline = {
+        start:
+          Number(category.timeline[category.timeline.length - 1].end) +
+          1000 * 60 * 60 * 24,
+        cards: [],
+      };
+      new_timeline.end =
+        new_timeline.start + 1000 * 60 * 60 * 24 * (category.step - 1);
+      await Category.populate(category, { path: "timeline.cards" });
+      for (let card of category.timeline[category.timeline.length - 1].cards) {
+        if (card.regular) {
+          let newCard = new Card(JSON.parse(JSON.stringify(card)));
+          newCard.status = false;
+          delete newCard._id;
+          newCard.comments = [];
+          newCard.expired = false;
+          newCard.column = "В работе";
+          newCard.deadline
+            ? (newCard.deadline += 1000 * 60 * 60 * 24 * category.step)
+            : undefined;
           for (let task of newCard.tasks) {
             task.taskStatus = false;
             delete task._id;
@@ -261,12 +282,65 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
               ? (task.deadline += 1000 * 60 * 60 * 24 * category.step)
               : undefined;
           }
+          await newCard.save();
+          new_timeline.cards.push(newCard);
         }
-        await newCard.save();
-        new_timeline.cards.push(newCard._id);
       }
+      category.timeline.push(new_timeline);
+    } else {
+      let new_timeline = {
+        start:
+          Number(category.timeline[category.timeline.length - 1].end) +
+          1000 * 60 * 60 * 24,
+        cards: [],
+      };
+      let month =
+        new Date(new_timeline.start).getMonth() + category.month < 12
+          ? new Date(new_timeline.start).getMonth() + category.month
+          : new Date(new_timeline.start).getMonth() + category.month - 12;
+      new_timeline.end = new Date(
+        new Date(new_timeline.start).getFullYear() + category.month < 12
+          ? new Date(new_timeline.start).getFullYear()
+          : new Date(new_timeline.start).getFullYear() + 1,
+        month,
+        0
+      );
+      await Category.populate(category, { path: "timeline.cards" });
+      for (let card of category.timeline[category.timeline.length - 1].cards) {
+        /////////////////
+        ///ЧЕТО ДЕЛАЕМ///
+        /////////////////
+        if (card.regular) {
+          let newCard = new Card(JSON.parse(JSON.stringify(card)));
+          newCard.status = false;
+          delete newCard._id;
+          newCard.comments = [];
+          newCard.expired = false;
+          newCard.column = "В работе";
+          newCard.deadline
+            ? new Date(
+                newCard.deadline.getMonth() + category.month < 12
+                  ? newCard.deadline.getFullYear()
+                  : newCard.deadline.getFullYear() + 1,
+                newCard.deadline.getMonth() + category.month < 12
+                  ? newCard.deadline.getMonth() + category.month
+                  : newCard.deadline.getMonth() + category.month - 12,
+                newCard.deadline.getDate()
+              )
+            : undefined;
+          for (let task of newCard.tasks) {
+            task.taskStatus = false;
+            delete task._id;
+            task.deadline
+              ? (task.deadline += 1000 * 60 * 60 * 24 * category.step)
+              : undefined;
+          }
+          await newCard.save();
+          new_timeline.cards.push(newCard);
+        }
+      }
+      category.timeline.push(new_timeline);
     }
-    category.timeline.push(new_timeline);
     await category.save();
     let project = await Project.findOne({
       "boards._id": req.body.board_id,
@@ -276,7 +350,7 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
         {
           path: "timeline.cards",
           populate: [
-            { path: "creator" },
+            { path: "creator", select: "avatar fullname" },
             { path: "execs", select: "avatar fullname" },
             {
               path: "event_users",
@@ -287,7 +361,7 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
         {
           path: "expired",
           populate: [
-            { path: "creator" },
+            { path: "creator", select: "avatar fullname" },
             { path: "execs", select: "avatar fullname" },
             {
               path: "event_users",
@@ -330,11 +404,21 @@ router.put("/categories/delete/:id", async (req, res) => {
       {
         path: "boards.categories",
         populate: [
-          { path: "timeline.cards" },
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -372,11 +456,21 @@ router.put("/boards/column/new/:id", async (req, res) => {
       {
         path: "boards.categories",
         populate: [
-          { path: "timeline.cards" },
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -404,11 +498,22 @@ router.put("/boards/column/delete/:id", async (req, res) => {
       {
         path: "board.categories",
         populate: [
-          { path: "timeline.cards" },
+          {
+            path: "timeline.cards",
+            select: "avatar fullname",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -447,11 +552,21 @@ router.put("/boards/column/delete/:id", async (req, res) => {
       {
         path: "boards.categories",
         populate: [
-          { path: "timeline.cards" },
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -827,26 +942,10 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
     };
     if (req.body.deadline) {
       req.body.deadline = new Date(req.body.deadline);
-      let new_date =
-        req.body.deadline.getDate() +
-        "-" +
-        (req.body.deadline.getMonth() + 1) +
-        "-" +
-        req.body.deadline.getFullYear();
+      let new_date = req.body.deadline.toLocaleString().substring(0, 10);
       if (card.deadline != undefined) {
-        let old_date = card.deadline
-          ? card.deadline.getDate() +
-            "-" +
-            (card.deadline.getMonth() + 1) +
-            "-" +
-            card.deadline.getFullYear()
-          : "нет";
-        let new_date =
-          req.body.deadline.getDate() +
-          "-" +
-          (req.body.deadline.getMonth() + 1) +
-          "-" +
-          req.body.deadline.getFullYear();
+        let old_date = card.deadline.toLocaleString().substring(0, 10);
+        let new_date = req.body.deadline.toLocaleString().substring(0, 10);
         comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
         card.comments.push(comment);
       } else {

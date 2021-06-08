@@ -50,11 +50,17 @@ exports.timeline_refresh = async () => {
           cards: [],
         };
         // let end;
+        // console.log(new Date(new_timeline.start).getMonth());
         let month =
-          new_timeline.start.getMonth() + category.month < 12
-            ? new_timeline.start.getMonth() + category.month
-            : new_timeline.start.getMonth() + category.month - 12;
-        new_timeline.end = new Date(new_timeline.start.getFullYear(), month);
+          new Date(new_timeline.start).getMonth() + category.month < 12
+            ? new Date(new_timeline.start).getMonth() + category.month
+            : new Date(new_timeline.start).getMonth() + category.month - 12;
+        new_timeline.end = new Date(
+          new Date(new_timeline.start).getFullYear() + category.month < 12
+            ? new Date(new_timeline.start).getFullYear()
+            : new Date(new_timeline.start).getFullYear() + 1,
+          month,0
+        );
         // new_timeline.end =
         //   new_timeline.start + 1000 * 60 * 60 * 24 * (category.step - 1);
         await Category.populate(categories, { path: "timeline.cards" });

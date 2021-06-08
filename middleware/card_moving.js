@@ -111,7 +111,9 @@ exports.timeline_timeline = async (
         type: "history",
       };
       switch (true) {
-        case doc.column == column && old_timeline_id != timeline_id:
+        case doc.column == column && old_timeline_id == timeline_id:
+          break;
+        case doc.column == column:
           comment.text = `${old_category.name} -> ${category.name}`;
           doc.comments.push(comment);
           break;

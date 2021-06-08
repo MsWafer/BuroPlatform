@@ -292,7 +292,7 @@ router.get("/me", auth, async (req, res) => {
       }).select("tasks project");
       if (sprints.length > 0 || cards.length > 0) {
         let arr = [];
-        sprints.forEach((sprint) => {
+        sprints && sprints.forEach((sprint) => {
           sprint.tasks.forEach((task) => {
             if (task.user == req.user.id) {
               task.project = sprint.project;
@@ -301,7 +301,7 @@ router.get("/me", auth, async (req, res) => {
             }
           });
         });
-        cards.forEach((card) => {
+        cards && cards.forEach((card) => {
           card.tasks.forEach((task) => {
             if (task.user == req.user.id) {
               // task.project = card.project;
