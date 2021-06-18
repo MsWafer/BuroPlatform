@@ -25,6 +25,7 @@ const {
 const rc_mention = require("../middleware/rc_mention");
 const User = require("../models/User");
 const { findOne } = require("../models/Project");
+const manauth = require("../middleware/manauth");
 
 //new board
 router.post("/boards/new/:crypt", async (req, res) => {
@@ -35,11 +36,6 @@ router.post("/boards/new/:crypt", async (req, res) => {
     if (!project) {
       return res.status(404).json({ err: "Проект не найден" });
     }
-    // let category = new Category({
-    //   name: "Категория",
-    //   timeline: [{ start: undefined, end: undefined, cards: [] }],
-    // });
-    // await category.save();
     let timed_category = new Category({
       name: "Спринт",
       step: 7,
@@ -54,12 +50,8 @@ router.post("/boards/new/:crypt", async (req, res) => {
     project.boards.push(board);
     await project.save();
     await Project.populate(project, [
-      {
-        path: "boards.categories",
-        populate: [{ path: "timeline.cards" }],
-      },
       { path: "backlog" },
-      { path: "boards.archive" },
+      { path: "team2.user" },
     ]);
     return res.json(project);
   } catch (error) {
@@ -126,6 +118,63 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
   }
 });
 
+//delete board
+router.delete("/boards/delete/:id", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ "boards._id": req.params.id });
+    project.boards = project.boards.filter((el) => el._id != req.params.id);
+    await project.save();
+    await Project.populate(project, { path: "boards.categories" });
+    res.json(project);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//rename board
+router.put("/boards/rename/:id", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({ "boards._id": req.params.id });
+    let board = project.boards.filter((el) => el._id == req.params.id)[0];
+    board.name = req.body.name;
+    await project.save();
+    await Project.populate(project, [
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    res.json({ project, board });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 //new category
 router.post("/categories/new/:id", async (req, res) => {
   try {
@@ -170,6 +219,52 @@ router.post("/categories/new/:id", async (req, res) => {
         ],
       },
     ]);
+    return res.json(board);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//rename category
+router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
+  try {
+    let category = await Category.findOne({ _id: req.params.id });
+    if (!category) {
+      return res.status(404).json({ err: "Категория не найдена" });
+    }
+    category.name = req.body.name;
+    await category.save();
+    let project = await Project.findOne({
+      "boards._id": req.body.board_id,
+    }).populate({
+      path: "boards.categories",
+      populate: [
+        {
+          path: "timeline.cards",
+          populate: [
+            { path: "creator" },
+            { path: "execs", select: "avatar fullname" },
+            {
+              path: "event_users",
+              select: "avatar fullname",
+            },
+          ],
+        },
+        {
+          path: "expired",
+          populate: [
+            { path: "creator" },
+            { path: "execs", select: "avatar fullname" },
+            {
+              path: "event_users",
+              select: "avatar fullname",
+            },
+          ],
+        },
+      ],
+    });
+    let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
   } catch (error) {
     console.error(error);
@@ -577,6 +672,71 @@ router.put("/boards/column/delete/:id", async (req, res) => {
         ],
       },
     ]);
+    return res.json(board);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//rename column
+router.put("/boards/column/rename/:id", manauth, async (req, res) => {
+  try {
+    let project = await Project.findOne({
+      "boards._id": req.params.id,
+    }).populate([
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            select: "avatar fullname",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    if (!project) {
+      return response.status(404).json({ err: "Проект не найден" });
+    }
+    let board = project.boards.filter((el) => el._id == req.params.id)[0];
+    let old_column = board.columns[req.body.ind];
+    board.columns.splice(req.body.ind, 1, req.body.new_column);
+    for (let category of board.categories) {
+      for (let timeline of category.timeline) {
+        for (let card of timeline.cards) {
+          if (card.column == old_column) {
+            card.column = req.body.new_column;
+            card.comments.push({
+              type: "history",
+              date: new Date(),
+              text: `${old_column} -> ${req.body.new_column}`,
+              author: req.user.id,
+            });
+            await card.save();
+          }
+        }
+      }
+    }
+    await project.save();
     return res.json(board);
   } catch (error) {
     console.error(error);

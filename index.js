@@ -72,13 +72,3 @@ let expired = async () => {
 
 expired();
 timeline_check();
-
-// delete later
-app.get("/test-next", async (req, res) => {
-  try {
-    res.json("frontend lezhat");
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});

@@ -156,9 +156,9 @@ router.put(
   auth,
   async (req, res) => {
     try {
-      if (!req.body.position || !req.body.name || !req.body.lastname) {
-        return res.json({ err: "Заполните поля" });
-      }
+      // if (!req.body.position || !req.body.name || !req.body.lastname) {
+      //   return res.json({ err: "Заполните поля" });
+      // }
 
       let user = await User.findOne({ _id: req.user.id });
       let keys = Object.keys(req.body);
