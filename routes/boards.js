@@ -652,21 +652,7 @@ router.put("/boards/column/new/:id", async (req, res) => {
   try {
     let project = await Project.findOne({
       "boards._id": req.params.id,
-    }).populate("boards.categories");
-    if (!project) {
-      return response.status(404).json({ err: "Проект не найден" });
-    }
-    let board = project.boards.filter((el) => el._id == req.params.id)[0];
-    if (board.columns.includes(req.body.column)) {
-      return res.status(400).json({ msg: "Такая колонка уже существует" });
-    }
-    board.columns.push(req.body.column);
-    for (let category of board.categories) {
-      category.columns.push(req.body.column);
-      await category.save();
-    }
-    await project.save();
-    await Project.populate(project, [
+    }).populate([
       {
         path: "boards.categories",
         populate: [
@@ -706,6 +692,60 @@ router.put("/boards/column/new/:id", async (req, res) => {
         ],
       },
     ]);
+    if (!project) {
+      return response.status(404).json({ err: "Проект не найден" });
+    }
+    let board = project.boards.filter((el) => el._id == req.params.id)[0];
+    if (board.columns.includes(req.body.column)) {
+      return res.status(400).json({ msg: "Такая колонка уже существует" });
+    }
+    board.columns.push(req.body.column);
+    for (let category of board.categories) {
+      category.columns.push(req.body.column);
+      await category.save();
+    }
+    await project.save();
+    // await Project.populate(project, [
+    //   {
+    //     path: "boards.categories",
+    //     populate: [
+    //       {
+    //         path: "timeline.cards",
+    //         populate: [
+    //           { path: "creator", select: "avatar fullname" },
+    //           { path: "execs", select: "avatar fullname" },
+    //           {
+    //             path: "event_users",
+    //             select: "avatar fullname",
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         path: "expired",
+    //         populate: [
+    //           { path: "creator", select: "avatar fullname" },
+    //           { path: "execs", select: "avatar fullname" },
+    //           {
+    //             path: "event_users",
+    //             select: "avatar fullname",
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     path: "boards.monitor",
+    //     populate: [
+    //       { path: "creator" },
+    //       { path: "execs", select: "avatar fullname" },
+    //       {
+    //         path: "event_users",
+    //         select: "avatar fullname",
+    //       },
+    //     ],
+    //   },
+    // ]);
+    console.log(board);
     // let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
   } catch (error) {
@@ -767,26 +807,27 @@ router.put("/boards/column/delete/:id", async (req, res) => {
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     board.columns = board.columns.filter((el) => el != req.body.column);
     for (let category of board.categories) {
-      if (
-        (category.columns = category.columns.filter(
+      if (category.columns) {
+        category.columns = category.columns.filter(
           (el) => el != req.body.column
-        ))
-      )
-        if (category.timeline) {
-          for (let timeline of category.timeline) {
-            let arr = [];
-            for (let card of timeline.cards) {
-              if (card.column == req.body.column) {
-                board.archive.push(card);
-                arr.push(card.id);
-              }
+        );
+      }
+
+      if (category.timeline) {
+        for (let timeline of category.timeline) {
+          let arr = [];
+          for (let card of timeline.cards) {
+            if (card.column == req.body.column) {
+              board.archive.push(card);
+              arr.push(card.id);
             }
-            await Category.findOneAndUpdate(
-              { _id: category._id },
-              { $pull: { timeline: { cards: { $in: arr } } } }
-            );
           }
+          await Category.findOneAndUpdate(
+            { _id: category._id },
+            { $pull: { timeline: { cards: { $in: arr } } } }
+          );
         }
+      }
     }
     await project.save();
     await Project.populate(project, [
@@ -1919,65 +1960,65 @@ router.put("/cards/notification/:id", auth, async (req, res) => {
 });
 
 //rocket_kostil
-router.get("/kostil/kostil/kostil", async (req, res) => {
-  try {
-    const delay = ms => new Promise(res => setTimeout(res, ms));
-    let a = await User.find();
-    function sliceIntoChunks(arr, chunkSize) {
-      const res = [];
-      for (let i = 0; i < arr.length; i += chunkSize) {
-          const chunk = arr.slice(i, i + chunkSize);
-          res.push(chunk);
-      }
-      return res;
-  }
-  let temp = sliceIntoChunks(a,5)
-  for(let chunk of temp){
-    for (let user of chunk) {
-      if (user.rocketId) {
-        await fetch(`${process.env.CHAT}/api/v1/login`, {
-          method: "post",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user: process.env.R_U,
-            password: process.env.R_P,
-          }),
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            console.log(response);
-            fetch(
-              `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
-              {
-                method: "get",
-                headers: {
-                  Accept: "application/json, text/plain, */*",
-                  "Content-Type": "application/json",
-                  "X-Auth-Token": response.data.authToken,
-                  "X-User-Id": response.data.userId,
-                },
-              }
-            )
-              .then((response) => response.json())
-              .then((response) => {
-                console.log(response);
-                user.rocketname = response.user.username;
-              });
-          });
-        await user.save();
-      }
-    }
-    await delay(1000*60)
-  }
-    
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
+// router.get("/kostil/kostil/kostil", async (req, res) => {
+//   try {
+//     const delay = ms => new Promise(res => setTimeout(res, ms));
+//     let a = await User.find();
+//     function sliceIntoChunks(arr, chunkSize) {
+//       const res = [];
+//       for (let i = 0; i < arr.length; i += chunkSize) {
+//           const chunk = arr.slice(i, i + chunkSize);
+//           res.push(chunk);
+//       }
+//       return res;
+//   }
+//   let temp = sliceIntoChunks(a,5)
+//   for(let chunk of temp){
+//     for (let user of chunk) {
+//       if (user.rocketId) {
+//         await fetch(`${process.env.CHAT}/api/v1/login`, {
+//           method: "post",
+//           headers: {
+//             Accept: "application/json, text/plain, */*",
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             user: process.env.R_U,
+//             password: process.env.R_P,
+//           }),
+//         })
+//           .then((response) => response.json())
+//           .then((response) => {
+//             // console.log(response);
+//             fetch(
+//               `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
+//               {
+//                 method: "get",
+//                 headers: {
+//                   Accept: "application/json, text/plain, */*",
+//                   "Content-Type": "application/json",
+//                   "X-Auth-Token": response.data.authToken,
+//                   "X-User-Id": response.data.userId,
+//                 },
+//               }
+//             )
+//               .then((response) => response.json())
+//               .then((response) => {
+//                 console.log(response);
+//                 user.rocketname = response.user.username;
+//               });
+//           });
+//         await user.save();
+//       }
+//     }
+//     await delay(1000*60)
+//   }
+
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ err: "server error" });
+//   }
+// });
 
 //add monitored category to board
 router.put("/category/monitor/:id", auth, async (req, res) => {
@@ -1994,23 +2035,23 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
   }
 });
 
-//microkostil
-router.get("/micro/kostil/eee", async (req, res) => {
-  try {
-    let prjs = await Project.find({}).populate("boards.categories");
-    for (let prj of prjs) {
-      for (let board of prj.boards) {
-        for (let category of board.categories) {
-          category.columns = board.columns;
-          await category.save();
-        }
-      }
-    }
-    res.json("huy");
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
+// //microkostil
+// router.get("/micro/kostil/eee", async (req, res) => {
+//   try {
+//     let prjs = await Project.find({}).populate("boards.categories");
+//     for (let prj of prjs) {
+//       for (let board of prj.boards) {
+//         for (let category of board.categories) {
+//           category.columns = board.columns;
+//           await category.save();
+//         }
+//       }
+//     }
+//     res.json("huy");
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ err: "server error" });
+//   }
+// });
 
 module.exports = router;
