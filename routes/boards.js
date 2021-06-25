@@ -4,7 +4,7 @@ const auth = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
-const fetch = require("node-fetch")
+const fetch = require("node-fetch");
 const Card = require("../models/Card");
 const Project = require("../models/Project");
 const Category = require("../models/Category");
@@ -1923,37 +1923,40 @@ router.get("/kostil/kostil/kostil", async (req, res) => {
   try {
     let a = await User.find();
     for (let user of a) {
-      await fetch(`${process.env.CHAT}/api/v1/login`, {
-        method: "post",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: process.env.R_U,
-          password: process.env.R_P,
-        }),
-      })
-        .then((response) => response.json())
-        .then((response) =>
-          fetch(
-            `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
-            {
-              method: "get",
-              headers: {
-                Accept: "application/json, text/plain, */*",
-                "Content-Type": "application/json",
-                "X-Auth-Token": response.data.authToken,
-                "X-User-Id": response.data.userId,
-              },
-            }
-          )
-            .then((response) => response.json())
-            .then((response) => {
-              user.rocketname = response.user.username;
-            })
-        );
-      await user.save();
+      if (user.rocketId) {
+        await fetch(`${process.env.CHAT}/api/v1/login`, {
+          method: "post",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: process.env.R_U,
+            password: process.env.R_P,
+          }),
+        })
+          .then((response) => response.json())
+          .then((response) =>
+            fetch(
+              `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
+              {
+                method: "get",
+                headers: {
+                  Accept: "application/json, text/plain, */*",
+                  "Content-Type": "application/json",
+                  "X-Auth-Token": response.data.authToken,
+                  "X-User-Id": response.data.userId,
+                },
+              }
+            )
+              .then((response) => response.json())
+              .then((response) => {
+                console.log(response);
+                user.rocketname = response.user.username;
+              })
+          );
+        await user.save();
+      }
     }
   } catch (error) {
     console.error(error);
