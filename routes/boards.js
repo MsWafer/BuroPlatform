@@ -1936,7 +1936,8 @@ router.get("/kostil/kostil/kostil", async (req, res) => {
           }),
         })
           .then((response) => response.json())
-          .then((response) =>
+          .then((response) => {
+            console.log(response);
             fetch(
               `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
               {
@@ -1953,8 +1954,8 @@ router.get("/kostil/kostil/kostil", async (req, res) => {
               .then((response) => {
                 console.log(response);
                 user.rocketname = response.user.username;
-              })
-          );
+              });
+          });
         await user.save();
       }
     }
