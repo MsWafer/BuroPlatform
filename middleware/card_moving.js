@@ -170,20 +170,35 @@ exports.expired_expired = async (
   index
 ) => {
   try {
-    await Category.findOne({ _id: old_category_id }, (err, doc) => {
-      if (err) throw err;
-      doc.expired = doc.expired.filter((el) => el != card_id);
-      doc.save();
-    });
-    await Category.findOne({ _id: category_id }, (err, doc) => {
-      if (err) throw err;
-      doc.expired.splice(index, 0, card_id);
-      doc.save();
-    });
-    // await Card.findOneAndUpdate({ _id: card_id }, { column: column });
-    // await old_category.save();
-    // category.expired.splice(index, 0, card_id);
-    // await category.save();
+    if (old_category_id == category_id) {
+      await Category.findOne({ _id: old_category_id }, (err, doc) => {
+        if (err) throw err;
+        if (!doc) {
+          return;
+        }
+        doc.expired = doc.expired.filter((el) => el != card_id);
+        doc.expired.splice(index, 0, card_id);
+        doc.save();
+      });
+    } else {
+      await Category.findOne({ _id: old_category_id }, (err, doc) => {
+        if (err) throw err;
+        if (!doc) {
+          return;
+        }
+        doc.expired = doc.expired.filter((el) => el != card_id);
+        doc.save();
+      });
+      await Category.findOne({ _id: category_id }, (err, doc) => {
+        if (err) throw err;
+        if (!doc) {
+          return;
+        }
+        doc.expired.splice(index, 0, card_id);
+        doc.save();
+      });
+    }
+
     return { msg: "uspeh" };
   } catch (error) {
     console.error(error);

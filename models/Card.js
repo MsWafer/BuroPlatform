@@ -7,7 +7,16 @@ const CardSchema = new Schema({
     default: false,
   },
   type: String,
+  likeCount: {
+    type: Number,
+    default: 0,
+  },
+  likeUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   expired: Boolean,
+  notification: [{
+    date: Date,
+    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+  }],
   regular: Boolean,
   date: Date,
   column: String,
@@ -16,6 +25,7 @@ const CardSchema = new Schema({
   deadline: Date,
   event_date: Date,
   explanation: String,
+  board_id: String,
   emergency: { type: String, default: "Обычная" },
   comments: [
     {
@@ -28,6 +38,7 @@ const CardSchema = new Schema({
       type: {
         type: String,
       },
+      image: String,
     },
   ],
   tags: [String],

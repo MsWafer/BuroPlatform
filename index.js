@@ -22,6 +22,8 @@ app.use("/avatars", express.static(__dirname + "/avatars"));
 app.use("/covers", express.static(__dirname + "/covers"));
 app.use("/docfiles", express.static(__dirname + "/docs"));
 app.use("/docimages", express.static(__dirname + "/docimages"));
+app.use("/images", express.static(__dirname + "/images"));
+app.use("/stickers", express.static(__dirname + "/stickers"));
 
 app.get("/", (req, res) => res.send("Не крашься плиз"));
 app.post("/ip", async (req, res) => {
@@ -60,6 +62,7 @@ const PORT = process.env.PORT || 7070;
 app.listen(PORT, () => console.log(`Server started on ${PORT}`));
 
 const { timeline_refresh, expired_check } = require("./middleware/tm_dd");
+const rocketCardNotifications = require("./middleware/rocketCardNotifications");
 
 let timeline_check = async () => {
   await timeline_refresh();
@@ -69,6 +72,11 @@ let expired = async () => {
   await expired_check();
   setTimeout(expired, 1000 * 60 * 60 * 1);
 };
+let card_notification_check = async () => {
+  await rocketCardNotifications();
+  setTimeout(card_notification_check, 1000 * 60 * 60 * 1);
+};
 
 expired();
 timeline_check();
+card_notification_check();

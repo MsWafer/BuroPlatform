@@ -209,7 +209,7 @@ router.get("/get/stats/week", async (req, res) => {
       let f_arr = [];
       while (f_arr.length < 7 && stats.length > 0) {
         // if (stats.length >= 1) {
-          f_arr.push(stats.pop());
+        f_arr.push(stats.pop());
         // } else {
         //   break;
         // }
@@ -223,6 +223,7 @@ router.get("/get/stats/week", async (req, res) => {
         complete_sprints_closed: 0,
         incomplete_sprints_closed: 0,
         sprints_closed: 0,
+        cards_created: 0,
         date: f_arr[f_arr.length - 1].date,
       };
       for (let el of f_arr) {
@@ -235,6 +236,7 @@ router.get("/get/stats/week", async (req, res) => {
         week.complete_sprints_closed += el.complete_sprints_closed;
         week.sprints_closed +=
           el.complete_sprints_closed + el.incomplete_sprints_closed;
+        week.cards_created += el.cards_created;
       }
       return week;
     };

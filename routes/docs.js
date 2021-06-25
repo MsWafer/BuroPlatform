@@ -114,6 +114,9 @@ router.post(
   upload.single("file"),
   async (req, res) => {
     try {
+      if (!req.file) {
+        return;
+      }
       return res.json({
         msg: "Файл загружен",
         filename: "docimages/" + req.file.filename,

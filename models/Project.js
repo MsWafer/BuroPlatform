@@ -228,6 +228,12 @@ const ProjectSchema = new Schema({
           ref: "card",
         },
       ],
+      monitor: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "category",
+        },
+      ],
     },
   ],
   backlog: [

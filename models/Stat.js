@@ -14,6 +14,7 @@ const StatSchema = new Schema({
   sprints_created: { type: Number, default: 0 },
   complete_sprints_closed: { type: Number, default: 0 },
   incomplete_sprints_closed: { type: Number, default: 0 },
+  cards_created: { type: Number, default: 0 },
 });
 
 module.exports = Stat = mongoose.model("stat", StatSchema);

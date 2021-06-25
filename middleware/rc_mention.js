@@ -46,7 +46,6 @@ module.exports = async (user_id, card_title, board_url) => {
                 text: `Вас упомянули в карточке "${card_title}"`,
                 attachments: [
                   {
-                    // thumb_url: "https://bd.buro82.ru/avatars/spurdo.png",
                     title: "Ссылка на доску",
                     title_link: board_url,
                   },

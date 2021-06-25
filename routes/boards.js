@@ -11,6 +11,34 @@ const Category = require("../models/Category");
 const Stat = require("../models/Stat");
 const { response } = require("express");
 const { readdirSync } = require("fs");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname + "/../public/images");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + "-" + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+    }
+  },
+});
 const {
   backlog_expired,
   backlog_timeline,
@@ -26,6 +54,8 @@ const rc_mention = require("../middleware/rc_mention");
 const User = require("../models/User");
 const { findOne } = require("../models/Project");
 const manauth = require("../middleware/manauth");
+const rocketPushCard = require("../middleware/rocketPushCard");
+const { createEvent } = require("../middleware/googleCal");
 
 //new board
 router.post("/boards/new/:crypt", async (req, res) => {
@@ -38,6 +68,7 @@ router.post("/boards/new/:crypt", async (req, res) => {
     }
     let timed_category = new Category({
       name: "Спринт",
+      columns: ["В работе", "Готово"],
       step: 7,
       timeline: [{ start: start, end: end, cards: [] }],
     });
@@ -109,6 +140,17 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     return res.json({ board: board, backlog: project.backlog });
@@ -167,6 +209,17 @@ router.put("/boards/rename/:id", manauth, async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     res.json({ project, board });
   } catch (error) {
@@ -184,6 +237,7 @@ router.post("/categories/new/:id", async (req, res) => {
     }
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     let category = new Category({
+      columns: board.columns,
       name: req.body.name,
       timeline: [{ start: req.body.start, end: req.body.end, cards: [] }],
     });
@@ -218,6 +272,17 @@ router.post("/categories/new/:id", async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     return res.json(board);
   } catch (error) {
@@ -237,33 +302,46 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
     await category.save();
     let project = await Project.findOne({
       "boards._id": req.body.board_id,
-    }).populate({
-      path: "boards.categories",
-      populate: [
-        {
-          path: "timeline.cards",
-          populate: [
-            { path: "creator" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-        {
-          path: "expired",
-          populate: [
-            { path: "creator" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-      ],
-    });
+    }).populate([
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
+    ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
   } catch (error) {
@@ -305,33 +383,46 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
     await category.save();
     let project = await Project.findOne({
       "boards._id": req.body.board_id,
-    }).populate({
-      path: "boards.categories",
-      populate: [
-        {
-          path: "timeline.cards",
-          populate: [
-            { path: "creator" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-        {
-          path: "expired",
-          populate: [
-            { path: "creator" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-      ],
-    });
+    }).populate([
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
+    ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
   } catch (error) {
@@ -439,33 +530,46 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
     await category.save();
     let project = await Project.findOne({
       "boards._id": req.body.board_id,
-    }).populate({
-      path: "boards.categories",
-      populate: [
-        {
-          path: "timeline.cards",
-          populate: [
-            { path: "creator", select: "avatar fullname" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-        {
-          path: "expired",
-          populate: [
-            { path: "creator", select: "avatar fullname" },
-            { path: "execs", select: "avatar fullname" },
-            {
-              path: "event_users",
-              select: "avatar fullname",
-            },
-          ],
-        },
-      ],
-    });
+    }).populate([
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
+    ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
   } catch (error) {
@@ -523,6 +627,17 @@ router.put("/categories/delete/:id", async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
     return res.json(board);
@@ -535,17 +650,21 @@ router.put("/categories/delete/:id", async (req, res) => {
 //new column
 router.put("/boards/column/new/:id", async (req, res) => {
   try {
-    let project = await Project.findOne({ "boards._id": req.params.id });
+    let project = await Project.findOne({
+      "boards._id": req.params.id,
+    }).populate("boards.categories");
     if (!project) {
       return response.status(404).json({ err: "Проект не найден" });
     }
-    // console.log(project.boards)
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     if (board.columns.includes(req.body.column)) {
       return res.status(400).json({ msg: "Такая колонка уже существует" });
     }
-    // console.log(board.columns)
     board.columns.push(req.body.column);
+    for (let category of board.categories) {
+      category.columns.push(req.body.column);
+      await category.save();
+    }
     await project.save();
     await Project.populate(project, [
       {
@@ -572,6 +691,17 @@ router.put("/boards/column/new/:id", async (req, res) => {
                 select: "avatar fullname",
               },
             ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
           },
         ],
       },
@@ -618,6 +748,17 @@ router.put("/boards/column/delete/:id", async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
       // { path: "board.categories" },
     ]);
     if (!project) {
@@ -626,21 +767,26 @@ router.put("/boards/column/delete/:id", async (req, res) => {
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     board.columns = board.columns.filter((el) => el != req.body.column);
     for (let category of board.categories) {
-      if (category.timeline) {
-        for (let timeline of category.timeline) {
-          let arr = [];
-          for (let card of timeline.cards) {
-            if (card.column == req.body.column) {
-              board.archive.push(card);
-              arr.push(card.id);
+      if (
+        (category.columns = category.columns.filter(
+          (el) => el != req.body.column
+        ))
+      )
+        if (category.timeline) {
+          for (let timeline of category.timeline) {
+            let arr = [];
+            for (let card of timeline.cards) {
+              if (card.column == req.body.column) {
+                board.archive.push(card);
+                arr.push(card.id);
+              }
             }
+            await Category.findOneAndUpdate(
+              { _id: category._id },
+              { $pull: { timeline: { cards: { $in: arr } } } }
+            );
           }
-          await Category.update(
-            { _id: category._id },
-            { $pull: { timeline: { cards: { $in: arr } } } }
-          );
         }
-      }
     }
     await project.save();
     await Project.populate(project, [
@@ -668,6 +814,17 @@ router.put("/boards/column/delete/:id", async (req, res) => {
                 select: "avatar fullname",
               },
             ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
           },
         ],
       },
@@ -713,6 +870,17 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     if (!project) {
       return response.status(404).json({ err: "Проект не найден" });
@@ -721,6 +889,8 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
     let old_column = board.columns[req.body.ind];
     board.columns.splice(req.body.ind, 1, req.body.new_column);
     for (let category of board.categories) {
+      // let old = category.columns[req.body.ind]
+      category.columns.splice(req.body.ind, 1, req.body.new_column);
       for (let timeline of category.timeline) {
         for (let card of timeline.cards) {
           if (card.column == old_column) {
@@ -735,6 +905,7 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
           }
         }
       }
+      await category.save();
     }
     await project.save();
     return res.json(board);
@@ -776,6 +947,7 @@ router.post("/cards/new/backlog/:crypt", auth, async (req, res) => {
       comments: [
         { author: req.user.id, date: Date.now(), text: "Карточка создана" },
       ],
+      board_id: req.body.board_id,
     });
     await card.save();
     if (!project.backlog) {
@@ -824,6 +996,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
       column: req.body.column,
       creator: req.user.id,
       type: req.body.type,
+      board_id: req.body.board_id,
       regular: req.body.regular ? req.body.regular : undefined,
       comments: [
         { author: req.user.id, date: Date.now(), text: "Карточка создана" },
@@ -872,9 +1045,36 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
           },
         ],
       },
+      {
+        path: "boards.monitor",
+        populate: [
+          { path: "creator" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
     ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
-    return res.json(board);
+    res.json(board);
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { cards_created: 1 } }
+    );
+    let date = Date.now();
+    await createEvent(
+      card.title,
+      "Описание карточки",
+      new Date(),
+      new Date(date + 1000 * 60 * 60 * 3)
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -994,46 +1194,52 @@ router.put("/cards/move", auth, async (req, res) => {
 });
 
 //add comment to card
-router.post("/cards/comment/new/:id", auth, async (req, res) => {
-  try {
-    let card = await Card.findOne({ _id: req.params.id });
-    if (!card) {
-      return res.status(404).json({ err: "Карточка не найдена" });
-    }
-    let comment = {
-      date: new Date() + 3 * 60 * 60 * 1000,
-      text: req.body.text,
-      author: req.user.id,
-      type: "comment",
-    };
-    card.comments.push(comment);
-    if (req.body.mentions.length > 0) {
-      for (let id of req.body.mentions) {
-        await rc_mention(id, card.title, req.body.url);
+router.post(
+  "/cards/comment/new/:id",
+  auth,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      let card = await Card.findOne({ _id: req.params.id });
+      if (!card) {
+        return res.status(404).json({ err: "Карточка не найдена" });
       }
+      let comment = {
+        date: new Date() + 3 * 60 * 60 * 1000,
+        text: req.body.text,
+        author: req.user.id,
+        type: "comment",
+        image: req.file ? "images/" + req.file.filename : undefined,
+      };
+      card.comments.push(comment);
+      if (req.body.mentions.length > 0) {
+        for (let id of req.body.mentions) {
+          await rc_mention(id, card.title, req.body.url);
+        }
+      }
+      await card.save();
+      await Card.populate(card, [
+        {
+          path: "comments.author",
+        },
+        { path: "creator" },
+        { path: "user" },
+        { path: "user2" },
+        { path: "tasks.user" },
+        { path: "tasks.user2" },
+        { path: "execs" },
+        {
+          path: "event_users",
+          select: "avatar fullname",
+        },
+      ]);
+      return res.json(card.comments);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ err: "server error" });
     }
-    await card.save();
-    await Card.populate(card, [
-      {
-        path: "comments.author",
-      },
-      { path: "creator" },
-      { path: "user" },
-      { path: "user2" },
-      { path: "tasks.user" },
-      { path: "tasks.user2" },
-      { path: "execs" },
-      {
-        path: "event_users",
-        select: "avatar fullname",
-      },
-    ]);
-    return res.json(card.comments);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
   }
-});
+);
 
 //add tag to card
 router.put("/cards/tags/add/:id", auth, async (req, res) => {
@@ -1091,53 +1297,55 @@ router.put("/cards/tags/remove/:id", auth, async (req, res) => {
 //edit card
 router.put("/cards/fields/edit/:id", auth, async (req, res) => {
   try {
-    let card = await Card.findOne({ _id: req.params.id });
-    if (!card) {
-      return res.status(404).json({ err: "Карточка не найдена" });
-    }
-    let comment = {
-      author: req.user.id,
-      date: Date.now(),
-      type: "history",
-    };
-    if (req.body.deadline) {
-      req.body.deadline = new Date(req.body.deadline);
-      let new_date = req.body.deadline.toLocaleString().substring(0, 10);
-      if (card.deadline != undefined) {
-        let old_date = card.deadline.toLocaleString().substring(0, 10);
+    await Card.findOne({ _id: req.params.id }, async (err, card) => {
+      if (err) throw err;
+      if (!card) {
+        return res.status(404).json({ err: "Карточка не найдена" });
+      }
+      let comment = {
+        author: req.user.id,
+        date: Date.now(),
+        type: "history",
+      };
+      if (req.body.deadline) {
+        req.body.deadline = new Date(req.body.deadline);
         let new_date = req.body.deadline.toLocaleString().substring(0, 10);
-        comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
-        card.comments.push(comment);
-      } else {
-        comment.text = `Дедлайн изменен на ${new_date}`;
+        if (card.deadline != undefined) {
+          let old_date = card.deadline.toLocaleString().substring(0, 10);
+          let new_date = req.body.deadline.toLocaleString().substring(0, 10);
+          comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
+          card.comments.push(comment);
+        } else {
+          comment.text = `Дедлайн изменен на ${new_date}`;
+          card.comments.push(comment);
+        }
+      }
+      if (req.body.emergency) {
+        comment.text = `Срочность изменена с "${card.emergency}" на "${req.body.emergency}"`;
         card.comments.push(comment);
       }
-    }
-    if (req.body.emergency) {
-      comment.text = `Срочность изменена с "${card.emergency}" на "${req.body.emergency}"`;
-      card.comments.push(comment);
-    }
-    let keys = Object.keys(req.body);
-    for (let key of keys) {
-      card[key] = req.body[key];
-    }
-    await card.save();
-    await Card.populate(card, [
-      {
-        path: "comments.author",
-      },
-      { path: "creator" },
-      { path: "user" },
-      { path: "user2" },
-      { path: "tasks.user" },
-      { path: "tasks.user2" },
-      { path: "execs" },
-      {
-        path: "event_users",
-        select: "avatar fullname",
-      },
-    ]);
-    return res.json(card);
+      let keys = Object.keys(req.body);
+      for (let key of keys) {
+        card[key] = req.body[key];
+      }
+      await card.save();
+      await Card.populate(card, [
+        {
+          path: "comments.author",
+        },
+        { path: "creator" },
+        { path: "user" },
+        { path: "user2" },
+        { path: "tasks.user" },
+        { path: "tasks.user2" },
+        { path: "execs" },
+        {
+          path: "event_users",
+          select: "avatar fullname",
+        },
+      ]);
+      return res.json(card);
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -1179,7 +1387,16 @@ router.post("/cards/tasks/new/:id", async (req, res) => {
         select: "avatar fullname",
       },
     ]);
-    return res.json(card);
+    res.json(card);
+    let d = new Date();
+    await Stat.findOneAndUpdate(
+      {
+        day: d.getDate(),
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+      },
+      { $inc: { task_open_count: 1 } }
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -1197,6 +1414,18 @@ router.put("/cards/tasks/edit/:id", async (req, res) => {
     let task = card.tasks.filter((el) => el._id == req.params.id)[0];
     for (let key of keys) {
       task[key] = req.body[key];
+    }
+    if (typeof req.body.taskStatus == "boolean") {
+      let num = req.body.taskStatus ? 1 : -1;
+      let d = new Date();
+      await Stat.findOneAndUpdate(
+        {
+          day: d.getDate(),
+          month: d.getMonth() + 1,
+          year: d.getFullYear(),
+        },
+        { $inc: { task_close_count: num } }
+      );
     }
     await card.save();
     await Card.populate(card, [
@@ -1455,46 +1684,48 @@ router.put("/cards/unexpire/:id", auth, async (req, res) => {
     );
     let project = await Project.findOne({
       "boards._id": req.body.board_id,
-    }).populate([
-      {
-        path: "boards.categories",
-        populate: [
-          {
-            path: "timeline.cards",
-            populate: [
-              { path: "creator" },
-              { path: "execs", select: "avatar fullname" },
-              {
-                path: "event_users",
-                select: "avatar fullname",
-              },
-            ],
-          },
-          {
-            path: "expired",
-            populate: [
-              { path: "creator" },
-              { path: "execs", select: "avatar fullname" },
-              {
-                path: "event_users",
-                select: "avatar fullname",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        path: "backlog",
-        populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
-          {
-            path: "event_users",
-            select: "avatar fullname",
-          },
-        ],
-      },
-    ]);
+    })
+      .select("title crypt boards")
+      .populate([
+        {
+          path: "boards.categories",
+          populate: [
+            {
+              path: "timeline.cards",
+              populate: [
+                { path: "creator", select: "avatar fullname" },
+                { path: "execs", select: "avatar fullname" },
+                {
+                  path: "event_users",
+                  select: "avatar fullname",
+                },
+              ],
+            },
+            {
+              path: "expired",
+              populate: [
+                { path: "creator", select: "avatar fullname" },
+                { path: "execs", select: "avatar fullname" },
+                {
+                  path: "event_users",
+                  select: "avatar fullname",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          path: "backlog",
+          populate: [
+            { path: "creator", select: "avatar fullname" },
+            { path: "execs", select: "avatar fullname" },
+            {
+              path: "event_users",
+              select: "avatar fullname",
+            },
+          ],
+        },
+      ]);
     return res.json({
       category: category,
       card: card,
@@ -1513,19 +1744,21 @@ router.put("/cards/events/adduser/:id", auth, async (req, res) => {
     if (!card) {
       return res.status(404).json({ err: "Карточка не найдена" });
     }
-    card.event_users.push(req.body.user_id);
+    if (!card.execs.includes(req.body.user_id)) {
+      card.execs.push(req.body.user_id);
+    }
     await card.save();
     await Card.populate(card, [
       {
         path: "event_users",
       },
-      { path: "execs" },
-      { path: "user" },
-      { path: "user2" },
-      { path: "creator" },
-      { path: "tasks.user" },
-      { path: "tasks.user2" },
-      { path: "comments.author" },
+      { path: "execs", select: "avatar fullname" },
+      { path: "user", select: "avatar fullname" },
+      { path: "user2", select: "avatar fullname" },
+      { path: "creator", select: "avatar fullname" },
+      { path: "tasks.user", select: "avatar fullname" },
+      { path: "tasks.user2", select: "avatar fullname" },
+      { path: "comments.author", select: "avatar fullname" },
     ]);
     return res.json(card);
   } catch (error) {
@@ -1533,4 +1766,233 @@ router.put("/cards/events/adduser/:id", auth, async (req, res) => {
     return res.status(500).json({ err: "server error" });
   }
 });
+
+////////LIKES//////////////
+router.post("/cards/like/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id }, (err, doc) => {
+      if (err) throw err;
+      if (!doc) {
+        return res.status(404).json({ err: "Карточка не найдена" });
+      }
+      if (!doc.likeUsers.includes(req.user.id)) {
+        doc.likeCount++;
+        doc.likeUsers.push(req.user.id);
+      } else {
+        doc.likeCount--;
+        doc.likeUsers = doc.likeUsers.filter((el) => el != req.user.id);
+      }
+      doc.save();
+    }).populate([
+      {
+        path: "event_users",
+      },
+      { path: "execs", select: "avatar fullname" },
+      { path: "user", select: "avatar fullname" },
+      { path: "user2", select: "avatar fullname" },
+      { path: "creator", select: "avatar fullname" },
+      { path: "tasks.user", select: "avatar fullname" },
+      { path: "tasks.user2", select: "avatar fullname" },
+      { path: "comments.author", select: "avatar fullname" },
+    ]);
+    return res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//card copy
+router.put("/cards/copy/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    delete card._doc._id;
+    let newCard = new Card(JSON.parse(JSON.stringify(card._doc)));
+    newCard.column = req.body.column;
+    newCard.title = req.body.title;
+    await newCard.save();
+    if (req.body.newTimeline) {
+      await Category.findOneAndUpdate(
+        { "timeline._id": req.body.newTimeline },
+        { $push: { "timeline.$.cards": newCard._id } }
+      );
+    }
+    let prj = await Project.findOne({
+      "boards._id": req.body.board_id,
+    }).populate([
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator", select: "avatar fullname" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "backlog",
+        populate: [
+          { path: "creator", select: "avatar fullname" },
+          { path: "execs", select: "avatar fullname" },
+          {
+            path: "event_users",
+            select: "avatar fullname",
+          },
+        ],
+      },
+    ]);
+    let board = prj.boards.filter((el) => el._id == req.body.board_id)[0];
+    res.json({
+      board,
+      backlog: prj.backlog,
+      msg: "Карточка скопировалась",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//card notifications
+router.put("/cards/notification/:id", auth, async (req, res) => {
+  try {
+    await Card.findOne({ _id: req.params.id }, async (err, card) => {
+      if (err) throw err;
+      if (!card) {
+        return res.status(404).json({ err: "Карточка не найдена" });
+      }
+      if (!req.body.date) {
+        req.body.execs
+          ? await rocketPushCard(card.execs, card.title)
+          : await rocketPushCard([req.user.id], card.title);
+      }
+      if (req.body.date) {
+        console.log("a");
+        let notification_obj = {
+          date: req.body.date,
+          users: req.body.execs ? card.execs : [req.user.id],
+        };
+        typeof card.notification == "array"
+          ? card.notification.push(notification_obj)
+          : (card.notification = [notification_obj]);
+        await card.save();
+      }
+      await Card.populate(card, [
+        {
+          path: "event_users",
+        },
+        { path: "execs" },
+        { path: "user" },
+        { path: "user2" },
+        { path: "creator" },
+        { path: "tasks.user" },
+        { path: "tasks.user2" },
+        { path: "comments.author" },
+      ]);
+      res.json({ card, msg: "Уведомление отправлено" });
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//rocket_kostil
+router.get("/kostil/kostil/kostil", async (req, res) => {
+  try {
+    let a = await User.find();
+    for (let user of a) {
+      await fetch(`${process.env.CHAT}/api/v1/login`, {
+        method: "post",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: process.env.R_U,
+          password: process.env.R_P,
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) =>
+          fetch(
+            `${process.env.CHAT}/api/v1/users.info?userId=${user.rocketId}`,
+            {
+              method: "get",
+              headers: {
+                Accept: "application/json, text/plain, */*",
+                "Content-Type": "application/json",
+                "X-Auth-Token": response.data.authToken,
+                "X-User-Id": response.data.userId,
+              },
+            }
+          )
+            .then((response) => response.json())
+            .then((response) => {
+              user.rocketname = response.user.username;
+            })
+        );
+      await user.save();
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add monitored category to board
+router.put("/category/monitor/:id", auth, async (req, res) => {
+  try {
+    let new_prj = await Project.findOne({ "boards._id": req.body.board_id });
+    new_prj.boards
+      .filter((el) => el._id == req.body.new_board)[0]
+      .monitor.push(req.params.id);
+    await new_prj.save();
+    return res.json({ msg: "eeee boiiii" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//microkostil
+router.get("/micro/kostil/eee", async (req, res) => {
+  try {
+    let prjs = await Project.find({}).populate("boards.categories");
+    for (let prj of prjs) {
+      for (let board of prj.boards) {
+        for (let category of board.categories) {
+          category.columns = board.columns;
+          await category.save();
+        }
+      }
+    }
+    res.json("huy");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
 module.exports = router;

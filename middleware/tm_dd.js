@@ -21,28 +21,30 @@ exports.timeline_refresh = async () => {
         new_timeline.end =
           new_timeline.start + 1000 * 60 * 60 * 24 * (category.step - 1);
         await Category.populate(categories, { path: "timeline.cards" });
-        for (let card of arr[0].cards) {
-          if (card.regular) {
-            let newCard = new Card(JSON.parse(JSON.stringify(card)));
-            newCard.status = false;
-            delete newCard._id;
-            newCard.comments = [];
-            newCard.expired = false;
-            newCard.column = "В работе";
-            newCard.deadline
-              ? (newCard.deadline += 1000 * 60 * 60 * 24 * category.step)
-              : undefined;
-            for (let task of newCard.tasks) {
-              task.taskStatus = false;
-              delete task._id;
-              task.deadline
-                ? (task.deadline += 1000 * 60 * 60 * 24 * category.step)
-                : undefined;
-            }
-            await newCard.save();
-            new_timeline.cards.push(newCard);
-          }
-        }
+        // for (let card of arr[0].cards) {
+        //   // if (card.regular) {
+        //   //   // console.log(card)
+        //   //   let newCard = new Card(JSON.parse(JSON.stringify(card)));
+        //   //   // console.log(newCard)
+        //   //   newCard.status = false;
+        //   //   delete newCard._id;
+        //   //   newCard.comments = [];
+        //   //   newCard.expired = false;
+        //   //   newCard.column = "В работе";
+        //   //   newCard.deadline
+        //   //     ? (newCard.deadline += 1000 * 60 * 60 * 24 * category.step)
+        //   //     : undefined;
+        //   //   for (let task of newCard.tasks) {
+        //   //     task.taskStatus = false;
+        //   //     delete task._id;
+        //   //     task.deadline
+        //   //       ? (task.deadline += 1000 * 60 * 60 * 24 * category.step)
+        //   //       : undefined;
+        //   //   }
+        //   //   await newCard.save();
+        //   //   new_timeline.cards.push(newCard);
+        //   // }
+        // }
         category.timeline.push(new_timeline);
       } else {
         let new_timeline = {

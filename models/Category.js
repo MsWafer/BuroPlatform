@@ -5,6 +5,7 @@ const CategorySchema = new Schema({
   name: String,
   step: Number,
   month: Number,
+  columns: Array,
   timeline: [
     {
       start: Date,

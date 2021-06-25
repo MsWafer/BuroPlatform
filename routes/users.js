@@ -292,24 +292,26 @@ router.get("/me", auth, async (req, res) => {
       }).select("tasks project");
       if (sprints.length > 0 || cards.length > 0) {
         let arr = [];
-        sprints && sprints.forEach((sprint) => {
-          sprint.tasks.forEach((task) => {
-            if (task.user == req.user.id) {
-              task.project = sprint.project;
-              arr.push(task);
-              task.date ? history_array.push(task) : dateless_arr.push(task);
-            }
+        sprints &&
+          sprints.forEach((sprint) => {
+            sprint.tasks.forEach((task) => {
+              if (task.user == req.user.id) {
+                task.project = sprint.project;
+                arr.push(task);
+                task.date ? history_array.push(task) : dateless_arr.push(task);
+              }
+            });
           });
-        });
-        cards && cards.forEach((card) => {
-          card.tasks.forEach((task) => {
-            if (task.user == req.user.id) {
-              // task.project = card.project;
-              arr.push(task);
-              task.date ? history_array.push(task) : dateless_arr.push(task);
-            }
+        cards &&
+          cards.forEach((card) => {
+            card.tasks.forEach((task) => {
+              if (task.user == req.user.id) {
+                // task.project = card.project;
+                arr.push(task);
+                task.date ? history_array.push(task) : dateless_arr.push(task);
+              }
+            });
           });
-        });
         history_array = history_array
           .sort((a, b) => a.date - b.date)
           .concat(dateless_arr);
@@ -693,30 +695,50 @@ router.get("/:id", auth, async (req, res) => {
       })
       .populate("division")
       .populate("tickets", "-user");
-
-    let tasks = [];
-    let sprints = await Sprint.find({
-      "tasks.user": req.params.id,
-      status: false,
-    })
-      .select("tasks project")
-      .populate("project", "crypt title");
-    if (!sprints) {
-      tasks = [];
-    } else {
-      sprints.forEach((sprint) => {
-        sprint.tasks.forEach((task) => {
-          if (task.user == req.params.id) {
-            (task.project = sprint.project), tasks.push(task);
-          }
-        });
-      });
-    }
-    user.tasks = tasks;
     if (!user) {
       console.log("user not found");
       return res.status(404).json({ msg: "Пользователь не найден" });
     }
+    let tasks = [];
+    let sprints = await Sprint.find({
+      "tasks.user": req.params.id,
+      status: false,
+    }).select("tasks project");
+    let cards = await Card.find({
+      "tasks.user": req.user.id,
+    }).select("tasks");
+    if (sprints.length > 0 || cards.length > 0) {
+      sprints &&
+        sprints.forEach((sprint) => {
+          sprint.tasks.forEach((task) => {
+            if (task.user == req.params.id) {
+              (task.project = sprint.project), tasks.push(task);
+            }
+          });
+        });
+      cards &&
+        cards.forEach((card) => {
+          card.tasks.forEach((task) => {
+            if (task.user == req.params.id) {
+              tasks.push(task);
+            }
+          });
+        });
+    }
+
+    user.tasks = tasks;
+    await user
+      .populate([
+        {
+          path: "tasks.user2",
+          select: "avatar fullname",
+        },
+        {
+          path: "tasks.project",
+          select: "title crypt",
+        },
+      ])
+      .execPopulate();
     console.log("user found");
     return res.json(user);
   } catch (err) {

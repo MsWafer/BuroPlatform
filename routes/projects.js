@@ -759,7 +759,6 @@ router.get("/title/search", auth, async (req, res) => {
 router.get("/search/objectobject/object/object", auth, async (req, res) => {
   try {
     let prjs = await Project.find({ object: { $ne: null } }).select("object");
-    // prjs.forEach(prj=>{if(!prj.object){prj.obj="";await prj.save}})
     let obj_arr = [];
     prjs.forEach((prj) => {
       obj_arr.push(prj.object);
@@ -1324,12 +1323,6 @@ router.put("/sprints/DAtask/test", auth, async (req, res) => {
         );
       }
     }
-    // sprint.tasks.forEach((task) => {
-    //   if (task._id == req.body.taskid) {
-    //     task.taskStatus = !task.taskStatus;
-
-    //   }
-    // });
     await sprint.save();
     await Sprint.populate(sprint, "tasks.user");
     console.log("task de/activated");
