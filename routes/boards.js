@@ -1921,8 +1921,19 @@ router.put("/cards/notification/:id", auth, async (req, res) => {
 //rocket_kostil
 router.get("/kostil/kostil/kostil", async (req, res) => {
   try {
+    const delay = ms => new Promise(res => setTimeout(res, ms));
     let a = await User.find();
-    for (let user of a) {
+    function sliceIntoChunks(arr, chunkSize) {
+      const res = [];
+      for (let i = 0; i < arr.length; i += chunkSize) {
+          const chunk = arr.slice(i, i + chunkSize);
+          res.push(chunk);
+      }
+      return res;
+  }
+  let temp = sliceIntoChunks(a,5)
+  for(let chunk of temp){
+    for (let user of chunk) {
       if (user.rocketId) {
         await fetch(`${process.env.CHAT}/api/v1/login`, {
           method: "post",
@@ -1959,6 +1970,9 @@ router.get("/kostil/kostil/kostil", async (req, res) => {
         await user.save();
       }
     }
+    await delay(1000*60)
+  }
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
