@@ -212,6 +212,8 @@ const ProjectSchema = new Schema({
   ],
   boards: [
     {
+      project:String,
+      project_title:String,
       name: String,
       categories: [
         {

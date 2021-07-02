@@ -12,6 +12,7 @@ const Stat = require("../models/Stat");
 const { response } = require("express");
 const { readdirSync } = require("fs");
 const multer = require("multer");
+const path = require("path");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, __dirname + "/../public/images");
@@ -25,19 +26,19 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 3 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype == "image/png" ||
-      file.mimetype == "image/jpg" ||
-      file.mimetype == "image/jpeg"
-    ) {
-      cb(null, true);
-    } else {
-      cb(null, false);
-      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
-    }
-  },
+  limits: { fileSize: 100 * 1024 * 1024 },
+  // fileFilter: (req, file, cb) => {
+  //   if (
+  //     file.mimetype == "image/png" ||
+  //     file.mimetype == "image/jpg" ||
+  //     file.mimetype == "image/jpeg"
+  //   ) {
+  //     cb(null, true);
+  //   } else {
+  //     cb(null, false);
+  //     return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+  //   }
+  // },
 });
 const {
   backlog_expired,
@@ -143,11 +144,27 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -212,11 +229,27 @@ router.put("/boards/rename/:id", manauth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -237,6 +270,10 @@ router.post("/categories/new/:id", async (req, res) => {
     }
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     let category = new Category({
+      og_board: {
+        board_name: board.name,
+        board_id: board._id,
+      },
       columns: board.columns,
       name: req.body.name,
       timeline: [{ start: req.body.start, end: req.body.end, cards: [] }],
@@ -275,11 +312,27 @@ router.post("/categories/new/:id", async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -333,11 +386,27 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -414,11 +483,27 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -561,11 +646,27 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -630,11 +731,27 @@ router.put("/categories/delete/:id", async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -683,11 +800,27 @@ router.put("/boards/column/new/:id", async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -791,11 +924,27 @@ router.put("/boards/column/delete/:id", async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -861,11 +1010,27 @@ router.put("/boards/column/delete/:id", async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -914,11 +1079,27 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -1089,11 +1270,27 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
       {
         path: "boards.monitor",
         populate: [
-          { path: "creator" },
-          { path: "execs", select: "avatar fullname" },
           {
-            path: "event_users",
-            select: "avatar fullname",
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
           },
         ],
       },
@@ -1245,12 +1442,30 @@ router.post(
       if (!card) {
         return res.status(404).json({ err: "Карточка не найдена" });
       }
+      let type;
+      if (req.file) {
+        type = "file";
+        if (
+          req.file.mimetype == "image/png" ||
+          req.file.mimetype == "image/jpg" ||
+          req.file.mimetype == "image/jpeg" ||
+          req.file.mimetype == "image/svg+xml"
+        ) {
+          type = "image";
+        }
+      }
       let comment = {
         date: new Date() + 3 * 60 * 60 * 1000,
         text: req.body.text,
         author: req.user.id,
         type: "comment",
-        image: req.file ? "images/" + req.file.filename : undefined,
+        file: req.file
+          ? {
+              path: "images/" + req.file.filename,
+              og_name: req.file.originalname,
+              file_type: type,
+            }
+          : undefined,
       };
       card.comments.push(comment);
       if (req.body.mentions.length > 0) {
@@ -1786,6 +2001,10 @@ router.put("/cards/events/adduser/:id", auth, async (req, res) => {
       return res.status(404).json({ err: "Карточка не найдена" });
     }
     if (!card.execs.includes(req.body.user_id)) {
+      await User.findOneAndUpdate(
+        { _id: req.body.user_id },
+        { $push: { event_cards: req.params.id } }
+      );
       card.execs.push(req.body.user_id);
     }
     await card.save();
@@ -2024,11 +2243,150 @@ router.put("/cards/notification/:id", auth, async (req, res) => {
 router.put("/category/monitor/:id", auth, async (req, res) => {
   try {
     let new_prj = await Project.findOne({ "boards._id": req.body.board_id });
-    new_prj.boards
-      .filter((el) => el._id == req.body.new_board)[0]
-      .monitor.push(req.params.id);
+    let board = new_prj.boards.filter((el) => el._id == req.body.board_id)[0];
+    board.monitor.push(req.params.id);
     await new_prj.save();
-    return res.json({ msg: "eeee boiiii" });
+    await Project.populate(new_prj, [
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              {
+                path: "comments.author",
+              },
+              { path: "creator" },
+              { path: "user" },
+              { path: "user2" },
+              { path: "tasks.user" },
+              { path: "tasks.user2" },
+              { path: "execs" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    return res.json({ backlog: new_prj.backlog, board: board });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//remove monitored category from board
+router.put("/category/monitor/remove/:id", auth, async (req, res) => {
+  try {
+    let prj = await Project.findOne({ "boards._id": req.body.board_id });
+    let board = prj.boards.filter((el) => el._id == req.body.board_id)[0];
+    board.monitor = board.monitor.filter((el) => el != req.params.id);
+    await prj.save();
+    await Project.populate(prj, [
+      {
+        path: "boards.categories",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              {
+                path: "comments.author",
+              },
+              { path: "creator" },
+              { path: "user" },
+              { path: "user2" },
+              { path: "tasks.user" },
+              { path: "tasks.user2" },
+              { path: "execs" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "boards.monitor",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    return res.json({ backlog: prj.backlog, board: board });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -2053,5 +2411,25 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
 //     return res.status(500).json({ err: "server error" });
 //   }
 // });
+
+//and another one
+router.get("/eee/opyat/kostil/eee", async (req, res) => {
+  try {
+    let prjs = await Project.find().populate("boards.categories");
+    for (let prj of prjs) {
+      for (let board of prj.boards) {
+        let og_board = { board_name: board.name, board_id: board._id };
+        for (let category of board.categories) {
+          category.og_board = og_board;
+          await category.save();
+        }
+      }
+    }
+    res.json("huy");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 
 module.exports = router;

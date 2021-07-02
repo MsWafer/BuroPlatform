@@ -230,8 +230,19 @@ router.get("/me", auth, async (req, res) => {
           path: "fav_cards",
         },
         {
+          path: "event_cards",
+          populate: [
+            { path: "creator", select: "avatar fullname" },
+            { path: "execs", select: "avatar fullname" },
+            {
+              path: "event_users",
+              select: "avatar fullname",
+            },
+          ],
+        },
+        {
           path: "fav_boards.project",
-          select: "crypt backlog boards",
+          select: "crypt backlog boards title",
           populate: [
             {
               path: "boards.categories",
@@ -440,9 +451,13 @@ router.get("/me", auth, async (req, res) => {
     }
 
     for (let fav_board of user.fav_boards) {
-      user.boards.push(
-        fav_board.project.boards.filter((el) => el._id == fav_board.board_id)[0]
-      );
+      for (let a of fav_board.project.boards) {
+        if (a._id == fav_board.board_id) {
+          a.project = fav_board.project.crypt;
+          a.project_title = fav_board.project.title;
+          user.boards.push(a);
+        }
+      }
     }
     return res.json(user);
   } catch (error) {

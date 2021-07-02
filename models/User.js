@@ -180,6 +180,12 @@ const UserSchema = new mongoose.Schema({
       ref: "card",
     },
   ],
+  event_cards: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "card",
+    },
+  ],
   fav_boards: [
     {
       board_id: String,

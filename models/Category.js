@@ -6,6 +6,10 @@ const CategorySchema = new Schema({
   step: Number,
   month: Number,
   columns: Array,
+  og_board: {
+    board_name: String,
+    board_id: String,
+  },
   timeline: [
     {
       start: Date,

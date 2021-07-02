@@ -13,10 +13,12 @@ const CardSchema = new Schema({
   },
   likeUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   expired: Boolean,
-  notification: [{
-    date: Date,
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
-  }],
+  notification: [
+    {
+      date: Date,
+      users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    },
+  ],
   regular: Boolean,
   date: Date,
   column: String,
@@ -38,7 +40,11 @@ const CardSchema = new Schema({
       type: {
         type: String,
       },
-      image: String,
+      file: {
+        path: String,
+        og_name: String,
+        file_type: String,
+      },
     },
   ],
   tags: [String],
