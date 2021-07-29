@@ -56,7 +56,6 @@ const User = require("../models/User");
 const { findOne } = require("../models/Project");
 const manauth = require("../middleware/manauth");
 const rocketPushCard = require("../middleware/rocketPushCard");
-const { createEvent } = require("../middleware/googleCal");
 
 //new board
 router.post("/boards/new/:crypt", async (req, res) => {
@@ -192,13 +191,17 @@ router.delete("/boards/delete/:id", manauth, async (req, res) => {
 });
 
 //rename board
-router.put("/boards/rename/:id", manauth, async (req, res) => {
+router.put("/boards/rename/:id", auth, async (req, res) => {
   try {
     let project = await Project.findOne({ "boards._id": req.params.id });
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     board.name = req.body.name;
     await project.save();
     await Project.populate(project, [
+      {
+        path:"team2.user",
+        selet: "avatar fullname"
+      },
       {
         path: "boards.categories",
         populate: [
@@ -1307,12 +1310,6 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
       { $inc: { cards_created: 1 } }
     );
     let date = Date.now();
-    await createEvent(
-      card.title,
-      "Описание карточки",
-      new Date(),
-      new Date(date + 1000 * 60 * 60 * 3)
-    );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -1469,6 +1466,7 @@ router.post(
       };
       card.comments.push(comment);
       if (req.body.mentions.length > 0) {
+        req.body.mentions=req.body.mentions.split(",")
         for (let id of req.body.mentions) {
           await rc_mention(id, card.title, req.body.url);
         }

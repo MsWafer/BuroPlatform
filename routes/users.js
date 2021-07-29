@@ -8,11 +8,11 @@ const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const admauth = require("../middleware/admauth");
 const rocketlogin = require("../middleware/rocketlogin");
-const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
+const multer = require("multer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, __dirname + "/../public/avatars");
@@ -514,7 +514,7 @@ router.put("/me/pw", auth, async (req, res) => {
 });
 
 //change or add avatar
-router.put("/me/a", upload.single("file"), auth, async (req, res) => {
+router.put("/me/a", auth, upload.single("file"), async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id })
       .select("-password")

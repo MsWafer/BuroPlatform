@@ -4,6 +4,7 @@ const { check, validationResult, Result } = require("express-validator");
 const auth = require("../middleware/auth");
 const manauth = require("../middleware/manauth");
 const fetch = require("node-fetch");
+const path = require("path");
 
 const CryptoJS = require("crypto-js");
 
@@ -19,7 +20,7 @@ const multer = require("multer");
 const mob_push = require("../middleware/mob_push");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/usr/src/app/public/covers");
+    cb(null, __dirname + "/../public/covers");
   },
   filename: (req, file, cb) => {
     cb(
@@ -30,19 +31,19 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 3 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype == "image/png" ||
-      file.mimetype == "image/jpg" ||
-      file.mimetype == "image/jpeg"
-    ) {
-      cb(null, true);
-    } else {
-      cb(null, false);
-      return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
-    }
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
+  // fileFilter: (req, file, cb) => {
+  //   if (
+  //     file.mimetype == "image/png" ||
+  //     file.mimetype == "image/jpg" ||
+  //     file.mimetype == "image/jpeg"
+  //   ) {
+  //     cb(null, true);
+  //   } else {
+  //     cb(null, false);
+  //     return cb(new Error("Разрешенны только .jpg, .png, .jpeg"));
+  //   }
+  // },
 });
 
 //add new project
@@ -1477,6 +1478,81 @@ router.put("/favproj/:id", auth, async (req, res) => {
     }
     await user.save();
     res.json({ msg: msg });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add custom field
+router.post(
+  "/custom/add/:crypt",
+  auth,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      await Project.findOne({ crypt: req.params.crypt }, async (err, doc) => {
+        if (err) throw err;
+        let obj = {
+          viewable: req.body.viewable,
+          field_name: req.body.field_name,
+          file_path: req.file ? "covers/" + req.file.filename : undefined,
+          field_content: req.file
+            ? req.file.originalname
+            : req.body.field_content,
+          field_type: req.file ? "file" : "string",
+        };
+        doc.custom_fields.push(obj);
+        await doc.save();
+        res.json(doc);
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ err: "server error" });
+    }
+  }
+);
+
+//remove custom field
+router.post("/custom/remove/:id", async (req, res) => {
+  try {
+    await Project.findOne(
+      { "custom_fields._id": req.params.id },
+      async (err, doc) => {
+        if (err) throw err;
+        doc.custom_fields = doc.custom_fields.filter(
+          (el) => el._id != req.params.id
+        );
+        await doc.save();
+        res.json(doc);
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//edit custom field
+router.post("/custom/edit/:id", upload.single("file"), async (req, res) => {
+  try {
+    await Project.findOne(
+      { "custom_fields._id": req.params.id },
+      async (err, doc) => {
+        if (err) throw err;
+        let custom = doc.custom_fields.filter(
+          (el) => el._id == req.params.id
+        )[0];
+        custom.viewable = req.body.viewable;
+        custom.field_name = req.body.field_name;
+        custom.file_path = req.file ? "covers/" + req.file.filename : undefined;
+        custom.field_content = req.file
+          ? req.file.originalname
+          : req.body.field_content;
+        await doc.save();
+        res.json(doc);
+      }
+    );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

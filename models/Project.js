@@ -74,6 +74,15 @@ const ProjectSchema = new Schema({
   budget: {
     type: String,
   },
+  custom_fields: [
+    {
+      viewable: Boolean,
+      field_name: String,
+      field_content: String,
+      file_path: String,
+      field_type: String,
+    }
+  ],
   team: [
     {
       type: mongoose.Schema.Types.ObjectId,
