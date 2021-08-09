@@ -2440,13 +2440,14 @@ router.put("/make/it/stop", async (req, res) => {
     for (let category of categories) {
       for (let timeline of category.timeline) {
         if (timeline.start && timeline.end) {
-          timeline.start = timeline.start.setHours(-3);
-          timeline.end = timeline.end.setHours(-3);
+          timeline.start = timeline.start.setHours(-3,0,0,0);
+          timeline.end = timeline.end.setHours(-3,0,0,0);
         }
       }
       console.log("changed")
       await category.save();
     }
+    res.json("=")
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
