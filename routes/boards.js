@@ -60,7 +60,8 @@ const rocketPushCard = require("../middleware/rocketPushCard");
 //new board
 router.post("/boards/new/:crypt", async (req, res) => {
   try {
-    let start = Date.now() - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
+    let start =
+      Date.now().setHours(-3) - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
     let end = new Date(start + 1000 * 60 * 60 * 24 * 6);
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
@@ -199,8 +200,8 @@ router.put("/boards/rename/:id", auth, async (req, res) => {
     await project.save();
     await Project.populate(project, [
       {
-        path:"team2.user",
-        selet: "avatar fullname"
+        path: "team2.user",
+        selet: "avatar fullname",
       },
       {
         path: "boards.categories",
@@ -437,13 +438,15 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
     let start;
     let end;
     if (!req.body.month) {
-      start = Date.now() - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
+      start =
+        Date.now().setHours(-3) -
+        1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
       end = new Date(start + 1000 * 60 * 60 * 24 * (req.body.step - 1));
     }
     if (req.body.month) {
       start = new Date(
         Date.now() - 1000 * 60 * 60 * 24 * (new Date().getDate() - 1)
-      );
+      ).setHours(-3);
       let month =
         start.getMonth() + req.body.month < 12
           ? start.getMonth() + req.body.month
@@ -1466,7 +1469,7 @@ router.post(
       };
       card.comments.push(comment);
       if (req.body.mentions.length > 0) {
-        req.body.mentions=req.body.mentions.split(",")
+        req.body.mentions = req.body.mentions.split(",");
         for (let id of req.body.mentions) {
           await rc_mention(id, card.title, req.body.url);
         }
@@ -2424,6 +2427,25 @@ router.get("/eee/opyat/kostil/eee", async (req, res) => {
       }
     }
     res.json("huy");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+// SHO TUT U NAS, ESHE ODIN KOSTIL?????????!!???!?!?!?
+router.put("/make/it/stop", async (req, res) => {
+  try {
+    let categories = await Category.find({ timeline: { $ne: [] } });
+    for (let category of categories) {
+      for (let timeline of category.timeline) {
+        if (timeline.start && timeline.end) {
+          timeline.start = timeline.start.setHours(-3);
+          timeline.end = timeline.end.setHours(-3);
+        }
+      }
+      await category.save();
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
