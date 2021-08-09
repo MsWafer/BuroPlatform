@@ -61,7 +61,7 @@ const rocketPushCard = require("../middleware/rocketPushCard");
 router.post("/boards/new/:crypt", async (req, res) => {
   try {
     let start =
-      Date.now().setHours(-3) - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
+      new Date().setHours(-3) - 1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
     let end = new Date(start + 1000 * 60 * 60 * 24 * 6);
     let project = await Project.findOne({ crypt: req.params.crypt });
     if (!project) {
@@ -439,7 +439,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
     let end;
     if (!req.body.month) {
       start =
-        Date.now().setHours(-3) -
+        new Date().setHours(-3) -
         1000 * 60 * 60 * 24 * (new Date().getDay() - 1);
       end = new Date(start + 1000 * 60 * 60 * 24 * (req.body.step - 1));
     }
