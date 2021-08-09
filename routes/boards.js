@@ -2433,23 +2433,6 @@ router.get("/eee/opyat/kostil/eee", async (req, res) => {
   }
 });
 
-// SHO TUT U NAS, ESHE ODIN KOSTIL?????????!!???!?!?!?
-router.put("/make/it/stop", async (req, res) => {
-  try {
-    let categories = await Category.find({ timeline: { $ne: [] } });
-    for (let category of categories) {
-      for (let timeline of category.timeline) {
-        if (timeline.start && timeline.end) {
-          timeline.start = timeline.start.setHours(-3);
-          timeline.end = timeline.end.setHours(-3);
-        }
-      }
-      await category.save();
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ err: "server error" });
-  }
-});
+
 
 module.exports = router;
