@@ -2440,8 +2440,8 @@ router.put("/make/it/stop", async (req, res) => {
     for (let category of categories) {
       for (let timeline of category.timeline) {
         if (timeline.start && timeline.end) {
-          timeline.start = timeline.start.setHours(-3,0,0,0);
-          timeline.end = timeline.end.setHours(-3,0,0,0);
+          timeline.start = new Date(timeline.start).setHours(-3,0,0,0);
+          timeline.end = new Date(timeline.end).setHours(-3,0,0,0);
         }
       }
       console.log("changed")
