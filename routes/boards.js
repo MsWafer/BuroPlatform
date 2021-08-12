@@ -2444,7 +2444,7 @@ router.get("/help/me/pls", async (req, res) => {
       for (let timeline of category.timeline) {
         if (timeline.start && timeline.end) {
           timeline.end = new Date(
-            timeline.start.getTime() + 1000 * 60 * 60 * 24 * (category.step)
+            timeline.start.getTime() + 1000 * 60 * 60 * 24 * (category.step-1)
           );
         }
         await category.save();
