@@ -2433,4 +2433,26 @@ router.get("/eee/opyat/kostil/eee", async (req, res) => {
   }
 });
 
+///help me
+router.get("/help/me/pls", async (req, res) => {
+  try {
+    let categories = await Category.find({
+      month: undefined,
+      step: { $ne: undefined },
+    });
+    for (let category of categories) {
+      for (let timeline of category.timeline) {
+        if (timeline.start && timeline.end) {
+          timeline.end = new Date(
+            timeline.start.getTime() + 1000 * 60 * 60 * 24 * (category.step)
+          );
+        }
+        await category.save();
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
 module.exports = router;
