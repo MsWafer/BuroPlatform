@@ -2629,6 +2629,7 @@ router.get("/help/me/pls", async (req, res) => {
 //add explanation
 router.post("/cards/reason/:id", auth, async (req, res) => {
   try {
+    console.log(req.body);
     let card = await Card.findOne({ "tasks._id": req.params.id });
     if (!card) {
       return res.status(404).json({ err: "Карточка не найдена" });
