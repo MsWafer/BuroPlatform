@@ -1053,8 +1053,8 @@ router.put("/boards/column/delete/:id", async (req, res) => {
 //rename column
 router.put("/boards/column/rename/:id", manauth, async (req, res) => {
   try {
-    console.log(req.params)
-    console.log(req.body)
+    console.log(req.params);
+    console.log(req.body);
     let project = await Project.findOne({
       "boards._id": req.params.id,
     }).populate([
@@ -1378,6 +1378,33 @@ router.put("/cards/move", auth, async (req, res) => {
       "boards._id": req.body.board_id,
     }).populate([
       {
+        path: "boards.monitor",
+        populate: [
+          {
+            path: "timeline.cards",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+          {
+            path: "expired",
+            populate: [
+              { path: "creator" },
+              { path: "execs", select: "avatar fullname" },
+              {
+                path: "event_users",
+                select: "avatar fullname",
+              },
+            ],
+          },
+        ],
+      },
+      {
         path: "boards.categories",
         populate: [
           {
@@ -1561,6 +1588,7 @@ router.put("/cards/tags/remove/:id", auth, async (req, res) => {
 //edit card
 router.put("/cards/fields/edit/:id", auth, async (req, res) => {
   try {
+    console.log(req.body)
     await Card.findOne({ _id: req.params.id }, async (err, card) => {
       if (err) throw err;
       if (!card) {
@@ -1588,8 +1616,7 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
         comment.text = `Срочность изменена с "${card.emergency}" на "${req.body.emergency}"`;
         card.comments.push(comment);
       }
-      let keys = Object.keys(req.body);
-      for (let key of keys) {
+      for (let key of Object.keys(req.body)) {
         card[key] = req.body[key];
       }
       await card.save();
@@ -1754,7 +1781,12 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
 //delete task
 router.delete("/cards/tasks/delete/:id", async (req, res) => {
   try {
-    let card = await Card.findOne({ "tasks._id": req.params.id });
+    let card = await Card.findOne({ "tasks._id": req.params.id }).populate([
+      {
+        path: "comments.author",
+        select: "avatar fullname",
+      },
+    ]);
     if (!card) {
       return res.status(404).json({ err: "Карточка не найдена" });
     }
@@ -1849,6 +1881,9 @@ router.delete("/cards/delete/single", auth, async (req, res) => {
     }
     for (let board of project.boards) {
       for (let category of board.categories) {
+        category.expired = category.expired.filter((el) => {
+          return el._id == req.query.cardid;
+        });
         for (let timeline of category.timeline) {
           timeline.cards = timeline.cards.filter(
             (el) => el._id != req.query.cardid
@@ -1857,7 +1892,7 @@ router.delete("/cards/delete/single", auth, async (req, res) => {
         await category.save();
       }
       if (x) {
-        board.archive.push(req.query.cardid);
+        // board.archive.push(req.query.cardid);
         await Card.findOneAndUpdate(
           { _id: x },
           {
