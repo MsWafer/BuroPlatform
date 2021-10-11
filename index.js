@@ -80,3 +80,25 @@ let card_notification_check = async () => {
 expired();
 timeline_check();
 card_notification_check();
+const Project = require("./models/Project");
+const Card = require("./models/Card");
+let a = async () => {
+  let cards = await Card.find()
+  let projects = await Project.find();
+  for (let project of projects) {
+    if (!project.backlog_title) {
+      project.backlog_title = "Задачи";
+    }
+    if (!project.image) {
+      project.image = "covers/default_project_image.png";
+    }
+    await project.save();
+  }
+  for(let card of cards){
+    if(!card.review){
+      card.review.state = "not_pending"
+    }
+    await card.save()
+  }
+};
+a();

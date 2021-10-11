@@ -123,6 +123,7 @@ const ProjectSchema = new Schema({
       other: { type: Array, default: [] },
     },
   ],
+  image: String,
   city: {
     type: String,
   },
@@ -247,6 +248,7 @@ const ProjectSchema = new Schema({
       ],
     },
   ],
+  backlog_title: String,
   backlog: [
     {
       type: mongoose.Schema.Types.ObjectId,

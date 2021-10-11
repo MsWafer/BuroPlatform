@@ -19,6 +19,10 @@ const CardSchema = new Schema({
       users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     },
   ],
+  review: {
+    state: {type:String, default:"not_pending"},
+    date: Date,
+  },
   regular: Boolean,
   date: Date,
   column: String,
@@ -76,6 +80,12 @@ const CardSchema = new Schema({
       project: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "project",
+      },
+      reason: {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        type: String,
+        text: String,
+        date: Date,
       },
     },
   ],

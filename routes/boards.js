@@ -170,7 +170,11 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
       },
     ]);
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
-    return res.json({ board: board, backlog: project.backlog });
+    return res.json({
+      board: board,
+      backlog: project.backlog,
+      backlog_title: project.backlog_title,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -1458,7 +1462,11 @@ router.put("/cards/move", auth, async (req, res) => {
       },
     ]);
     let board = project.boards.filter((el) => el._id == req.body.board_id)[0];
-    return res.json({ board: board, backlog: project.backlog });
+    return res.json({
+      board: board,
+      backlog: project.backlog,
+      backlog_title: project.backlog_title,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -1588,7 +1596,7 @@ router.put("/cards/tags/remove/:id", auth, async (req, res) => {
 //edit card
 router.put("/cards/fields/edit/:id", auth, async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     await Card.findOne({ _id: req.params.id }, async (err, card) => {
       if (err) throw err;
       if (!card) {
@@ -1601,10 +1609,10 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
       };
       if (req.body.deadline) {
         req.body.deadline = new Date(req.body.deadline);
-        let new_date = req.body.deadline.toLocaleString().substring(0, 10);
+        let new_date = req.body.deadline.toLocaleString();
         if (card.deadline != undefined) {
-          let old_date = card.deadline.toLocaleString().substring(0, 10);
-          let new_date = req.body.deadline.toLocaleString().substring(0, 10);
+          let old_date = card.deadline.toLocaleString();
+          let new_date = req.body.deadline.toLocaleString();
           comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
           card.comments.push(comment);
         } else {
@@ -1641,6 +1649,72 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
     console.error(error);
     return res.status(500).json({ err: "server error" });
   }
+});
+
+//delete deadline from card
+router.post("/cards/deadline/delete/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    card.deadline = undefined;
+    await card.save();
+    await Card.populate(card, [
+      {
+        path: "comments.author",
+      },
+      { path: "creator" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "execs" },
+      {
+        path: "event_users",
+        select: "avatar fullname",
+      },
+    ]);
+    return res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//delete deadline from task
+router.post("/cards/tasks/deadline/delete/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ "tasks._id": req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    let task = card.tasks.filter((el) => {
+      return el._id == req.params.id;
+    })[0];
+    task.deadline = undefined;
+    await card.save();
+    await Card.populate(card, [
+      {
+        path: "comments.author",
+      },
+      { path: "creator" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "execs" },
+      {
+        path: "event_users",
+        select: "avatar fullname",
+      },
+    ]);
+    return res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+  ``;
 });
 
 //add tasks to card
@@ -1717,6 +1791,14 @@ router.put("/cards/tasks/edit/:id", async (req, res) => {
         },
         { $inc: { task_close_count: num } }
       );
+      let status = req.body.taskStatus?"завершена":"возобновлена";
+      let comment = {
+        type: "history",
+        date: new Date(),
+        author: req.user.id,
+        text: `Задача ${task.title} ${status}`
+      }
+      card.comments.push(comment)
     }
     await card.save();
     await Card.populate(card, [
@@ -1752,7 +1834,7 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
     task.user = req.body.user;
     task.user2 = req.user.id;
     // task.project = req.body.project;
-    if (!card.execs.includes(req.body.user)) {
+    if (req.body.user != undefined && !card.execs.includes(req.body.user)) {
       card.execs.push(req.body.user);
     }
     await card.save();
@@ -1776,6 +1858,40 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
     console.error(error);
     return res.status(500).json({ err: "server error" });
   }
+});
+
+//remove execs from card
+router.post("/cards/execs/remove/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    card.execs = card.execs.filter((el) => {
+      return el != req.body.user;
+    });
+    await card.save();
+    await Card.populate(card, [
+      {
+        path: "comments.author",
+      },
+      { path: "creator" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "execs" },
+      {
+        path: "event_users",
+        select: "avatar fullname",
+      },
+    ]);
+    return res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+  ``;
 });
 
 //delete task
@@ -1926,7 +2042,11 @@ router.delete("/cards/delete/single", auth, async (req, res) => {
     if (req.query.boardid) {
       board = project.boards.filter((el) => el._id == req.query.boardid)[0];
     }
-    return res.json({ board: board, backlog: project.backlog });
+    return res.json({
+      board: board,
+      backlog: project.backlog,
+      backlog_title: project.backlog_title,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -2352,7 +2472,11 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
         ],
       },
     ]);
-    return res.json({ backlog: new_prj.backlog, board: board });
+    return res.json({
+      backlog: new_prj.backlog,
+      board: board,
+      backlog_title: project.backlog_title,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -2429,7 +2553,11 @@ router.put("/category/monitor/remove/:id", auth, async (req, res) => {
         ],
       },
     ]);
-    return res.json({ backlog: prj.backlog, board: board });
+    return res.json({
+      backlog: prj.backlog,
+      board: board,
+      backlog_title: project.backlog_title,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });
@@ -2492,6 +2620,146 @@ router.get("/help/me/pls", async (req, res) => {
         await category.save();
       }
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//add explanation
+router.post("/cards/reason/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ "tasks._id": req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    let obj = {
+      user: req.user.id,
+      type: req.body.type,
+      text: req.body.text,
+      date: new Date(),
+    };
+    let task = card.tasks.filter((el) => {
+      return el._id == req.params.id;
+    })[0];
+    task.reason = obj;
+    let comment = {
+      text: `Добавлено объяснение просрочки задачи ${task.title}`,
+      author: req.user.id,
+      date: new Date(),
+      type: "history",
+    };
+    card.comments.push(comment);
+    await card.save();
+    await Card.populate(card, [
+      {
+        path: "event_users",
+      },
+      { path: "execs" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "creator" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "comments.author" },
+    ]);
+    res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change task order in card
+router.post("/cards/tasks/order/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    let task = card.tasks[req.body.old_ind];
+    card.tasks = card.tasks.filter((el) => {
+      return el._id != task.id;
+    });
+    card.tasks.splice(req.body.new_ind, 0, task);
+    await card.save();
+    await Card.populate(card, [
+      {
+        path: "event_users",
+      },
+      { path: "execs" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "creator" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "comments.author" },
+    ]);
+    res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//not_pending->pending
+router.post("/cards/review/start/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    if (!card.review) {
+      card.review = {state:undefined};
+    }
+    if(card.review.state=="pending"){
+      return res.status(400).json({err:"Карточка уже находится в проверке"})
+    }
+    (card.review.state = "pending"),
+      (card.review.date = new Date()),
+      await card.save();
+    await Card.populate(card, [
+      {
+        path: "event_users",
+      },
+      { path: "execs" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "creator" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "comments.author" },
+    ]);
+    res.json(card);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ err: "server error" });
+  }
+});
+
+//change review status
+router.post("/cards/review/changestatus/:id", auth, async (req, res) => {
+  try {
+    let card = await Card.findOne({ _id: req.params.id });
+    if (!card) {
+      return res.status(404).json({ err: "Карточка не найдена" });
+    }
+    if (!card.review || card.review.state != "pending") {
+      return res.status(400).json({ err: "Карточка не находится в проверке" });
+    }
+    (card.review.state = req.body.state),
+      // card.review.date = new Date(),
+      await card.save();
+    await Card.populate(card, [
+      {
+        path: "event_users",
+      },
+      { path: "execs" },
+      { path: "user" },
+      { path: "user2" },
+      { path: "creator" },
+      { path: "tasks.user" },
+      { path: "tasks.user2" },
+      { path: "comments.author" },
+    ]);
+    res.json(card);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ err: "server error" });

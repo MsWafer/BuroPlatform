@@ -50,6 +50,7 @@ const upload = multer({
 router.post(
   "/add",
   auth,
+  // upload.single("file"),
   [
     check("title", "Введите название проекта").not().isEmpty(),
     check("type", "Выберите тип проекта").not().isEmpty(),
@@ -64,6 +65,13 @@ router.post(
 
     try {
       let proj_obj = req.body;
+      // if (req.file) {
+      //   proj_obj.image = req.file
+      //     ? "covers/" + req.file.filename
+      //     : "avatars/spurdo.png";
+      // }
+
+      proj_obj.image = "covers/default_project_image.png"
       console.log(proj_obj);
       if (!proj_obj.dateStart) {
         proj_obj.dateStart = Date.now();
@@ -103,7 +111,9 @@ router.post(
       await project.save();
       console.log(`Проект ${project.title} добавлен`);
       res.json({ project: project, msg: `Проект ${project.title} добавлен` });
-
+      // if(proj_obj.team2){
+      //   proj_obj.team2 = proj_obj.team2.split(",")
+      // }
       if (proj_obj.team2 && proj_obj.team2.length > 0) {
         let govno = async (project, user) => {
           rcinvprj(project, user), user.projects.push(project._id);
@@ -118,6 +128,30 @@ router.post(
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("server error");
+    }
+  }
+);
+
+//change project image
+router.post(
+  "/image/change/:crypt",
+  auth,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      let project = await Project.findOne({ crypt: req.params.crypt });
+      if (!project) {
+        return res.status(404).json({ err: "Проект не найден" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ err: "Файл не загружен" });
+      }
+      project.image = "covers/" + req.file.filename;
+      await project.save();
+      return res.redirect(303, "/projects/" + project.crypt);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ err: "server error" });
     }
   }
 );
@@ -313,8 +347,7 @@ router.put("/:crypt", manauth, async (req, res) => {
     if (typeof req.body.dateFinish == "string") {
       req.body.dateFinish = new Date(req.body.dateFinish);
     }
-    let body_arr = Object.keys(req.body);
-    body_arr.forEach((field) => {
+    Object.keys(req.body).forEach((field) => {
       if (field != null && field != "customerNew") {
         typeof req.body[field] == "string"
           ? req.body[field].trim().length > 0
