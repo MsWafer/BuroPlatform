@@ -109,7 +109,7 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -120,7 +120,7 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -133,7 +133,7 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
       {
         path: "backlog",
         populate: [
-          { path: "creator" },
+          { path: "creator", select: "avatar fullname" },
           { path: "execs", select: "avatar fullname" },
           {
             path: "event_users",
@@ -147,7 +147,7 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -158,7 +158,7 @@ router.get("/boards/get/single/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -215,7 +215,7 @@ router.put("/boards/rename/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -226,7 +226,7 @@ router.put("/boards/rename/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -242,7 +242,7 @@ router.put("/boards/rename/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -253,7 +253,7 @@ router.put("/boards/rename/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -298,7 +298,7 @@ router.post("/categories/new/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -309,7 +309,7 @@ router.post("/categories/new/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -325,7 +325,7 @@ router.post("/categories/new/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -336,7 +336,7 @@ router.post("/categories/new/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -372,7 +372,7 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -383,7 +383,7 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -399,7 +399,7 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -410,7 +410,7 @@ router.put("/categories/edit/rename/:id", manauth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -471,7 +471,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -482,7 +482,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -498,7 +498,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -509,7 +509,7 @@ router.put("/categories/edit/timeline/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -661,7 +661,7 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -672,7 +672,7 @@ router.put("/categories/edit/newtimeline/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -746,7 +746,7 @@ router.put("/categories/delete/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -757,7 +757,7 @@ router.put("/categories/delete/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -815,7 +815,7 @@ router.put("/boards/column/new/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -826,7 +826,7 @@ router.put("/boards/column/new/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -881,7 +881,7 @@ router.put("/boards/column/new/:id", async (req, res) => {
     //   {
     //     path: "boards.monitor",
     //     populate: [
-    //       { path: "creator" },
+    //       { path: "creator", select :"avatar fullname" },
     //       { path: "execs", select: "avatar fullname" },
     //       {
     //         path: "event_users",
@@ -910,9 +910,8 @@ router.put("/boards/column/delete/:id", async (req, res) => {
         populate: [
           {
             path: "timeline.cards",
-            select: "avatar fullname",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -939,7 +938,7 @@ router.put("/boards/column/delete/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -950,7 +949,7 @@ router.put("/boards/column/delete/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1025,7 +1024,7 @@ router.put("/boards/column/delete/:id", async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1036,7 +1035,7 @@ router.put("/boards/column/delete/:id", async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1093,7 +1092,7 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1104,7 +1103,7 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1160,7 +1159,7 @@ router.post("/cards/new/backlog/:crypt", auth, async (req, res) => {
         {
           path: "comments.author",
         },
-        { path: "creator" },
+        { path: "creator", select: "avatar fullname" },
         { path: "user" },
         { path: "user2" },
         { path: "tasks.user" },
@@ -1210,7 +1209,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
           {
             path: "comments.author",
           },
-          { path: "creator" },
+          { path: "creator", select: "avatar fullname" },
           { path: "user" },
           { path: "user2" },
           { path: "tasks.user" },
@@ -1256,7 +1255,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
               {
                 path: "comments.author",
               },
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "user" },
               { path: "user2" },
               { path: "tasks.user" },
@@ -1271,7 +1270,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1287,7 +1286,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1298,7 +1297,7 @@ router.post("/cards/new/category/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1384,7 +1383,7 @@ router.put("/cards/move", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1395,7 +1394,7 @@ router.put("/cards/move", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1414,7 +1413,7 @@ router.put("/cards/move", auth, async (req, res) => {
               {
                 path: "comments.author",
               },
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "user" },
               { path: "user2" },
               { path: "tasks.user" },
@@ -1429,7 +1428,7 @@ router.put("/cards/move", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1445,7 +1444,7 @@ router.put("/cards/move", auth, async (req, res) => {
           {
             path: "comments.author",
           },
-          { path: "creator" },
+          { path: "creator", select: "avatar fullname" },
           { path: "user" },
           { path: "user2" },
           { path: "tasks.user" },
@@ -1518,7 +1517,7 @@ router.post(
         {
           path: "comments.author",
         },
-        { path: "creator" },
+        { path: "creator", select: "avatar fullname" },
         { path: "user" },
         { path: "user2" },
         { path: "tasks.user" },
@@ -1556,7 +1555,7 @@ router.put("/cards/tags/add/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1629,7 +1628,7 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
         {
           path: "comments.author",
         },
-        { path: "creator" },
+        { path: "creator", select: "avatar fullname" },
         { path: "user" },
         { path: "user2" },
         { path: "tasks.user" },
@@ -1661,7 +1660,7 @@ router.post("/cards/deadline/delete/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1695,7 +1694,7 @@ router.post("/cards/tasks/deadline/delete/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1738,7 +1737,7 @@ router.post("/cards/tasks/new/:id", async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1802,7 +1801,7 @@ router.put("/cards/tasks/edit/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1839,7 +1838,7 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1872,7 +1871,7 @@ router.post("/cards/execs/remove/:id", auth, async (req, res) => {
       {
         path: "comments.author",
       },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "user" },
       { path: "user2" },
       { path: "tasks.user" },
@@ -1973,7 +1972,7 @@ router.delete("/cards/delete/single", auth, async (req, res) => {
         {
           path: "expired",
           populate: [
-            { path: "creator" },
+            { path: "creator", select: "avatar fullname" },
             { path: "execs", select: "avatar fullname" },
             {
               path: "event_users",
@@ -2325,7 +2324,7 @@ router.put("/cards/notification/:id", auth, async (req, res) => {
         { path: "execs" },
         { path: "user" },
         { path: "user2" },
-        { path: "creator" },
+        { path: "creator", select: "avatar fullname" },
         { path: "tasks.user" },
         { path: "tasks.user2" },
         { path: "comments.author" },
@@ -2416,7 +2415,7 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
               {
                 path: "comments.author",
               },
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "user" },
               { path: "user2" },
               { path: "tasks.user" },
@@ -2431,7 +2430,7 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2447,7 +2446,7 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2458,7 +2457,7 @@ router.put("/category/monitor/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2497,7 +2496,7 @@ router.put("/category/monitor/remove/:id", auth, async (req, res) => {
               {
                 path: "comments.author",
               },
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "user" },
               { path: "user2" },
               { path: "tasks.user" },
@@ -2512,7 +2511,7 @@ router.put("/category/monitor/remove/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2528,7 +2527,7 @@ router.put("/category/monitor/remove/:id", auth, async (req, res) => {
           {
             path: "timeline.cards",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2539,7 +2538,7 @@ router.put("/category/monitor/remove/:id", auth, async (req, res) => {
           {
             path: "expired",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -2655,7 +2654,7 @@ router.post("/cards/reason/:id", auth, async (req, res) => {
       { path: "execs" },
       { path: "user" },
       { path: "user2" },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "tasks.user" },
       { path: "tasks.user2" },
       { path: "comments.author" },
@@ -2684,7 +2683,7 @@ router.post("/cards/tasks/order/:id", auth, async (req, res) => {
       { path: "execs" },
       { path: "user" },
       { path: "user2" },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "tasks.user" },
       { path: "tasks.user2" },
       { path: "comments.author" },
@@ -2719,7 +2718,7 @@ router.post("/cards/review/start/:id", auth, async (req, res) => {
       { path: "execs" },
       { path: "user" },
       { path: "user2" },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "tasks.user" },
       { path: "tasks.user2" },
       { path: "comments.author" },
@@ -2751,7 +2750,7 @@ router.post("/cards/review/changestatus/:id", auth, async (req, res) => {
       { path: "execs" },
       { path: "user" },
       { path: "user2" },
-      { path: "creator" },
+      { path: "creator", select: "avatar fullname" },
       { path: "tasks.user" },
       { path: "tasks.user2" },
       { path: "comments.author" },
