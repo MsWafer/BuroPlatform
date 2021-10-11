@@ -194,8 +194,8 @@ router.delete("/boards/delete/:id", manauth, async (req, res) => {
 //rename board
 router.put("/boards/rename/:id", auth, async (req, res) => {
   try {
-    console.log(req.params)
-    console.log(req.body)
+    console.log(req.params);
+    console.log(req.body);
     let project = await Project.findOne({ "boards._id": req.params.id });
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     board.name = req.body.name;
@@ -1053,6 +1053,8 @@ router.put("/boards/column/delete/:id", async (req, res) => {
 //rename column
 router.put("/boards/column/rename/:id", manauth, async (req, res) => {
   try {
+    console.log(req.params)
+    console.log(req.body)
     let project = await Project.findOne({
       "boards._id": req.params.id,
     }).populate([
@@ -1124,6 +1126,9 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
       for (let timeline of category.timeline) {
         for (let card of timeline.cards) {
           if (card.column == old_column) {
+            if (!card.comments) {
+              card.comments = [];
+            }
             card.column = req.body.new_column;
             card.comments.push({
               type: "history",
@@ -2446,7 +2451,7 @@ router.get("/help/me/pls", async (req, res) => {
       for (let timeline of category.timeline) {
         if (timeline.start && timeline.end) {
           timeline.end = new Date(
-            timeline.start.getTime() + 1000 * 60 * 60 * 24 * (category.step-1)
+            timeline.start.getTime() + 1000 * 60 * 60 * 24 * (category.step - 1)
           );
         }
         await category.save();
