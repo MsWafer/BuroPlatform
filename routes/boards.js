@@ -1769,7 +1769,7 @@ router.post("/cards/tasks/new/:id", async (req, res) => {
 });
 
 //edit task
-router.put("/cards/tasks/edit/:id", async (req, res) => {
+router.put("/cards/tasks/edit/:id", auth, async (req, res) => {
   try {
     let card = await Card.findOne({ "tasks._id": req.params.id });
     if (!card) {
