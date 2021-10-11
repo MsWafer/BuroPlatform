@@ -1129,7 +1129,7 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
       category.columns.splice(req.body.ind, 1, req.body.new_column);
       for (let timeline of category.timeline) {
         for (let card of timeline.cards) {
-          if (card.column == old_column) {
+          if (card.column === old_column) {
             if (!card.comments) {
               card.comments = [];
             }
