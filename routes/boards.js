@@ -1056,6 +1056,9 @@ router.put("/boards/column/delete/:id", async (req, res) => {
 //rename column
 router.put("/boards/column/rename/:id", manauth, async (req, res) => {
   try {
+    if(req.body.new_column==null||req.body.new_column===''){
+      return res.status(400).json({err:"null new column"})
+    }
     let project = await Project.findOne({
       "boards._id": req.params.id,
     }).populate([
@@ -1125,7 +1128,7 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
       category.columns.splice(req.body.ind, 1, req.body.new_column);
       for (let timeline of category.timeline) {
         for (let card of timeline.cards) {
-          if (card.column === old_column) {
+          if (card.column.toString() == old_column.toString()) {
             if (!card.comments) {
               card.comments = [];
             }
@@ -2640,7 +2643,7 @@ router.post("/cards/reason/:id", auth, async (req, res) => {
     })[0];
     task.reason = obj;
     let comment = {
-      text: `Добавлено объяснение просрочки задачи ${task.title}`,
+      text: `Добавлено объяснение просрочки задачи ${task.taskTitle}`,
       author: req.user.id,
       date: new Date(),
       type: "history",
