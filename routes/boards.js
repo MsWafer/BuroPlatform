@@ -1056,9 +1056,9 @@ router.put("/boards/column/delete/:id", async (req, res) => {
 //rename column
 router.put("/boards/column/rename/:id", manauth, async (req, res) => {
   try {
-    if(req.body.new_column==null||req.body.new_column===''){
-      return res.status(400).json({err:"null new column"})
-    }
+    // if(req.body.new_column==null||req.body.new_column===''){
+    //   return res.status(400).json({err:"null new column"})
+    // }
     let project = await Project.findOne({
       "boards._id": req.params.id,
     }).populate([
