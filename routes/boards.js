@@ -194,6 +194,8 @@ router.delete("/boards/delete/:id", manauth, async (req, res) => {
 //rename board
 router.put("/boards/rename/:id", auth, async (req, res) => {
   try {
+    console.log(req.params)
+    console.log(req.body)
     let project = await Project.findOne({ "boards._id": req.params.id });
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     board.name = req.body.name;
