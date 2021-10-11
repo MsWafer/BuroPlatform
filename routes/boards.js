@@ -1057,8 +1057,6 @@ router.put("/boards/column/delete/:id", async (req, res) => {
 //rename column
 router.put("/boards/column/rename/:id", manauth, async (req, res) => {
   try {
-    console.log(req.params);
-    console.log(req.body);
     let project = await Project.findOne({
       "boards._id": req.params.id,
     }).populate([
@@ -1067,9 +1065,8 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
         populate: [
           {
             path: "timeline.cards",
-            select: "avatar fullname",
             populate: [
-              { path: "creator" },
+              { path: "creator", select: "avatar fullname" },
               { path: "execs", select: "avatar fullname" },
               {
                 path: "event_users",
@@ -1791,14 +1788,14 @@ router.put("/cards/tasks/edit/:id", auth, async (req, res) => {
         },
         { $inc: { task_close_count: num } }
       );
-      let status = req.body.taskStatus?"завершена":"возобновлена";
+      let status = req.body.taskStatus ? "завершена" : "возобновлена";
       let comment = {
         type: "history",
         date: new Date(),
         author: req.user.id,
-        text: `Задача ${task.title} ${status}`
-      }
-      card.comments.push(comment)
+        text: `Задача ${task.title} ${status}`,
+      };
+      card.comments.push(comment);
     }
     await card.save();
     await Card.populate(card, [
@@ -2707,10 +2704,10 @@ router.post("/cards/review/start/:id", auth, async (req, res) => {
       return res.status(404).json({ err: "Карточка не найдена" });
     }
     if (!card.review) {
-      card.review = {state:undefined};
+      card.review = { state: undefined };
     }
-    if(card.review.state=="pending"){
-      return res.status(400).json({err:"Карточка уже находится в проверке"})
+    if (card.review.state == "pending") {
+      return res.status(400).json({ err: "Карточка уже находится в проверке" });
     }
     (card.review.state = "pending"),
       (card.review.date = new Date()),
