@@ -1122,6 +1122,9 @@ router.put("/boards/column/rename/:id", manauth, async (req, res) => {
     }
     let board = project.boards.filter((el) => el._id == req.params.id)[0];
     let old_column = board.columns[req.body.ind];
+    if(old_column==undefined || old_column == null){
+      old_column="В работе"
+    }
     board.columns.splice(req.body.ind, 1, req.body.new_column);
     for (let category of board.categories) {
       // let old = category.columns[req.body.ind]
