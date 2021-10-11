@@ -83,7 +83,7 @@ const CardSchema = new Schema({
       },
       reason: {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        type: String,
+        rType: String,
         text: String,
         date: Date,
       },
