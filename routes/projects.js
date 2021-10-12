@@ -163,7 +163,7 @@ router.get("/", auth, async (req, res) => {
   try {
     let projects = await Project.find()
       .select(
-        "crypt crypter sprints title type dateStart dateFinish par stage status tags object"
+        "image crypt crypter sprints title type dateStart dateFinish par stage status tags object"
       )
       .populate("sprints", "status");
     let que = req.query.field;
@@ -194,7 +194,7 @@ router.get("/q/search", auth, async (req, res) => {
       let prj = await Project.find()
         .sort({ title: 1 })
         .select(
-          "crypt crypter sprints title type dateStart dateFinish par stage status tags object"
+          "image crypt crypter sprints title type dateStart dateFinish par stage status tags object"
         )
         .populate("sprints", "status");
       return res.json(prj);
