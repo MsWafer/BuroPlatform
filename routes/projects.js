@@ -140,7 +140,7 @@ router.post(
   async (req, res) => {
     try {
       console.log(req.body)
-      console.log(req.file)
+      console.log(req)
       let project = await Project.findOne({ crypt: req.params.crypt });
       if (!project) {
         return res.status(404).json({ err: "Проект не найден" });
