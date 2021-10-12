@@ -1801,7 +1801,7 @@ router.put("/cards/tasks/edit/:id", auth, async (req, res) => {
         type: "history",
         date: new Date(),
         author: req.user.id,
-        text: `Задача ${task.title} ${status}`,
+        text: `Задача ${task.taskTitle} ${status}`,
       };
       card.comments.push(comment);
     }
