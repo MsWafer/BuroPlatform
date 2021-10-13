@@ -1838,6 +1838,7 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
     let task = card.tasks.filter((el) => el._id == req.params.id)[0];
     task.user = req.body.user;
     task.user2 = req.user.id;
+    console.log(req.body)
     console.log(task)
     // task.project = req.body.project;
     if (req.body.user != undefined && !card.execs.includes(req.body.user)) {
