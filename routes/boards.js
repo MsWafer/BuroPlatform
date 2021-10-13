@@ -1614,10 +1614,11 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
       };
       if (req.body.deadline) {
         req.body.deadline = new Date(req.body.deadline);
-        let new_date = req.body.deadline.toLocaleString('ru-RU',{timezone:'utc+3'});
+        let newDateNew = new Date(req.body.deadline.getTime()+1000*3600*3)
+        let new_date = newDateNew.toLocaleString('ru-RU',{timezone:'utc+3'});
         if (card.deadline != undefined) {
-          let old_date = card.deadline.toLocaleString('ru-RU',{timezone:'utc+3'});
-          let new_date = req.body.deadline.toLocaleString('ru-RU',{timezone:'utc+3'});
+          let old_date = newDateNew.toLocaleString('ru-RU',{timezone:'utc+3'});
+          let new_date = newDateNew.toLocaleString('ru-RU',{timezone:'utc+3'});
           comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
           card.comments.push(comment);
         } else {
