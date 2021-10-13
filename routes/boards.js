@@ -1614,10 +1614,10 @@ router.put("/cards/fields/edit/:id", auth, async (req, res) => {
       };
       if (req.body.deadline) {
         req.body.deadline = new Date(req.body.deadline);
-        let new_date = req.body.deadline.toLocaleString();
+        let new_date = req.body.deadline.toLocaleString('ru-RU');
         if (card.deadline != undefined) {
-          let old_date = card.deadline.toLocaleString();
-          let new_date = req.body.deadline.toLocaleString();
+          let old_date = card.deadline.toLocaleString('ru-RU');
+          let new_date = req.body.deadline.toLocaleString('ru-RU');
           comment.text = `Дедлайн изменен с ${old_date} на ${new_date}`;
           card.comments.push(comment);
         } else {
