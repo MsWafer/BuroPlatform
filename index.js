@@ -98,6 +98,12 @@ let a = async () => {
     if(!card.review){
       card.review.state = "not_pending"
     }
+    for(let task of card.tasks){
+      if(!task.cardId){
+        task.cardId = card._id;
+        task.cardTitle = card.title;
+      }
+    }
     await card.save()
   }
 };

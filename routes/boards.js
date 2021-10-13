@@ -1730,7 +1730,7 @@ router.post("/cards/tasks/new/:id", async (req, res) => {
       return res.status(404).json({ err: "Карточка не найдена" });
     }
     if (!req.body.title) {
-      return res.status(400).json({ err: "Введите имя таска" });
+      return res.status(400).json({ err: "Введите имя задачи" });
     }
     if (card.tasks.length == 0) {
       card.type = "Чеклист";
