@@ -1736,6 +1736,8 @@ router.post("/cards/tasks/new/:id", async (req, res) => {
       card.type = "Чеклист";
     }
     card.tasks.push({
+      cardId: card._id,
+      cardTitle: card.title,
       taskTitle: req.body.title,
       project: req.body.project_id,
       date: new Date(),
