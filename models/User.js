@@ -136,6 +136,11 @@ const UserSchema = new mongoose.Schema({
           },
           tasks: [
             {
+              cardId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "card"
+              },
+              cardTitle: String,
               taskTitle: { type: String },
               taskStatus: { type: Boolean },
               date: { type: Date },
