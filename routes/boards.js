@@ -1838,6 +1838,7 @@ router.put("/cards/tasks/exec/:id", auth, async (req, res) => {
     let task = card.tasks.filter((el) => el._id == req.params.id)[0];
     task.user = req.body.user;
     task.user2 = req.user.id;
+    console.log(task)
     // task.project = req.body.project;
     if (req.body.user != undefined && !card.execs.includes(req.body.user)) {
       card.execs.push(req.body.user);
@@ -1905,7 +1906,7 @@ router.delete("/cards/tasks/delete/:id", async (req, res) => {
     let card = await Card.findOne({ "tasks._id": req.params.id }).populate([
       {
         path: "comments.author",
-        select: "avatar fullname",
+        select: "avatar fullname name lastname",
       },
     ]);
     if (!card) {
@@ -2003,7 +2004,7 @@ router.delete("/cards/delete/single", auth, async (req, res) => {
     for (let board of project.boards) {
       for (let category of board.categories) {
         category.expired = category.expired.filter((el) => {
-          return el._id == req.query.cardid;
+          return el._id != req.query.cardid;
         });
         for (let timeline of category.timeline) {
           timeline.cards = timeline.cards.filter(
