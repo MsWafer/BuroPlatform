@@ -110,4 +110,4 @@ let a = async () => {
 a();
 let f = new Date();
 console.log(f.toLocaleString())
-console.log(f.toLocaleString('ru-RU'))
+console.log(f.toLocaleString('ru-RU',{timezone:'utc+3'}))
